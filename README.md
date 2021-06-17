@@ -1,7 +1,7 @@
 
 # event-hub
 
-This is a placeholder README.md for a new repository
+Facilitate reporting of delivery of failed email's
 
 ### License
 
