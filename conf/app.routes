@@ -1,3 +1,9 @@
 # microservice specific routes
 
+###
+# summary: prints hello world
+# responses:
+#   200:
+#     description: test endpoint
+###
 GET        /hello-world             uk.gov.hmrc.eventhub.controllers.MicroserviceHelloWorldController.hello

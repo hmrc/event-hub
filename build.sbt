@@ -1,3 +1,4 @@
+import com.iheart.sbtPlaySwagger.SwaggerPlugin.autoImport.swaggerDomainNameSpaces
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
@@ -7,7 +8,13 @@ val appName = "event-hub"
 val silencerVersion = "1.7.3"
 
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
+  .enablePlugins(
+    play.sbt.PlayScala,
+    SbtAutoBuildPlugin,
+    SbtGitVersioning,
+    SbtDistributablesPlugin,
+    SwaggerPlugin
+  )
   .settings(
     majorVersion                     := 0,
     scalaVersion                     := "2.12.13",
@@ -33,3 +40,11 @@ lazy val microservice = Project(appName, file("."))
       task.map(_ => previousInputs)
     }.value)
 )
+swaggerDomainNameSpaces := Seq(
+    "uk.gov.hmrc.eventhub.models"
+  )
+swaggerTarget := baseDirectory.value / "public"
+swaggerFileName := "schema.json"
+swaggerPrettyJson := true
+swaggerRoutesFile := "prod.routes"
+swaggerV3 := true

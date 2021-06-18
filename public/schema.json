@@ -1,0 +1,31 @@
+{
+  "components" : {
+    "schemas" : { }
+  },
+  "paths" : {
+    "/event-hub/hello-world" : {
+      "get" : {
+        "operationId" : "hello",
+        "tags" : [ "app" ]
+      }
+    },
+    "/admin/metrics" : {
+      "get" : {
+        "operationId" : "metrics",
+        "tags" : [ "prod" ]
+      }
+    }
+  },
+  "info" : {
+    "produces" : [ "application/json" ],
+    "description" : "report failed emails",
+    "title" : "Event Hub API",
+    "version" : "0.1.0-SNAPSHOT",
+    "consumes" : [ "application/json" ]
+  },
+  "tags" : [ {
+    "name" : "app"
+  }, {
+    "name" : "prod"
+  } ]
+}

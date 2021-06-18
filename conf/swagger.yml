@@ -1,0 +1,8 @@
+---
+info:
+  title: "Event Hub API"
+  description: "report failed emails"
+  consumes:
+    - application/json
+  produces:
+    - application/json
