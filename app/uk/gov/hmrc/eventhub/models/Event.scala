@@ -18,4 +18,4 @@ package uk.gov.hmrc.eventhub.models
 
 import java.util.UUID
 
-case class Event (messageId: UUID)
+case class Event(messageId: UUID)

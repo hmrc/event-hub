@@ -6,7 +6,13 @@
     "/event-hub/hello-world" : {
       "get" : {
         "operationId" : "hello",
-        "tags" : [ "app" ]
+        "tags" : [ "app" ],
+        "summary" : "prints hello world",
+        "responses" : {
+          "200" : {
+            "description" : "test endpoint"
+          }
+        }
       }
     },
     "/admin/metrics" : {
