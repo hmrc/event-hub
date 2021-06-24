@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.controllers
+package uk.gov.hmrc.eventhub.repository
 
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import play.api.mvc.{ Action, AnyContent, ControllerComponents }
-import javax.inject.{ Inject, Singleton }
-import scala.concurrent.Future
+import org.mongodb.scala.result.InsertOneResult
+import org.mongodb.scala.{ClientSession, SingleObservable}
+import uk.gov.hmrc.eventhub.models.Event
+import uk.gov.hmrc.mongo.workitem.{WorkItem, WorkItemRepository}
 
-@Singleton()
-class MicroserviceHelloWorldController @Inject()(cc: ControllerComponents) extends BackendController(cc) {
+import javax.inject.Inject
 
-  def hello(): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok("Hello world"))
+class SubscriberQueuesRepository @Inject()() {
+
+  def addWorkItem(clientSession: ClientSession, repository: WorkItemRepository[Event],
+                  eventWorkItem: WorkItem[Event]): SingleObservable[InsertOneResult]
+  = {
+    repository.collection.insertOne(clientSession, eventWorkItem)
   }
+
 }

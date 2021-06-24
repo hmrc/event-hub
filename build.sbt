@@ -22,7 +22,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     majorVersion                     := 0,
     scalaVersion                     := "2.12.13",
-    libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
+    libraryDependencies              ++= Dependencies.libraries,
     // ***************
     // Use the silencer plugin to suppress warnings
     scalacOptions += "-P:silencer:pathFilters=routes",
@@ -45,9 +45,9 @@ lazy val microservice = Project(appName, file("."))
     }.value)
 )
 
-lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
-compileScalastyle := scalastyle.in(Compile).toTask("").value
-(compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
+//lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
+//compileScalastyle := scalastyle.in(Compile).toTask("").value
+//(compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
 
 PlayKeys.playDefaultPort := 9050
 
