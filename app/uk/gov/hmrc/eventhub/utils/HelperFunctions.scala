@@ -14,23 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.controllers
+package uk.gov.hmrc.eventhub.utils
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import play.api.http.Status
-import play.api.test.Helpers._
-import play.api.test.{ FakeRequest, Helpers }
+import uk.gov.hmrc.eventhub.models.PublishError
 
-class MicroserviceHelloWorldControllerSpec extends AnyWordSpec with Matchers {
+import scala.concurrent.{ExecutionContext, Future}
 
-  private val fakeRequest = FakeRequest("GET", "/")
-  private val controller = new MicroserviceHelloWorldController(Helpers.stubControllerComponents())
-
-  "GET /" should {
-    "return 200" in {
-      val result = controller.hello()(fakeRequest)
-      status(result) shouldBe Status.OK
-    }
-  }
+object HelperFunctions {
+  def liftFuture[A](e: Either[PublishError, Future[A]])(implicit ec: ExecutionContext): Future[Either[PublishError, A]] =
+    e.fold((l: PublishError) => Future(Left(l)), (r: Future[A]) => r.map(value => Right(value)))
 }

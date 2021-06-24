@@ -16,6 +16,26 @@
 
 package uk.gov.hmrc.eventhub.models
 
+import enumeratum.{ EnumEntry, PlayEnum }
+import play.api.libs.json.{ Format, JsValue, Json }
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+
+import java.time.LocalDateTime
 import java.util.UUID
 
-case class Event(messageId: UUID)
+final case class Event(eventId: UUID, subject: String, groupId: String, timeStamp: LocalDateTime, event: JsValue)
+
+object Event {
+  implicit val dateTimeFormat = MongoJavatimeFormats.instantFormat
+  implicit val eventFormat: Format[Event] = Json.format[Event]
+}
+
+sealed abstract class EventStatus extends EnumEntry
+
+object EventStatus extends EventStatus with PlayEnum[EventStatus] {
+  val values = findValues
+  case object Failed extends EventStatus
+}
+
+case class EmailAddress(value: String)
+case class Enrolment(key: String, name: String, value: String)
