@@ -16,24 +16,20 @@
 
 package uk.gov.hmrc.eventhub.controllers
 
-import play.api.libs.json.{JsError, JsValue, Json}
-import play.api.mvc.{Action, BaseController, ControllerComponents}
+import play.api.libs.json.{ JsError, JsValue, Json }
+import play.api.mvc.{ Action, BaseController, ControllerComponents }
 import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.service.PublishEventService
-import uk.gov.hmrc.eventhub.subscriptions.SubscriberPushSubscriptions
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.{ Inject, Singleton }
+import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
 class EventHubController @Inject()(
   val controllerComponents: ControllerComponents,
-  eventService: PublishEventService,
-  subscriberPushSubscriptions: SubscriberPushSubscriptions
-)
-(implicit ec: ExecutionContext) extends BaseController {
-
-  subscriberPushSubscriptions.push
+  eventService: PublishEventService
+)(implicit ec: ExecutionContext)
+    extends BaseController {
 
   def publishEvent(topic: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val event = request.body.validate[Event]
@@ -42,15 +38,14 @@ class EventHubController @Inject()(
         Future.successful(BadRequest(Json.obj("message" -> JsError.toJson(errors))))
       },
       e => {
-        eventService.processEvent(topic, e).map{
-          case SaveError => InternalServerError
-          case NoTopics => NotFound("No such topic")
-          case NoSubscribers => Created("No Subscribers to Topic")
+        eventService.processEvent(topic, e).map {
+          case SaveError      => InternalServerError
+          case NoTopics       => NotFound("No such topic")
+          case NoSubscribers  => Created("No Subscribers to Topic")
           case DuplicateEvent => Created("Duplicate event")
-          case _ => Created
+          case _              => Created
         }
       }
     )
   }
 }
-
