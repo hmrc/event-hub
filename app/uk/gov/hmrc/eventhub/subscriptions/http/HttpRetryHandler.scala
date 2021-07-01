@@ -30,7 +30,6 @@ trait HttpRetryHandler extends Logging {
         case StatusCodes.Success(_) | StatusCodes.ClientError(_) => None
         case _                                                   => Some(inputs)
       }
-      logger.info(s"retry logic: $output")
       resp.entity.discardBytes()
       output
     case ((_, _), (Failure(_), _)) => None

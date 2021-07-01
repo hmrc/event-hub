@@ -26,14 +26,14 @@ import uk.gov.hmrc.eventhub.respository.SubscriberEventRepository
 
 import java.util.concurrent.Callable
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait SubscriberEventSource {
   def source: Source[Event, NotUsed]
 }
 
 /**
-  * Attempts to pull from work item queue when downstream signals demand, emits as soon as there is an available work item
+  * Polls for work items, emits when there is an available work item and downstream demand
   */
 class PullSubscriberEventSource(
   subscriberEventRepository: SubscriberEventRepository
@@ -46,19 +46,19 @@ class PullSubscriberEventSource(
   /**
     * TODO make `after` delay configurable
     */
-  private def onPull: Unit => Future[Option[(Unit, Event)]] = {
-    _ =>
-      logger.info(s"polling subscriber repository...")
-      subscriberEventRepository
-        .next
-        .flatMap {
-          case None        =>
-            logger.info("no dice, retrying in 500 millis")
-            after(500.millis, scheduler, executionContext, onPullCallable)
-          case Some(event) =>
-            logger.info(s"found event $event")
-            Future.successful(Some(() -> event))
-      }
+  private def onPull: Unit => Future[Option[(Unit, Event)]] = { _ =>
+    logger.info(s"polling subscriber repository...")
+    subscriberEventRepository.next
+      .flatMap(pullLogic)
+  }
+
+  private def pullLogic(readResult: Option[Event]): Future[Option[(Unit, Event)]] = readResult match {
+    case None =>
+      logger.info("no dice, retrying in 500 millis")
+      after(500.millis, scheduler, executionContext, onPullCallable)
+    case Some(event) =>
+      logger.info(s"found event $event")
+      Future.successful(Some(() -> event))
   }
 
   private def onPullCallable: Callable[Future[Option[(Unit, Event)]]] =
