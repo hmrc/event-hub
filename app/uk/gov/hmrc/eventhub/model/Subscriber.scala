@@ -91,10 +91,10 @@ object Subscriber {
 case class Topic(name: String, subscribers: List[Subscriber])
 
 object Topic {
-  implicit val configLoader: ConfigLoader[Map[String, List[Topic]]] = (rootConfig: Config, path: String) =>
+  implicit val configLoader: ConfigLoader[Map[String, Topic]] = (rootConfig: Config, path: String) =>
     ConfigSource
       .fromConfig(rootConfig.getConfig(path))
-      .load[Map[String, List[Topic]]] match {
+      .load[Map[String, Topic]] match {
       case Left(value) => throw new IllegalArgumentException(s"could not load topic config: ${value.toList.mkString(" | ")}")
       case Right(value) => value
     }

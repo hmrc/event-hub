@@ -33,7 +33,7 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class SubscriberPushSubscriptions @Inject()(
- @Named("eventTopics") topics: Map[String, List[Topic]],
+ @Named("eventTopics") topics: Map[String, Topic],
  configuration: Configuration,
  mongoComponent: MongoComponent
 )(
@@ -54,12 +54,12 @@ class SubscriberPushSubscriptions @Inject()(
 
     logger.info(s"starting subscribers for: $topics")
 
-    val subs = topics.toList.flatMap { case (name, t) =>
-      t
-        .flatMap(_.subscribers)
+    val subs = topics.toList.flatMap { case (_, topic) =>
+      topic
+        .subscribers
         .map { subscriber =>
           val subscriberQueueRepository: SubscriberQueueRepository = new SubscriberQueueRepository(
-            name,
+            topic.name,
             subscriber,
             configuration,
             mongoComponent

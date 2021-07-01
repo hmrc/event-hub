@@ -29,14 +29,12 @@ class PublishEventService @Inject()(
   eventHubRepository: EventHubRepository,
   configuration: Configuration,
   mongoComponent: MongoComponent,
-  @Named("eventTopics") topics: Map[String, List[Topic]]
+  @Named("eventTopics") topics: Map[String, Topic]
 )(implicit executionContext: ExecutionContext) {
 
   val subscriberRepos: Map[Subscriber, SubscriberQueueRepository] = topics.flatMap {
-    case (name, t) => t.flatMap {
-      _.subscribers.map { subscriber =>
-        subscriber -> new SubscriberQueueRepository(name, subscriber, configuration, mongoComponent)(executionContext)
-      }
+    case (_, topic) => topic.subscribers.map { subscriber =>
+      subscriber -> new SubscriberQueueRepository(topic.name, subscriber, configuration, mongoComponent)(executionContext)
     }
   }
 
@@ -47,7 +45,7 @@ class PublishEventService @Inject()(
         for {
           _ <- eventHubRepository.saveEvent(event)
           status <- Future.sequence(
-          l.flatMap(_.subscribers).map { s =>
+          l.subscribers.map { s =>
             subscriberRepos(s).addSubscriberWorkItems(Seq(SubscriberWorkItem(event)))
           }).map(_ => Published)
         } yield status
