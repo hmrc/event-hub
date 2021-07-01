@@ -19,10 +19,10 @@ package uk.gov.hmrc.eventhub.subscriptions
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.stream.scaladsl.{Keep, Sink}
+import akka.stream.scaladsl.{Keep, Sink, Source}
 import akka.stream.{KillSwitches, Materializer, SharedKillSwitch}
 import play.api.{Configuration, Logging}
-import uk.gov.hmrc.eventhub.model.Topic
+import uk.gov.hmrc.eventhub.model.{Subscriber, Topic}
 import uk.gov.hmrc.eventhub.respository.{SubscriberEventRepository, SubscriberQueueRepository, WorkItemSubscriberEventRepository}
 import uk.gov.hmrc.eventhub.subscriptions.http.{EventMarkingHttpResponseHandler, HttpEventRequestBuilder, HttpResponseHandler, HttpRetryHandler}
 import uk.gov.hmrc.eventhub.subscriptions.stream._
@@ -56,34 +56,38 @@ class SubscriberPushSubscriptions @Inject()(
       topic
         .subscribers
         .map { subscriber =>
-          val subscriberQueueRepository: SubscriberQueueRepository = new SubscriberQueueRepository(
-            topic.name,
-            subscriber,
-            configuration,
-            mongoComponent
-          )
-          val subscriberEventRepository: SubscriberEventRepository = new WorkItemSubscriberEventRepository(subscriberQueueRepository)
-          val subscriberEventSource: SubscriberEventSource = new PullSubscriberEventSource(subscriberEventRepository)(actorSystem.scheduler, executionContext)
-          val subscriberEventHttpFlow: SubscriberEventHttpFlow = new SubscriberEventHttpFlowImpl(
-            subscriber,
-            HttpRetryHandler,
-            HttpEventRequestBuilder,
-            Http()
-          )
-          val httpResponseHandler: HttpResponseHandler = new EventMarkingHttpResponseHandler(subscriberEventRepository)
-          val stream = PushSubscription.subscriptionStream(
-            subscriberEventSource,
-            subscriberEventHttpFlow,
-            httpResponseHandler
-          )
-
+          val stream = buildSubscriberStream(subscriber, topic)
           stream
             .viaMat(subscribersKillSwitch.flow)(Keep.left)
             .to(Sink.ignore)
             .run()
-      }
+        }
     }
 
     subscribersKillSwitch -> subs
+  }
+
+  private def buildSubscriberStream(subscriber: Subscriber, topic: Topic): Source[HttpResponseHandler.EventSendStatus, NotUsed] = {
+    val subscriberQueueRepository: SubscriberQueueRepository = new SubscriberQueueRepository(
+      topic.name,
+      subscriber,
+      configuration,
+      mongoComponent
+    )
+    val subscriberEventRepository: SubscriberEventRepository = new WorkItemSubscriberEventRepository(subscriberQueueRepository)
+    val subscriberEventSource: SubscriberEventSource = new PullSubscriberEventSource(subscriberEventRepository)(actorSystem.scheduler, executionContext)
+    val subscriberEventHttpFlow: SubscriberEventHttpFlow = new SubscriberEventHttpFlowImpl(
+      subscriber,
+      HttpRetryHandler,
+      HttpEventRequestBuilder,
+      Http()
+    )
+    val httpResponseHandler: HttpResponseHandler = new EventMarkingHttpResponseHandler(subscriberEventRepository)
+
+    PushSubscription.subscriptionStream(
+      subscriberEventSource,
+      subscriberEventHttpFlow,
+      httpResponseHandler
+    )
   }
 }
