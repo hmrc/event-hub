@@ -33,21 +33,19 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class SubscriberPushSubscriptions @Inject()(
- @Named("eventTopics") topics: Map[String, Topic],
- configuration: Configuration,
- mongoComponent: MongoComponent
+  @Named("eventTopics") topics: Map[String, Topic],
+  configuration: Configuration,
+  mongoComponent: MongoComponent
 )(
- implicit
- actorSystem: ActorSystem,
- materializer: Materializer,
- executionContext: ExecutionContext
+  implicit
+  actorSystem: ActorSystem,
+  materializer: Materializer,
+  executionContext: ExecutionContext
 ) extends Logging {
 
   /**
    * TODO decide on what aggregation if any we should be returning along side the kill switch
    * Do we need a kill switch per subscriber stream?
-   *
-   * @return
    */
   def push: (SharedKillSwitch, List[NotUsed]) = {
     val subscribersKillSwitch = KillSwitches.shared("subscribers-kill-switch")
