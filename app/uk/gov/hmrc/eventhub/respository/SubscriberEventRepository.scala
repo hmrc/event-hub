@@ -26,7 +26,7 @@ import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem}
 import scala.concurrent.{ExecutionContext, Future}
 
 trait SubscriberEventRepository {
-  def next: Future[Option[Event]]
+  def next(): Future[Option[Event]]
   def failed(event: Event): Future[Option[Boolean]]
   def sent(event: Event): Future[Option[Boolean]]
 }
@@ -34,7 +34,7 @@ trait SubscriberEventRepository {
 class WorkItemSubscriberEventRepository(
   subscriberQueueRepository: SubscriberQueueRepository
 )(implicit executionContext: ExecutionContext) extends SubscriberEventRepository with Logging {
-  override def next: Future[Option[Event]] =
+  override def next(): Future[Option[Event]] =
     subscriberQueueRepository
       .getEvent
       .map(_.map(_.item.event))
