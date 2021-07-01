@@ -85,5 +85,5 @@ object Subscriber {
     override def writes(o: HttpMethod): JsValue = JsString(o.toString())
   }
 
-  implicit val fmt: OFormat[Subscriber] = Json.format[Subscriber]
+  implicit val subscriberFormat: OFormat[Subscriber] = Json.format[Subscriber]
 }
