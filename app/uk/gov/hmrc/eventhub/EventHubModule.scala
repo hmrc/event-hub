@@ -36,9 +36,7 @@ class EventHubModule extends AbstractModule with AkkaGuiceSupport {
   def configTopics(configuration: Configuration): Map[String, Topic] = {
     configuration
       .get[Map[String, List[Subscriber]]]("topics")
-      .toList
       .map { case (k, v) => k -> Topic(k, v) }
-      .toMap
   }
 }
 
