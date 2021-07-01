@@ -21,6 +21,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.scaladsl.{Keep, Sink, Source}
 import akka.stream.{KillSwitches, Materializer, SharedKillSwitch}
+import play.api.inject.ApplicationLifecycle
 import play.api.{Configuration, Logging}
 import uk.gov.hmrc.eventhub.model.{Subscriber, Topic}
 import uk.gov.hmrc.eventhub.respository.{SubscriberEventRepository, SubscriberQueueRepository, WorkItemSubscriberEventRepository}
@@ -29,13 +30,14 @@ import uk.gov.hmrc.eventhub.subscriptions.stream._
 import uk.gov.hmrc.mongo.MongoComponent
 
 import javax.inject.{Inject, Named, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SubscriberPushSubscriptions @Inject()(
   @Named("eventTopics") topics: Map[String, Topic],
   configuration: Configuration,
-  mongoComponent: MongoComponent
+  mongoComponent: MongoComponent,
+  lifecycle: ApplicationLifecycle
 )(
   implicit
   actorSystem: ActorSystem,
@@ -48,6 +50,10 @@ class SubscriberPushSubscriptions @Inject()(
    * Do we need a kill switch per subscriber stream?
    */
   val subscribersKillSwitch: SharedKillSwitch = KillSwitches.shared("subscribers-kill-switch")
+
+  lifecycle.addStopHook { () =>
+    Future(subscribersKillSwitch.shutdown())
+  }
 
   logger.info(s"starting subscribers for: $topics")
 

@@ -48,7 +48,8 @@ class PullSubscriberEventSource(
     */
   private def onPull: Unit => Future[Option[(Unit, Event)]] = { _ =>
     logger.info(s"polling subscriber repository...")
-    subscriberEventRepository.next
+    subscriberEventRepository
+      .next()
       .flatMap(pullLogic)
   }
 
