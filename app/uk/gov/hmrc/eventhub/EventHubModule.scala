@@ -33,11 +33,11 @@ class EventHubModule extends AbstractModule with AkkaGuiceSupport {
   @Provides
   @Named("eventTopics")
   @Singleton
-  def configTopics(configuration: Configuration): Map[String, List[Topic]] = {
+  def configTopics(configuration: Configuration): Map[String, Topic] = {
     configuration
       .get[Map[String, List[Subscriber]]]("topics")
       .toList
-      .map { case (k, v) => k -> List(Topic(k, v)) }
+      .map { case (k, v) => k -> Topic(k, v) }
       .toMap
   }
 }
