@@ -3,16 +3,23 @@
     "schemas" : { }
   },
   "paths" : {
-    "/event-hub/hello-world" : {
-      "get" : {
-        "operationId" : "hello",
+    "/event-hub/publish/{topic}" : {
+      "post" : {
+        "operationId" : "publishEvent",
         "tags" : [ "app" ],
-        "summary" : "prints hello world",
+        "summary" : "Post Event",
         "responses" : {
-          "200" : {
-            "description" : "test endpoint"
-          }
-        }
+          "201" : null,
+          "description" : "Post event with a topic"
+        },
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "topic",
+          "schema" : {
+            "type" : "string"
+          },
+          "required" : true
+        } ]
       }
     },
     "/admin/metrics" : {
@@ -26,7 +33,7 @@
     "produces" : [ "application/json" ],
     "description" : "report failed emails",
     "title" : "Event Hub API",
-    "version" : "0.1.0-SNAPSHOT",
+    "version" : "0.4.0-SNAPSHOT",
     "consumes" : [ "application/json" ]
   },
   "tags" : [ {

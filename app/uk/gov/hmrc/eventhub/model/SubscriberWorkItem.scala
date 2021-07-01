@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.models
+package uk.gov.hmrc.eventhub.model
 
-import java.util.UUID
+import org.bson.types.ObjectId
+import play.api.libs.json.{Format, Json, OFormat}
+import uk.gov.hmrc.mongo.play.json.formats.MongoFormats
 
-case class Event(messageId: UUID)
+case class SubscriberWorkItem(_id: ObjectId, event: Event)
+
+object SubscriberWorkItem {
+  def apply(event: Event): SubscriberWorkItem = SubscriberWorkItem(ObjectId.get, event)
+  implicit val objectIdFormat: Format[ObjectId] = MongoFormats.objectIdFormat
+  implicit val subscriberWorkItemFormat: OFormat[SubscriberWorkItem] = Json.format[SubscriberWorkItem]
+}

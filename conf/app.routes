@@ -1,9 +1,9 @@
 # microservice specific routes
 
 ###
-# summary: prints hello world
+# summary: Post Event
 # responses:
-#   200:
-#     description: test endpoint
+#   201:
+#   description: Post event with a topic
 ###
-GET        /hello-world             uk.gov.hmrc.eventhub.controllers.MicroserviceHelloWorldController.hello
+POST        /publish/:topic             uk.gov.hmrc.eventhub.controllers.EventHubController.publishEvent(topic)

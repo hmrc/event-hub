@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.controllers
+package uk.gov.hmrc.eventhub.subscriptions.http
 
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import play.api.mvc.{ Action, AnyContent, ControllerComponents }
-import javax.inject.{ Inject, Singleton }
-import scala.concurrent.Future
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpRequest}
+import play.api.libs.json.Json
+import uk.gov.hmrc.eventhub.model.{Event, Subscriber}
 
-@Singleton()
-class MicroserviceHelloWorldController @Inject()(cc: ControllerComponents) extends BackendController(cc) {
-
-  def hello(): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok("Hello world"))
-  }
+trait HttpEventRequestBuilder {
+  def build(subscriber: Subscriber, event: Event): HttpRequest =
+    HttpRequest.apply(
+      method = subscriber.httpMethod,
+      uri = subscriber.uri,
+      entity = HttpEntity(
+        ContentTypes.`application/json`,
+        Json.toJson(event).toString()
+      )
+    )
 }
+
+object HttpEventRequestBuilder extends HttpEventRequestBuilder
