@@ -44,27 +44,23 @@ class SubscriberPushSubscriptions @Inject()(
 ) extends Logging {
 
   /**
-   * TODO decide on what aggregation if any we should be returning along side the kill switch
+   * TODO decide on what aggregation if any we should be providing along side the kill switch
    * Do we need a kill switch per subscriber stream?
    */
-  def push: (SharedKillSwitch, List[NotUsed]) = {
-    val subscribersKillSwitch = KillSwitches.shared("subscribers-kill-switch")
+  val subscribersKillSwitch: SharedKillSwitch = KillSwitches.shared("subscribers-kill-switch")
 
-    logger.info(s"starting subscribers for: $topics")
+  logger.info(s"starting subscribers for: $topics")
 
-    val subs = topics.toList.flatMap { case (_, topic) =>
-      topic
-        .subscribers
-        .map { subscriber =>
-          val stream = buildSubscriberStream(subscriber, topic)
-          stream
-            .viaMat(subscribersKillSwitch.flow)(Keep.left)
-            .to(Sink.ignore)
-            .run()
-        }
-    }
-
-    subscribersKillSwitch -> subs
+  private val _: List[NotUsed] = topics.toList.flatMap { case (_, topic) =>
+    topic
+      .subscribers
+      .map { subscriber =>
+        val stream = buildSubscriberStream(subscriber, topic)
+        stream
+          .viaMat(subscribersKillSwitch.flow)(Keep.left)
+          .to(Sink.ignore)
+          .run()
+      }
   }
 
   private def buildSubscriberStream(subscriber: Subscriber, topic: Topic): Source[HttpResponseHandler.EventSendStatus, NotUsed] = {
