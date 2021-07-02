@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.model
+package uk.gov.hmrc.eventhub.subscription.http
 
-import play.api.libs.json._
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpRequest}
+import play.api.libs.json.Json
+import uk.gov.hmrc.eventhub.model.{Event, Subscriber}
 
-import java.time.LocalDateTime
-import java.util.UUID
-
-final case class Event(eventId: UUID, subject: String, groupId: String, timeStamp: LocalDateTime, event: JsValue)
-
-object Event {
-  implicit val eventFormat: OFormat[Event] = Json.format[Event]
+trait HttpEventRequestBuilder {
+  def build(subscriber: Subscriber, event: Event): HttpRequest =
+    HttpRequest.apply(
+      method = subscriber.httpMethod,
+      uri = subscriber.uri,
+      entity = HttpEntity(
+        ContentTypes.`application/json`,
+        Json.toJson(event).toString()
+      )
+    )
 }
+
+object HttpEventRequestBuilder extends HttpEventRequestBuilder

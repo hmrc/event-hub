@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscriptions.stream
+package uk.gov.hmrc.eventhub.subscription.stream
 
 import akka.NotUsed
 import akka.actor.Scheduler
@@ -27,10 +27,6 @@ import uk.gov.hmrc.eventhub.respository.SubscriberEventRepository
 import java.util.concurrent.Callable
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
-
-trait SubscriberEventSource {
-  def source: Source[Event, NotUsed]
-}
 
 /**
   * Polls for work items, emits when there is an available work item and downstream demand

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscriptions.http
+package uk.gov.hmrc.eventhub.subscription.http
 
 import akka.http.scaladsl.model.StatusCodes
 import play.api.Logging
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.respository.SubscriberEventRepository
-import uk.gov.hmrc.eventhub.subscriptions.http.HttpResponseHandler.{EventSendStatus, Failed, SendStatus, Sent}
-import uk.gov.hmrc.eventhub.subscriptions.stream.SubscriberEventHttpFlow.SubscriberEventHttpResponse
+import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{EventSendStatus, Failed, SendStatus, Sent}
+import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpResponse
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -30,7 +30,7 @@ class EventMarkingHttpResponseHandler(
   subscriberEventRepository: SubscriberEventRepository
 )(implicit executionContext: ExecutionContext) extends HttpResponseHandler with Logging {
 
-  def handleResponse(subscriberEventHttpResult: SubscriberEventHttpResponse): Future[EventSendStatus] = subscriberEventHttpResult match {
+  def handleResponse(subscriberEventHttpResponse: SubscriberEventHttpResponse): Future[EventSendStatus] = subscriberEventHttpResponse match {
     case SubscriberEventHttpResponse(response, event, subscriber) =>
       val resultF = EventSendStatus(event, subscriber, _)
 
@@ -44,11 +44,11 @@ class EventMarkingHttpResponseHandler(
             case StatusCodes.Success(_) => subscriberEventRepository.sent(event).map(_ => resultF(Sent))
 
             case StatusCodes.ClientError(_) =>
-              logger.error(s"client error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
+              logger.warn(s"client error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
               markAsFailed(event, resultF)
 
             case _ =>
-              logger.error(s"upstream error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
+              logger.warn(s"upstream error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
               markAsFailed(event, resultF)
           }
       }

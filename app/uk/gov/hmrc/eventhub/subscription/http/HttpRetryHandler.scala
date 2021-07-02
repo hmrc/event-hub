@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscriptions.http
+package uk.gov.hmrc.eventhub.subscription.http
 
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.stream.Materializer

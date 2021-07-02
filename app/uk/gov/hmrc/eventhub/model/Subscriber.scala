@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.eventhub.model
 
+import akka.http.scaladsl.model.HttpMethods.{POST, PUT}
 import akka.http.scaladsl.model.{HttpMethod, HttpMethods, Uri}
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 import play.api.libs.json._
 import pureconfig._
 import pureconfig.generic.auto._
+
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.util.Try
 
@@ -77,12 +79,20 @@ object Subscriber {
     override def reads(json: JsValue): JsResult[HttpMethod] = json match {
       case JsString(value) => HttpMethods
         .getForKeyCaseInsensitive(value)
+        .flatMap(postOrPut)
         .map(JsSuccess(_))
-        .getOrElse(throw new IllegalArgumentException(s"could not parse $value to HTTP method"))
+        .getOrElse(throw new IllegalArgumentException(s"expected one of [POST, PUT], but got: $value."))
       case x => JsError(s"expected a JsString, but got: $x")
     }
 
     override def writes(o: HttpMethod): JsValue = JsString(o.toString())
+
+    private def postOrPut(httpMethod: HttpMethod): Option[HttpMethod] = {
+      httpMethod match {
+        case postOrPut@(POST | PUT) => Some(postOrPut)
+        case _ => None
+      }
+    }
   }
 
   implicit val subscriberFormat: OFormat[Subscriber] = Json.format[Subscriber]

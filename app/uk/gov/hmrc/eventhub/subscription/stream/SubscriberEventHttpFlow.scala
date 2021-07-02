@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.model
+package uk.gov.hmrc.eventhub.subscription.stream
 
-import play.api.libs.json._
+import akka.NotUsed
+import akka.stream.scaladsl.Flow
+import uk.gov.hmrc.eventhub.model.Event
 
-import java.time.LocalDateTime
-import java.util.UUID
-
-final case class Event(eventId: UUID, subject: String, groupId: String, timeStamp: LocalDateTime, event: JsValue)
-
-object Event {
-  implicit val eventFormat: OFormat[Event] = Json.format[Event]
+trait SubscriberEventHttpFlow {
+  def flow: Flow[Event, SubscriberEventHttpResponse, NotUsed]
 }

@@ -62,6 +62,6 @@ class WorkItemSubscriberEventRepository(
   private def findAsWortItem(event: Event): Future[Option[WorkItem[SubscriberWorkItem]]] =
     subscriberQueueRepository
       .collection
-      .find(equal("item.eventId", event.eventId.toString))
+      .find(equal("item.event.eventId", event.eventId.toString))
       .headOption()
 }

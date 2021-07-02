@@ -14,25 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscriptions.http
+package uk.gov.hmrc.eventhub.subscription.stream
 
+import akka.http.scaladsl.model.HttpResponse
 import uk.gov.hmrc.eventhub.model.{Event, Subscriber}
-import uk.gov.hmrc.eventhub.subscriptions.http.HttpResponseHandler.EventSendStatus
-import uk.gov.hmrc.eventhub.subscriptions.stream.SubscriberEventHttpFlow.SubscriberEventHttpResponse
 
-import scala.concurrent.Future
+import scala.util.Try
 
-object HttpResponseHandler {
-  val ResponseParallelism = 4;
-
-  sealed trait SendStatus
-
-  case object Sent extends SendStatus
-  case object Failed extends SendStatus
-
-  case class EventSendStatus(event: Event, subscriber: Subscriber, sendStatus: SendStatus)
-}
-
-trait HttpResponseHandler {
-  def handleResponse(subscriberEventHttpResult: SubscriberEventHttpResponse): Future[EventSendStatus]
-}
+case class SubscriberEventHttpResponse(response: Try[HttpResponse], event: Event, subscriber: Subscriber)
