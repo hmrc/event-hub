@@ -20,7 +20,7 @@ import com.google.inject.{ AbstractModule, Provides }
 import play.api.Configuration
 import play.api.libs.concurrent.AkkaGuiceSupport
 import uk.gov.hmrc.eventhub.model.{ Subscriber, Topic }
-import uk.gov.hmrc.eventhub.subscriptions.SubscriberPushSubscriptions
+import uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptions
 
 import javax.inject.{ Named, Singleton }
 

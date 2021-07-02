@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscriptions
+package uk.gov.hmrc.eventhub.subscription
 
 import akka.NotUsed
 import akka.actor.ActorSystem
@@ -25,8 +25,8 @@ import play.api.inject.ApplicationLifecycle
 import play.api.{Configuration, Logging}
 import uk.gov.hmrc.eventhub.model.{Subscriber, Topic}
 import uk.gov.hmrc.eventhub.respository.{SubscriberEventRepository, SubscriberQueueRepository, WorkItemSubscriberEventRepository}
-import uk.gov.hmrc.eventhub.subscriptions.http.{EventMarkingHttpResponseHandler, HttpEventRequestBuilder, HttpResponseHandler, HttpRetryHandler}
-import uk.gov.hmrc.eventhub.subscriptions.stream._
+import uk.gov.hmrc.eventhub.subscription.http.{EventMarkingHttpResponseHandler, HttpEventRequestBuilder, HttpResponseHandler, HttpRetryHandler}
+import uk.gov.hmrc.eventhub.subscription.stream._
 import uk.gov.hmrc.mongo.MongoComponent
 
 import javax.inject.{Inject, Named, Singleton}

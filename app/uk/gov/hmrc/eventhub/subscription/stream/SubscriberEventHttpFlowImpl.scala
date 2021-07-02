@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscriptions.stream
+package uk.gov.hmrc.eventhub.subscription.stream
 
 import akka.NotUsed
 import akka.http.scaladsl.model._
@@ -22,14 +22,9 @@ import akka.http.scaladsl.{Http, HttpExt}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, RetryFlow}
 import uk.gov.hmrc.eventhub.model.{Event, Subscriber}
-import uk.gov.hmrc.eventhub.subscriptions.http.{HttpEventRequestBuilder, HttpRetryHandler}
-import uk.gov.hmrc.eventhub.subscriptions.stream.SubscriberEventHttpFlow.{RandomFactor, SubscriberEventHttpResponse}
+import uk.gov.hmrc.eventhub.subscription.http.{HttpEventRequestBuilder, HttpRetryHandler}
 
 import scala.util.Try
-
-trait SubscriberEventHttpFlow {
-  def flow: Flow[Event, SubscriberEventHttpResponse, NotUsed]
-}
 
 class SubscriberEventHttpFlowImpl(
   subscriber: Subscriber,
@@ -37,6 +32,7 @@ class SubscriberEventHttpFlowImpl(
   httpEventRequestBuilder: HttpEventRequestBuilder,
   httpExt: HttpExt
 )(implicit materializer: Materializer) extends SubscriberEventHttpFlow {
+  private val RandomFactor = 0.2
 
   private val httpFlow = httpExt.cachedHostConnectionPool[Event](
     subscriber.uri.authority.host.toString(),
@@ -59,15 +55,12 @@ class SubscriberEventHttpFlowImpl(
       .map(event => requestBuilder(event) -> event)
       .throttle(subscriber.elements, subscriber.per)
       .via(retryHttpFlow)
-      .map { case(response, event) =>
-        response.map(_.entity.discardBytes())
-        SubscriberEventHttpResponse(response, event, subscriber)
-      }
+      .map(response)
   }
-}
 
-object SubscriberEventHttpFlow {
-  case class SubscriberEventHttpResponse(response: Try[HttpResponse], event: Event, subscriber: Subscriber)
-
-  val RandomFactor = 0.2
+  private def response(tuple: (Try[HttpResponse], Event)): SubscriberEventHttpResponse = tuple match {
+    case(response, event) =>
+      response.map(_.entity.discardBytes())
+      SubscriberEventHttpResponse(response, event, subscriber)
+  }
 }

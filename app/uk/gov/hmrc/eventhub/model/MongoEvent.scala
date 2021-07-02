@@ -27,9 +27,9 @@ import java.time.Instant
 case class MongoEvent(_id: ObjectId, createdAt: Instant, event: Event)
 
 object MongoEvent {
-  implicit val oif: Format[ObjectId] = MongoFormats.objectIdFormat
-  implicit val instantF: Format[Instant] = MongoJavatimeFormats.instantFormat
-  implicit val fmt: OFormat[MongoEvent] = ((JsPath \ "_id").format[ObjectId]
+  implicit val objectId: Format[ObjectId] = MongoFormats.objectIdFormat
+  implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
+  implicit val mongoEventFormat: OFormat[MongoEvent] = ((JsPath \ "_id").format[ObjectId]
     ~ (JsPath \ "createdAt").format[Instant]
     ~ (JsPath \ "event").format[Event]
     )(MongoEvent.apply, unlift(MongoEvent.unapply))

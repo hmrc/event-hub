@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscriptions.stream
+package uk.gov.hmrc.eventhub.subscription.stream
 
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 import play.api.Logging
-import uk.gov.hmrc.eventhub.subscriptions.http.HttpResponseHandler
-import uk.gov.hmrc.eventhub.subscriptions.http.HttpResponseHandler.{EventSendStatus, ResponseParallelism}
+import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler
+import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{EventSendStatus, ResponseParallelism}
 
 object PushSubscription extends Logging {
   def subscriptionStream(

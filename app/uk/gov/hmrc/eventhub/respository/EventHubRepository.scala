@@ -36,7 +36,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class EventHubRepository @Inject()(configuration : Configuration, mongo: MongoComponent)(implicit ec: ExecutionContext) extends PlayMongoRepository[MongoEvent](
   mongoComponent = mongo,
   collectionName = "event-hub",
-  domainFormat   = MongoEvent.fmt,
+  domainFormat   = MongoEvent.mongoEventFormat,
   indexes        =  Seq(IndexModel(ascending("createdAt"),IndexOptions().expireAfter(ExpireAfter, TimeUnit.SECONDS)))
 ){
 
