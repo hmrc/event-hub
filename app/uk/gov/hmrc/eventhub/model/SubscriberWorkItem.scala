@@ -17,7 +17,7 @@
 package uk.gov.hmrc.eventhub.model
 
 import org.bson.types.ObjectId
-import play.api.libs.json.{Format, Json, OFormat}
+import play.api.libs.json.{ Format, Json, OFormat }
 import uk.gov.hmrc.mongo.play.json.formats.MongoFormats
 
 case class SubscriberWorkItem(_id: ObjectId, event: Event)

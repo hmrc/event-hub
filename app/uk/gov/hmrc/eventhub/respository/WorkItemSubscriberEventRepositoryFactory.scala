@@ -20,14 +20,15 @@ import play.api.Configuration
 import uk.gov.hmrc.eventhub.model.Subscriber
 import uk.gov.hmrc.mongo.MongoComponent
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 import scala.concurrent.ExecutionContext
 
 @Singleton
 class WorkItemSubscriberEventRepositoryFactory @Inject()(
   configuration: Configuration,
   mongo: MongoComponent
-)(implicit executionContext: ExecutionContext) extends SubscriberEventRepositoryFactory {
+)(implicit executionContext: ExecutionContext)
+    extends SubscriberEventRepositoryFactory {
   override def apply(subscriber: Subscriber, topic: String): SubscriberEventRepository = {
     val queue = new SubscriberQueueRepository(topic, subscriber, configuration, mongo)
     new WorkItemSubscriberEventRepository(queue)

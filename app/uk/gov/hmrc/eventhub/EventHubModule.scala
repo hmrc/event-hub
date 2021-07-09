@@ -17,15 +17,15 @@
 package uk.gov.hmrc.eventhub
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.{Http, HttpExt}
-import com.google.inject.{AbstractModule, Provides}
+import akka.http.scaladsl.{ Http, HttpExt }
+import com.google.inject.{ AbstractModule, Provides }
 import play.api.Configuration
 import play.api.libs.concurrent.AkkaGuiceSupport
-import uk.gov.hmrc.eventhub.model.{Subscriber, Topic}
-import uk.gov.hmrc.eventhub.respository.{SubscriberEventRepositoryFactory, WorkItemSubscriberEventRepositoryFactory}
+import uk.gov.hmrc.eventhub.model.{ Subscriber, Topic }
+import uk.gov.hmrc.eventhub.respository.{ SubscriberEventRepositoryFactory, WorkItemSubscriberEventRepositoryFactory }
 import uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptions
 
-import javax.inject.{Named, Singleton}
+import javax.inject.{ Named, Singleton }
 
 class EventHubModule extends AbstractModule with AkkaGuiceSupport {
   override def configure(): Unit = {
@@ -39,9 +39,8 @@ class EventHubModule extends AbstractModule with AkkaGuiceSupport {
 
   @Provides
   @Singleton
-  def createHttpExt(system: ActorSystem): HttpExt = {
+  def createHttpExt(system: ActorSystem): HttpExt =
     Http()(system)
-  }
 
   @Provides
   @Named("eventTopics")

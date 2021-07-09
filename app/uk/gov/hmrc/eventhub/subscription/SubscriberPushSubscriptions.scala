@@ -20,18 +20,18 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.HttpExt
 import akka.stream.Attributes.LogLevels
-import akka.stream.scaladsl.{Keep, Sink, Source}
-import akka.stream.{Attributes, KillSwitches, Materializer, SharedKillSwitch}
+import akka.stream.scaladsl.{ Keep, Sink, Source }
+import akka.stream.{ Attributes, KillSwitches, Materializer, SharedKillSwitch }
 import play.api.Logging
 import play.api.inject.ApplicationLifecycle
-import uk.gov.hmrc.eventhub.model.{Event, Subscriber, Topic}
+import uk.gov.hmrc.eventhub.model.{ Event, Subscriber, Topic }
 import uk.gov.hmrc.eventhub.respository.SubscriberEventRepositoryFactory
-import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{EventSendStatus, ResponseParallelism}
-import uk.gov.hmrc.eventhub.subscription.http.{HttpEventRequestBuilder, HttpResponseHandler, HttpRetryHandler}
-import uk.gov.hmrc.eventhub.subscription.stream.{SubscriberEventHttpFlow, _}
+import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{ EventSendStatus, ResponseParallelism }
+import uk.gov.hmrc.eventhub.subscription.http.{ HttpEventRequestBuilder, HttpResponseHandler, HttpRetryHandler }
+import uk.gov.hmrc.eventhub.subscription.stream.{ SubscriberEventHttpFlow, _ }
 
-import javax.inject.{Inject, Named, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.{ Inject, Named, Singleton }
+import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
 class SubscriberPushSubscriptions @Inject()(
@@ -56,8 +56,7 @@ class SubscriberPushSubscriptions @Inject()(
 
   private val _: Set[NotUsed] =
     topics.flatMap { topic =>
-      topic
-        .subscribers
+      topic.subscribers
         .map { subscriber =>
           val stream = buildStream(subscriber, topic.name)
           stream

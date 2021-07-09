@@ -20,10 +20,10 @@ import cats.data.OptionT
 import cats.implicits._
 import org.mongodb.scala.model.Filters.equal
 import play.api.Logging
-import uk.gov.hmrc.eventhub.model.{Event, SubscriberWorkItem}
-import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem}
+import uk.gov.hmrc.eventhub.model.{ Event, SubscriberWorkItem }
+import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait SubscriberEventRepository {
   def next(): Future[Option[Event]]
@@ -33,35 +33,32 @@ trait SubscriberEventRepository {
 
 class WorkItemSubscriberEventRepository(
   subscriberQueueRepository: SubscriberQueueRepository
-)(implicit executionContext: ExecutionContext) extends SubscriberEventRepository with Logging {
+)(implicit executionContext: ExecutionContext)
+    extends SubscriberEventRepository with Logging {
   override def next(): Future[Option[Event]] =
-    subscriberQueueRepository
-      .getEvent
+    subscriberQueueRepository.getEvent
       .map(_.map(_.item.event))
 
-  override def failed(event: Event): Future[Option[Boolean]] = {
+  override def failed(event: Event): Future[Option[Boolean]] =
     (for {
       workItem <- OptionT(findAsWortItem(event))
-      result <- OptionT(subscriberQueueRepository.markAs(workItem.id, ProcessingStatus.Failed).map(_.some))
+      result   <- OptionT(subscriberQueueRepository.markAs(workItem.id, ProcessingStatus.Failed).map(_.some))
     } yield {
       logger.info(s"marking $event as failed: $result")
       result
     }).value
-  }
 
-  override def sent(event: Event): Future[Option[Boolean]] = {
+  override def sent(event: Event): Future[Option[Boolean]] =
     (for {
       workItem <- OptionT(findAsWortItem(event))
-      result <- OptionT(subscriberQueueRepository.completeAndDelete(workItem.id).map(_.some))
+      result   <- OptionT(subscriberQueueRepository.completeAndDelete(workItem.id).map(_.some))
     } yield {
       logger.info(s"marking $event as sent: $result")
       result
     }).value
-  }
 
   private def findAsWortItem(event: Event): Future[Option[WorkItem[SubscriberWorkItem]]] =
-    subscriberQueueRepository
-      .collection
+    subscriberQueueRepository.collection
       .find(equal("item.event.eventId", event.eventId.toString))
       .headOption()
 }

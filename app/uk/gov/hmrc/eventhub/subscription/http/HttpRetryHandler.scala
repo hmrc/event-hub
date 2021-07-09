@@ -16,15 +16,16 @@
 
 package uk.gov.hmrc.eventhub.subscription.http
 
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.{ HttpRequest, HttpResponse, StatusCodes }
 import akka.stream.Materializer
 import play.api.Logging
 import uk.gov.hmrc.eventhub.model.Event
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 trait HttpRetryHandler extends Logging {
-  def shouldRetry()(implicit materializer: Materializer): ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] = {
+  def shouldRetry()(implicit materializer: Materializer)
+    : ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] = {
     case (inputs @ (_, _), (Success(resp), _)) =>
       resp.entity.discardBytes()
       resp.status match {

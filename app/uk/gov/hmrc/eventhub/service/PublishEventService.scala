@@ -18,11 +18,11 @@ package uk.gov.hmrc.eventhub.service
 
 import play.api.Configuration
 import uk.gov.hmrc.eventhub.model._
-import uk.gov.hmrc.eventhub.respository.{EventHubRepository, SubscriberQueueRepository}
+import uk.gov.hmrc.eventhub.respository.{ EventHubRepository, SubscriberQueueRepository }
 import uk.gov.hmrc.mongo.MongoComponent
 
-import javax.inject.{Inject, Named, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.{ Inject, Named, Singleton }
+import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
 class PublishEventService @Inject()(
@@ -34,21 +34,22 @@ class PublishEventService @Inject()(
 
   val subscriberRepos: Map[Subscriber, SubscriberQueueRepository] = topics.flatMap { topic =>
     topic.subscribers.map { subscriber =>
-      subscriber -> new SubscriberQueueRepository(topic.name, subscriber, configuration, mongoComponent)(executionContext)
+      subscriber -> new SubscriberQueueRepository(topic.name, subscriber, configuration, mongoComponent)(
+        executionContext)
     }
   }.toMap
 
-  def processEvent(topic: String, event: Event): Future[PublishStatus] = {
+  def processEvent(topic: String, event: Event): Future[PublishStatus] =
     topics.find(_.name == topic) match {
       case None => Future.successful(NoTopics)
       case Some(l) =>
         for {
           _ <- eventHubRepository.saveEvent(event)
-          status <- Future.sequence(
-          l.subscribers.map { s =>
-            subscriberRepos(s).addSubscriberWorkItems(Seq(SubscriberWorkItem(event)))
-          }).map(_ => Published)
+          status <- Future
+                     .sequence(l.subscribers.map { s =>
+                       subscriberRepos(s).addSubscriberWorkItems(Seq(SubscriberWorkItem(event)))
+                     })
+                     .map(_ => Published)
         } yield status
     }
-  }
 }

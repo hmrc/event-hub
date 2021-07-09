@@ -18,10 +18,10 @@ package uk.gov.hmrc.eventhub.subscription.stream
 
 import akka.NotUsed
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.{Http, HttpExt}
+import akka.http.scaladsl.{ Http, HttpExt }
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Flow, RetryFlow}
-import uk.gov.hmrc.eventhub.model.{Event, Subscriber}
+import akka.stream.scaladsl.{ Flow, RetryFlow }
+import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
 import uk.gov.hmrc.eventhub.subscription.http.HttpRetryHandler
 
 import scala.util.Try
@@ -55,7 +55,7 @@ class SubscriberEventHttpFlow(
   }
 
   private def response(tuple: (Try[HttpResponse], Event)): SubscriberEventHttpResponse = tuple match {
-    case(response, event) =>
+    case (response, event) =>
       response.map(_.entity.discardBytes())
       SubscriberEventHttpResponse(response, event, subscriber)
   }

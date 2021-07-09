@@ -36,7 +36,8 @@ class SubscriberEventSource(
 )(
   implicit
   scheduler: Scheduler,
-  executionContext: ExecutionContext) extends Logging {
+  executionContext: ExecutionContext)
+    extends Logging {
 
   /**
     * TODO make `after` delay configurable

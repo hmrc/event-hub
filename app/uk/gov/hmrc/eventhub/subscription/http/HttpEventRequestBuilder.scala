@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.eventhub.subscription.http
 
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpRequest}
+import akka.http.scaladsl.model.{ ContentTypes, HttpEntity, HttpRequest }
 import play.api.libs.json.Json
-import uk.gov.hmrc.eventhub.model.{Event, Subscriber}
+import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
 
 trait HttpEventRequestBuilder {
   def build(subscriber: Subscriber, event: Event): HttpRequest =

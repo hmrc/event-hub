@@ -20,7 +20,7 @@ import org.bson.types.ObjectId
 import play.api.libs.functional.syntax.unlift
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.mongo.play.json.formats.{MongoFormats, MongoJavatimeFormats}
+import uk.gov.hmrc.mongo.play.json.formats.{ MongoFormats, MongoJavatimeFormats }
 
 import java.time.Instant
 
@@ -31,8 +31,7 @@ object MongoEvent {
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
   implicit val mongoEventFormat: OFormat[MongoEvent] = ((JsPath \ "_id").format[ObjectId]
     ~ (JsPath \ "createdAt").format[Instant]
-    ~ (JsPath \ "event").format[Event]
-    )(MongoEvent.apply, unlift(MongoEvent.unapply))
+    ~ (JsPath \ "event").format[Event])(MongoEvent.apply, unlift(MongoEvent.unapply))
 
   def newMongoEvent(instant: Instant, e: Event): MongoEvent = MongoEvent(ObjectId.get(), instant, e)
 }
