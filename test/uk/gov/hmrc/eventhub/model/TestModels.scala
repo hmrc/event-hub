@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.model
 
-import akka.http.scaladsl.model.{HttpMethods, Uri}
+import akka.http.scaladsl.model.{ HttpMethods, Uri }
 import play.api.libs.json.Json
 import scala.concurrent.duration._
 
