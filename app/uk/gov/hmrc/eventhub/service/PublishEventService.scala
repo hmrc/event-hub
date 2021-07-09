@@ -29,17 +29,17 @@ class PublishEventService @Inject()(
   eventHubRepository: EventHubRepository,
   configuration: Configuration,
   mongoComponent: MongoComponent,
-  @Named("eventTopics") topics: Map[String, Topic]
+  @Named("eventTopics") topics: Set[Topic]
 )(implicit executionContext: ExecutionContext) {
 
-  val subscriberRepos: Map[Subscriber, SubscriberQueueRepository] = topics.flatMap {
-    case (_, topic) => topic.subscribers.map { subscriber =>
+  val subscriberRepos: Map[Subscriber, SubscriberQueueRepository] = topics.flatMap { topic =>
+    topic.subscribers.map { subscriber =>
       subscriber -> new SubscriberQueueRepository(topic.name, subscriber, configuration, mongoComponent)(executionContext)
     }
-  }
+  }.toMap
 
   def processEvent(topic: String, event: Event): Future[PublishStatus] = {
-    topics.get(topic) match {
+    topics.find(_.name == topic) match {
       case None => Future.successful(NoTopics)
       case Some(l) =>
         for {

@@ -18,25 +18,26 @@ package uk.gov.hmrc.eventhub.subscription
 
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
+import akka.http.scaladsl.HttpExt
+import akka.stream.Attributes.LogLevels
 import akka.stream.scaladsl.{Keep, Sink, Source}
-import akka.stream.{KillSwitches, Materializer, SharedKillSwitch}
+import akka.stream.{Attributes, KillSwitches, Materializer, SharedKillSwitch}
+import play.api.Logging
 import play.api.inject.ApplicationLifecycle
-import play.api.{Configuration, Logging}
-import uk.gov.hmrc.eventhub.model.{Subscriber, Topic}
-import uk.gov.hmrc.eventhub.respository.{SubscriberEventRepository, SubscriberQueueRepository, WorkItemSubscriberEventRepository}
-import uk.gov.hmrc.eventhub.subscription.http.{EventMarkingHttpResponseHandler, HttpEventRequestBuilder, HttpResponseHandler, HttpRetryHandler}
-import uk.gov.hmrc.eventhub.subscription.stream._
-import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.eventhub.model.{Event, Subscriber, Topic}
+import uk.gov.hmrc.eventhub.respository.SubscriberEventRepositoryFactory
+import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{EventSendStatus, ResponseParallelism}
+import uk.gov.hmrc.eventhub.subscription.http.{HttpEventRequestBuilder, HttpResponseHandler, HttpRetryHandler}
+import uk.gov.hmrc.eventhub.subscription.stream.{SubscriberEventHttpFlow, _}
 
 import javax.inject.{Inject, Named, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SubscriberPushSubscriptions @Inject()(
-  @Named("eventTopics") topics: Map[String, Topic],
-  configuration: Configuration,
-  mongoComponent: MongoComponent,
+  @Named("eventTopics") topics: Set[Topic],
+  subscriberEventRepositoryFactory: SubscriberEventRepositoryFactory,
+  httpExt: HttpExt,
   lifecycle: ApplicationLifecycle
 )(
   implicit
@@ -45,11 +46,7 @@ class SubscriberPushSubscriptions @Inject()(
   executionContext: ExecutionContext
 ) extends Logging {
 
-  /**
-   * TODO decide on what aggregation if any we should be providing along side the kill switch
-   * Do we need a kill switch per subscriber stream?
-   */
-  val subscribersKillSwitch: SharedKillSwitch = KillSwitches.shared("subscribers-kill-switch")
+  private val subscribersKillSwitch: SharedKillSwitch = KillSwitches.shared("subscribers-kill-switch")
 
   lifecycle.addStopHook { () =>
     Future(subscribersKillSwitch.shutdown())
@@ -57,39 +54,37 @@ class SubscriberPushSubscriptions @Inject()(
 
   logger.info(s"starting subscribers for: $topics")
 
-  private val _: List[NotUsed] = topics.toList.flatMap { case (_, topic) =>
-    topic
-      .subscribers
-      .map { subscriber =>
-        val stream = buildSubscriberStream(subscriber, topic)
-        stream
-          .viaMat(subscribersKillSwitch.flow)(Keep.left)
-          .to(Sink.ignore)
-          .run()
-      }
-  }
+  private val _: Set[NotUsed] =
+    topics.flatMap { topic =>
+      topic
+        .subscribers
+        .map { subscriber =>
+          val stream = buildStream(subscriber, topic.name)
+          stream
+            .viaMat(subscribersKillSwitch.flow)(Keep.left)
+            .to(Sink.ignore)
+            .run()
+        }
+    }
 
-  private def buildSubscriberStream(subscriber: Subscriber, topic: Topic): Source[HttpResponseHandler.EventSendStatus, NotUsed] = {
-    val subscriberQueueRepository: SubscriberQueueRepository = new SubscriberQueueRepository(
-      topic.name,
-      subscriber,
-      configuration,
-      mongoComponent
-    )
-    val subscriberEventRepository: SubscriberEventRepository = new WorkItemSubscriberEventRepository(subscriberQueueRepository)
-    val subscriberEventSource: SubscriberEventSource = new PullSubscriberEventSource(subscriberEventRepository)(actorSystem.scheduler, executionContext)
-    val subscriberEventHttpFlow: SubscriberEventHttpFlow = new SubscriberEventHttpFlowImpl(
-      subscriber,
-      HttpRetryHandler,
-      HttpEventRequestBuilder,
-      Http()
-    )
-    val httpResponseHandler: HttpResponseHandler = new EventMarkingHttpResponseHandler(subscriberEventRepository)
+  private def buildStream(subscriber: Subscriber, topic: String): Source[EventSendStatus, NotUsed] = {
+    val repository = subscriberEventRepositoryFactory(subscriber, topic)
+    val requestBuilder = (event: Event) => HttpEventRequestBuilder.build(subscriber, event) -> event
+    val source = new SubscriberEventSource(repository)(actorSystem.scheduler, executionContext).source
+    val responseHandler = new HttpResponseHandler(repository).handle(_)
+    val httpFlow = new SubscriberEventHttpFlow(subscriber, HttpRetryHandler, httpExt).flow
 
-    PushSubscription.subscriptionStream(
-      subscriberEventSource,
-      subscriberEventHttpFlow,
-      httpResponseHandler
-    )
+    source
+      .map(requestBuilder)
+      .via(httpFlow)
+      .mapAsync(parallelism = ResponseParallelism)(responseHandler)
+      .log(s"$topic-${subscriber.name} subscription")
+      .withAttributes(
+        Attributes.logLevels(
+          onElement = LogLevels.Debug,
+          onFinish = LogLevels.Info,
+          onFailure = LogLevels.Error
+        )
+      )
   }
 }

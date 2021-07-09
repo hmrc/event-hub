@@ -16,26 +16,39 @@
 
 package uk.gov.hmrc.eventhub
 
-import com.google.inject.{ AbstractModule, Provides }
+import akka.actor.ActorSystem
+import akka.http.scaladsl.{Http, HttpExt}
+import com.google.inject.{AbstractModule, Provides}
 import play.api.Configuration
 import play.api.libs.concurrent.AkkaGuiceSupport
-import uk.gov.hmrc.eventhub.model.{ Subscriber, Topic }
+import uk.gov.hmrc.eventhub.model.{Subscriber, Topic}
+import uk.gov.hmrc.eventhub.respository.{SubscriberEventRepositoryFactory, WorkItemSubscriberEventRepositoryFactory}
 import uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptions
 
-import javax.inject.{ Named, Singleton }
+import javax.inject.{Named, Singleton}
 
 class EventHubModule extends AbstractModule with AkkaGuiceSupport {
-
   override def configure(): Unit = {
+    bind(classOf[SubscriberEventRepositoryFactory])
+      .to(classOf[WorkItemSubscriberEventRepositoryFactory])
+
     bind(classOf[SubscriberPushSubscriptions]).asEagerSingleton()
+
     super.configure()
+  }
+
+  @Provides
+  @Singleton
+  def createHttpExt(system: ActorSystem): HttpExt = {
+    Http()(system)
   }
 
   @Provides
   @Named("eventTopics")
   @Singleton
-  def configTopics(configuration: Configuration): Map[String, Topic] =
+  def configTopics(configuration: Configuration): Set[Topic] =
     configuration
       .get[Map[String, List[Subscriber]]](path = "topics")
-      .map { case (k, v) => k -> Topic(k, v) }
+      .map { case (k, v) => Topic(k, v) }
+      .toSet
 }
