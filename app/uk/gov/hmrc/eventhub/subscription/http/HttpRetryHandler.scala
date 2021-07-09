@@ -26,12 +26,11 @@ import scala.util.{Failure, Success, Try}
 trait HttpRetryHandler extends Logging {
   def shouldRetry()(implicit materializer: Materializer): ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] = {
     case (inputs @ (_, _), (Success(resp), _)) =>
-      val output = resp.status match {
+      resp.entity.discardBytes()
+      resp.status match {
         case StatusCodes.Success(_) | StatusCodes.ClientError(_) => None
         case _                                                   => Some(inputs)
       }
-      resp.entity.discardBytes()
-      output
     case ((_, _), (Failure(_), _)) => None
   }
 }

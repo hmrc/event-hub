@@ -17,9 +17,51 @@
 package uk.gov.hmrc.eventhub.subscription.stream
 
 import akka.NotUsed
+import akka.actor.Scheduler
+import akka.pattern.Patterns.after
 import akka.stream.scaladsl.Source
+import play.api.Logging
 import uk.gov.hmrc.eventhub.model.Event
+import uk.gov.hmrc.eventhub.respository.SubscriberEventRepository
 
-trait SubscriberEventSource {
-  def source: Source[Event, NotUsed]
+import java.util.concurrent.Callable
+import scala.concurrent.duration._
+import scala.concurrent.{ ExecutionContext, Future }
+
+/**
+  * Polls for work items, emits when there is an available work item and downstream demand
+  */
+class SubscriberEventSource(
+  subscriberEventRepository: SubscriberEventRepository
+)(
+  implicit
+  scheduler: Scheduler,
+  executionContext: ExecutionContext) extends Logging {
+
+  /**
+    * TODO make `after` delay configurable
+    */
+  private def onPull: Unit => Future[Option[(Unit, Event)]] = { _ =>
+    logger.info(s"polling subscriber repository...")
+    subscriberEventRepository
+      .next()
+      .flatMap(pullLogic)
+  }
+
+  private def pullLogic(readResult: Option[Event]): Future[Option[(Unit, Event)]] = readResult match {
+    case None =>
+      logger.info("no dice, retrying in 500 millis")
+      after(500.millis, scheduler, executionContext, onPullCallable)
+    case Some(event) =>
+      logger.info(s"found event $event")
+      Future.successful(Some(() -> event))
+  }
+
+  private def onPullCallable: Callable[Future[Option[(Unit, Event)]]] =
+    new Callable[Future[Option[(Unit, Event)]]] {
+      override def call: Future[Option[(Unit, Event)]] = onPull(())
+    }
+
+  def source: Source[Event, NotUsed] =
+    Source.unfoldAsync(())(onPull)
 }
