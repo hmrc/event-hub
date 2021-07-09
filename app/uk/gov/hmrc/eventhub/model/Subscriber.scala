@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.eventhub.model
 
-import akka.http.scaladsl.model.HttpMethods.{POST, PUT}
-import akka.http.scaladsl.model.{HttpMethod, HttpMethods, Uri}
+import akka.http.scaladsl.model.HttpMethods.{ POST, PUT }
+import akka.http.scaladsl.model.{ HttpMethod, HttpMethods, Uri }
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 import play.api.libs.json._
 import pureconfig._
 import pureconfig.generic.auto._
 
-import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.duration.{ Duration, FiniteDuration }
 import scala.util.Try
 
 case class Subscriber(
@@ -40,26 +40,31 @@ case class Subscriber(
 
 object Subscriber {
   implicit val uriReader: ConfigReader[Uri] = (cur: ConfigCursor) => cur.asString.map(s => Uri(s))
-  implicit val httpMethodReader: ConfigReader[HttpMethod] = (cur: ConfigCursor) => cur.asString.map(s =>
-    HttpMethods.getForKeyCaseInsensitive(s).getOrElse(
-      throw new IllegalArgumentException(s"could not convert $s to HttpMethod")
-    )
-  )
+  implicit val httpMethodReader: ConfigReader[HttpMethod] = (cur: ConfigCursor) =>
+    cur.asString.map(
+      s =>
+        HttpMethods
+          .getForKeyCaseInsensitive(s)
+          .getOrElse(
+            throw new IllegalArgumentException(s"could not convert $s to HttpMethod")
+        ))
 
   implicit val configLoader: ConfigLoader[Map[String, List[Subscriber]]] = (rootConfig: Config, path: String) =>
     ConfigSource
       .fromConfig(rootConfig.getConfig(path))
       .load[Map[String, List[Subscriber]]] match {
-      case Left(value) => throw new IllegalArgumentException(s"could not load subscriber config: ${value.toList.mkString(" | ")}")
+      case Left(value) =>
+        throw new IllegalArgumentException(s"could not load subscriber config: ${value.toList.mkString(" | ")}")
       case Right(value) => value
-    }
+  }
 
   implicit object FiniteDurationFormat extends Format[FiniteDuration] {
     override def reads(json: JsValue): JsResult[FiniteDuration] = json match {
-      case JsString(value) => Duration(value) match {
-        case infinite: Duration.Infinite => JsError(s"expected a finite duration, but got infinite: $infinite")
-        case duration: FiniteDuration  => JsSuccess(duration)
-      }
+      case JsString(value) =>
+        Duration(value) match {
+          case infinite: Duration.Infinite => JsError(s"expected a finite duration, but got infinite: $infinite")
+          case duration: FiniteDuration    => JsSuccess(duration)
+        }
       case x => JsError(s"expected a JsString, but got: $x")
     }
 
@@ -69,7 +74,7 @@ object Subscriber {
   implicit object UriFormat extends Format[Uri] {
     override def reads(json: JsValue): JsResult[Uri] = json match {
       case JsString(value) => JsResult.fromTry(Try(Uri(value)))
-      case x => JsError(s"expected a JsString, but got: $x")
+      case x               => JsError(s"expected a JsString, but got: $x")
     }
 
     override def writes(o: Uri): JsValue = JsString(o.toString())
@@ -77,22 +82,22 @@ object Subscriber {
 
   implicit object HttpMethodFormat extends Format[HttpMethod] {
     override def reads(json: JsValue): JsResult[HttpMethod] = json match {
-      case JsString(value) => HttpMethods
-        .getForKeyCaseInsensitive(value)
-        .flatMap(postOrPut)
-        .map(JsSuccess(_))
-        .getOrElse(throw new IllegalArgumentException(s"expected one of [POST, PUT], but got: $value."))
+      case JsString(value) =>
+        HttpMethods
+          .getForKeyCaseInsensitive(value)
+          .flatMap(postOrPut)
+          .map(JsSuccess(_))
+          .getOrElse(throw new IllegalArgumentException(s"expected one of [POST, PUT], but got: $value."))
       case x => JsError(s"expected a JsString, but got: $x")
     }
 
     override def writes(o: HttpMethod): JsValue = JsString(o.toString())
 
-    private def postOrPut(httpMethod: HttpMethod): Option[HttpMethod] = {
+    private def postOrPut(httpMethod: HttpMethod): Option[HttpMethod] =
       httpMethod match {
-        case postOrPut@(POST | PUT) => Some(postOrPut)
-        case _ => None
+        case postOrPut @ (POST | PUT) => Some(postOrPut)
+        case _                        => None
       }
-    }
   }
 
   implicit val subscriberFormat: OFormat[Subscriber] = Json.format[Subscriber]

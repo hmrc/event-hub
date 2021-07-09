@@ -23,4 +23,3 @@ case object NoSubscribers extends PublishStatus
 case object NoTopics extends PublishStatus
 case object SaveError extends PublishStatus
 case object Published extends PublishStatus
-
