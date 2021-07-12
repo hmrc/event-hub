@@ -21,7 +21,7 @@ import cats.implicits._
 import org.mongodb.scala.model.Filters.equal
 import play.api.Logging
 import uk.gov.hmrc.eventhub.model.{ Event, SubscriberWorkItem }
-import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
+import uk.gov.hmrc.mongo.workitem.WorkItem
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -42,7 +42,7 @@ class WorkItemSubscriberEventRepository(
   override def failed(event: Event): Future[Option[Boolean]] =
     (for {
       workItem <- OptionT(findAsWortItem(event))
-      result   <- OptionT(subscriberQueueRepository.markAs(workItem.id, ProcessingStatus.Failed).map(_.some))
+      result   <- OptionT(subscriberQueueRepository.failed(workItem).map(_.some))
     } yield {
       logger.info(s"marking $event as failed: $result")
       result
