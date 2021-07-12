@@ -20,7 +20,7 @@ import play.api.Configuration
 import uk.gov.hmrc.eventhub.model.{ Subscriber, SubscriberWorkItem }
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.PermanentlyFailed
-import uk.gov.hmrc.mongo.workitem.{ WorkItem, WorkItemFields, WorkItemRepository }
+import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem, WorkItemFields, WorkItemRepository }
 
 import java.time.{ Duration, Instant }
 import scala.concurrent.{ ExecutionContext, Future }
@@ -52,10 +52,13 @@ class SubscriberQueueRepository(
     pushNewBatch(s)
 
   def getEvent: Future[Option[WorkItem[SubscriberWorkItem]]] =
-    pullOutstanding(now(), now())
+    pullOutstanding(failedBefore = now().minus(retryFailedAfter), availableBefore = now())
 
   def deleteEvent(e: WorkItem[SubscriberWorkItem]): Future[Boolean] =
     completeAndDelete(e.id)
+
+  def failed(e: WorkItem[SubscriberWorkItem]): Future[Boolean] =
+    if (e.failureCount > numberOfRetries) permanentlyFailed(e) else markAs(e.id, ProcessingStatus.Failed)
 
   def permanentlyFailed(e: WorkItem[SubscriberWorkItem]): Future[Boolean] =
     complete(e.id, PermanentlyFailed)
