@@ -17,9 +17,10 @@
 package uk.gov.hmrc.eventhub.subscription
 
 import org.scalacheck.Gen
-import play.api.libs.json.{ JsArray, JsObject, JsValue }
+import play.api.libs.json.{ JsArray, JsObject, JsString, JsValue }
 import uk.gov.hmrc.eventhub.model.Event
 
+import java.time.format.DateTimeFormatter
 import java.time.{ Instant, LocalDate, LocalDateTime, ZoneOffset }
 
 object Generators {
@@ -58,10 +59,7 @@ object Generators {
   val localDateTimeGen: Gen[LocalDateTime] = instantGen.map(LocalDateTime.ofInstant(_, ZoneOffset.UTC))
   val localDateGen: Gen[LocalDate] = localDateTimeGen.map(_.toLocalDate)
 
-  val jsValueGen: Gen[JsValue] = Gen.oneOf(
-    JsObject.empty,
-    JsArray.empty
-  )
+  val jsValueGen: Gen[JsValue] = ChannelPreferences.bouncedEmailJsonGen
 
   val eventGen: Gen[Event] = for {
     eventId   <- Gen.uuid
@@ -70,4 +68,28 @@ object Generators {
     timeStamp <- localDateTimeGen
     event     <- jsValueGen
   } yield Event(eventId, subject, groupId, timeStamp, event)
+
+  val emailGen: Gen[String] = for {
+    emailUser   <- Gen.oneOf("jack", "john", "jake", "jasmine", "jane", "josephine")
+    emailDomain <- Gen.oneOf("gmail.com", "hotmail.com", "sky.com", "yahoo.com", "aol.com")
+  } yield s"$emailUser@$emailDomain"
+
+  object ChannelPreferences {
+    val bouncedEmailJsonGen: Gen[JsObject] = for {
+      event     <- Gen.const("failed")
+      email     <- emailGen
+      detected  <- localDateTimeGen
+      reason    <- Gen.oneOf("Not delivering to previously bounced address", "Virgin bounce")
+      enrolment <- Gen.const("HMRC-MTD-VAT~VRN~GB123456789")
+    } yield
+      JsObject(
+        Seq(
+          "event"     -> JsString(event),
+          "email"     -> JsString(email),
+          "detected"  -> JsString(detected.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)),
+          "reason"    -> JsString(reason),
+          "enrolment" -> JsString(enrolment)
+        )
+      )
+  }
 }
