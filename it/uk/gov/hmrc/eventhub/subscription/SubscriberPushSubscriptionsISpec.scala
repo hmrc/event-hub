@@ -25,6 +25,8 @@ import uk.gov.hmrc.eventhub.subscription.Setup.scope
 import uk.gov.hmrc.eventhub.subscription.TestModels.Http.requestPatternBuilderOps
 import uk.gov.hmrc.eventhub.subscription.TestModels.{ Events, Subscriptions }
 import scala.concurrent.ExecutionContext.Implicits.global
+import Subscriptions._
+import Events._
 import Arbitraries._
 
 import scala.concurrent.Future
@@ -33,74 +35,73 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
 
   behavior of "SubscriberPushSubscriptions"
 
-  it should "push an event to a registered subscriber" in scope(Subscriptions.channelPreferencesBouncedEmails) {
-    setup =>
-      val response = setup
-        .postToTopic(Subscriptions.BoundedEmailsTopic, Events.event)
-        .futureValue
-
-      response.status mustBe CREATED
-
-      val channelPreferencesServer = setup
-        .subscriberServer(Subscriptions.ChannelPreferencesBounced)
-        .value
-
-      oneSecond {
-        channelPreferencesServer
-          .verify(postRequestedFor(urlEqualTo(Subscriptions.ChannelPreferencesBouncedPath)).withEventJson(Events.event))
-      }
-  }
-
-  it should "push an event to registered subscribers" in scope(Subscriptions.bouncedEmails) { setup =>
+  it should "push an event to a registered subscriber" in scope(channelPreferencesBouncedEmails) { setup =>
     val response = setup
-      .postToTopic(Subscriptions.BoundedEmailsTopic, Events.event)
+      .postToTopic(BoundedEmailsTopic, event)
       .futureValue
 
     response.status mustBe CREATED
 
     val channelPreferencesServer = setup
-      .subscriberServer(Subscriptions.ChannelPreferencesBounced)
-      .value
-
-    val anotherPartyServer = setup
-      .subscriberServer(Subscriptions.AnotherPartyBounced)
+      .subscriberServer(ChannelPreferencesBounced)
       .value
 
     oneSecond {
       channelPreferencesServer
-        .verify(postRequestedFor(urlEqualTo(Subscriptions.ChannelPreferencesBouncedPath)).withEventJson(Events.event))
-
-      anotherPartyServer
-        .verify(postRequestedFor(urlEqualTo(Subscriptions.AnotherPartyBouncedPath)).withEventJson(Events.event))
+        .verify(postRequestedFor(urlEqualTo(ChannelPreferencesBouncedPath)).withEventJson(event))
     }
   }
 
-  it should "push events to all registered subscribers" in scope(Subscriptions.bouncedEmails) { setup =>
+  it should "push an event to registered subscribers" in scope(bouncedEmails) { setup =>
+    val response = setup
+      .postToTopic(BoundedEmailsTopic, event)
+      .futureValue
+
+    response.status mustBe CREATED
+
+    val channelPreferencesServer = setup
+      .subscriberServer(ChannelPreferencesBounced)
+      .value
+
+    val anotherPartyServer = setup
+      .subscriberServer(AnotherPartyBounced)
+      .value
+
+    oneSecond {
+      channelPreferencesServer
+        .verify(postRequestedFor(urlEqualTo(ChannelPreferencesBouncedPath)).withEventJson(event))
+
+      anotherPartyServer
+        .verify(postRequestedFor(urlEqualTo(AnotherPartyBouncedPath)).withEventJson(event))
+    }
+  }
+
+  it should "push events to all registered subscribers" in scope(bouncedEmails) { setup =>
     forAll { eventList: List[Event] =>
       val responses = Future
         .sequence(eventList.map { event =>
           setup
-            .postToTopic(Subscriptions.BoundedEmailsTopic, event)
+            .postToTopic(BoundedEmailsTopic, event)
         })
         .futureValue
 
       responses.foreach(_.status mustBe CREATED)
 
       val channelPreferencesServer = setup
-        .subscriberServer(Subscriptions.ChannelPreferencesBounced)
+        .subscriberServer(ChannelPreferencesBounced)
         .value
 
       val anotherPartyServer = setup
-        .subscriberServer(Subscriptions.AnotherPartyBounced)
+        .subscriberServer(AnotherPartyBounced)
         .value
 
       fiveMinutes {
         eventList.foreach { event =>
           channelPreferencesServer
-            .verify(postRequestedFor(urlEqualTo(Subscriptions.ChannelPreferencesBouncedPath)).withEventJson(event))
+            .verify(postRequestedFor(urlEqualTo(ChannelPreferencesBouncedPath)).withEventJson(event))
 
           anotherPartyServer
-            .verify(postRequestedFor(urlEqualTo(Subscriptions.AnotherPartyBouncedPath)).withEventJson(event))
+            .verify(postRequestedFor(urlEqualTo(AnotherPartyBouncedPath)).withEventJson(event))
         }
       }
     }

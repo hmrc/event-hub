@@ -17,7 +17,7 @@
 package uk.gov.hmrc.eventhub.subscription
 
 import org.scalacheck.Gen
-import play.api.libs.json.{ JsArray, JsObject, JsString, JsValue }
+import play.api.libs.json.{ JsObject, JsString, JsValue }
 import uk.gov.hmrc.eventhub.model.Event
 
 import java.time.format.DateTimeFormatter
