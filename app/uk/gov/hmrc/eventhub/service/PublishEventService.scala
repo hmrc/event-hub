@@ -20,6 +20,7 @@ import play.api.Configuration
 import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.respository.{ EventHubRepository, SubscriberQueueRepository }
 import uk.gov.hmrc.mongo.MongoComponent
+import PublishStatus._
 
 import javax.inject.{ Inject, Named, Singleton }
 import scala.concurrent.{ ExecutionContext, Future }

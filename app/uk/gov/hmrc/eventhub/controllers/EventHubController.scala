@@ -20,6 +20,7 @@ import play.api.libs.json.{ JsError, JsValue, Json }
 import play.api.mvc.{ Action, BaseController, ControllerComponents }
 import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.service.PublishEventService
+import PublishStatus._
 
 import javax.inject.{ Inject, Singleton }
 import scala.concurrent.{ ExecutionContext, Future }
