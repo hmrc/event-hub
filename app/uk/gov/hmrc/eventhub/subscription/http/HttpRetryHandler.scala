@@ -24,15 +24,14 @@ import uk.gov.hmrc.eventhub.model.Event
 import scala.util.{ Failure, Success, Try }
 
 trait HttpRetryHandler extends Logging {
-  def shouldRetry()(implicit materializer: Materializer)
-    : ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] = {
+  def shouldRetry()(implicit materializer: Materializer): ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] = {
     case (inputs @ (request, _), (Success(resp), _)) =>
       resp.entity.discardBytes()
       resp.status match {
         case StatusCodes.Success(_) | StatusCodes.ClientError(_) =>
           logger.info(s"\nresponse status:\n ${resp.status}.\nfor request:\n $request.\nwill not retry.")
           None
-        case _                                                   => Some(inputs)
+        case _ => Some(inputs)
       }
     case ((_, _), (Failure(_), _)) => None
   }
