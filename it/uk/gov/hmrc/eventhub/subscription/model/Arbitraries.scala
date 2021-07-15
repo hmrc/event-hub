@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscription
-import scala.concurrent.duration._
-import org.scalatest.concurrent.Eventually.eventually
-import org.scalatest.concurrent.Waiters.{ interval, timeout }
+package uk.gov.hmrc.eventhub.subscription.model
 
-trait EventualDefaults {
-  def oneSecond[T](fun: => T): T = eventually(timeout(1.second), interval(100.milliseconds)) { fun }
+import org.scalacheck.Arbitrary
+import uk.gov.hmrc.eventhub.model.Event
+import Generators.eventGen
 
-  def fiveMinutes[T](fun: => T): T = eventually(timeout(5.minutes), interval(1.second)) { fun }
+object Arbitraries {
+  implicit val eventArb: Arbitrary[Event] = Arbitrary(eventGen)
 }

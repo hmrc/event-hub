@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscription
+package uk.gov.hmrc.eventhub.utils
 
-import org.scalacheck.Arbitrary
-import uk.gov.hmrc.eventhub.model.Event
-import uk.gov.hmrc.eventhub.subscription.Generators.eventGen
-
-object Arbitraries {
-  implicit val eventArb: Arbitrary[Event] = Arbitrary(eventGen)
+case class TestId(private val name: String) extends AnyVal {
+  def id: String = s"${name.toLowerCase}-${System.currentTimeMillis()}"
 }

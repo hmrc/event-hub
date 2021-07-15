@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscription
+package uk.gov.hmrc.eventhub.subscription.model
 
-import org.scalatest.OptionValues
-import org.scalatest.concurrent.{ IntegrationPatience, ScalaFutures }
-import org.scalatest.matchers.must.Matchers
+import com.github.tomakehurst.wiremock.WireMockServer
+import uk.gov.hmrc.eventhub.model.Subscriber
 
-trait ISpec extends ScalaFutures with OptionValues with Matchers with IntegrationPatience with EventualDefaults
+case class SubscriberServers(topicName: String, subscriberServers: List[(WireMockServer, Subscriber)])
