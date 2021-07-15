@@ -35,8 +35,7 @@ class PublishEventService @Inject()(
 
   val subscriberRepos: Map[Subscriber, SubscriberQueueRepository] = topics.flatMap { topic =>
     topic.subscribers.map { subscriber =>
-      subscriber -> new SubscriberQueueRepository(topic.name, subscriber, configuration, mongoComponent)(
-        executionContext)
+      subscriber -> new SubscriberQueueRepository(topic.name, subscriber, configuration, mongoComponent)(executionContext)
     }
   }.toMap
 
