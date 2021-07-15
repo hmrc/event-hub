@@ -14,58 +14,53 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscription
+package uk.gov.hmrc.eventhub.utils
 
-import akka.http.scaladsl.model.HttpMethods
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.{ aResponse, post, put, urlEqualTo }
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
-import com.github.tomakehurst.wiremock.matching.UrlPattern
+import org.scalatest.concurrent.ScalaFutures._
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.Json
 import play.api.libs.ws.{ WSClient, WSResponse }
 import play.api.test.{ DefaultTestServerFactory, RunningServer }
-import uk.gov.hmrc.eventhub.model.{ Event, Topic }
+import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
+import uk.gov.hmrc.eventhub.subscription.model.{ SubscriberServers, SubscriberStub, TestTopic }
 import uk.gov.hmrc.integration.UrlHelper.-/
-import org.scalatest.concurrent.ScalaFutures._
-import play.api.libs.json.Json
+import uk.gov.hmrc.mongo.MongoComponent
 
 import scala.concurrent.Future
 
 object Setup {
-  def scope(topics: Set[Topic])(test: Setup => Any) {
-    val setup = new Setup(topics)
+  def scope(testTopic: TestTopic)(test: Setup => Any)(implicit testId: TestId): Unit =
+    scope(Set(testTopic))(test)
+
+  def scope(testTopics: Set[TestTopic])(test: Setup => Any)(implicit testId: TestId) {
+    val setup = new Setup(testTopics, testId)
     try {
       test(setup)
     } finally setup.shutdown()
   }
 }
 
-class Setup private (topics: Set[Topic]) {
-  private val OK = 200
+class Setup private (testTopics: Set[TestTopic], testId: TestId) {
+  private val subscriberServers: Set[SubscriberServers] = testTopics.map { topic =>
+    val subscriberServers = topic.subscriberStubs.map {
+      case SubscriberStub(subscriber, stubMapping) =>
+        val server = new WireMockServer(
+          wireMockConfig()
+            .dynamicHttpsPort()
+            .dynamicPort()
+            .notifier(new Slf4jNotifier(true))
+        )
 
-  val subscriberServers: Set[SubscriberServers] = topics.map { topic =>
-    val subscriberServers = topic.subscribers.map { subscriber =>
-      val server = new WireMockServer(
-        wireMockConfig()
-          .dynamicHttpsPort()
-          .dynamicPort()
-          .notifier(new Slf4jNotifier(true))
-      )
-
-      server.start()
-
-      val stubMethod = if (subscriber.httpMethod == HttpMethods.POST) post(_: UrlPattern) else put(_: UrlPattern)
-
-      server.addStubMapping(
-        stubMethod(urlEqualTo(subscriber.uri.path.toString())).willReturn(aResponse().withStatus(OK)).build()
-      )
-
-      server -> subscriber.copy(
-        uri = subscriber.uri
-          .withPort(if (subscriber.uri.scheme == "https") server.httpsPort() else server.port())
-      )
+        server.start()
+        server.addStubMapping(stubMapping)
+        server -> subscriber.copy(
+          uri = subscriber.uri
+            .withPort(if (subscriber.uri.scheme == "https") server.httpsPort() else server.port())
+        )
     }
     SubscriberServers(topic.name, subscriberServers)
   }
@@ -87,6 +82,7 @@ class Setup private (topics: Set[Topic]) {
   }.toMap
 
   private val application: Application = new GuiceApplicationBuilder()
+    .configure("mongodb.uri" -> s"mongodb://localhost:27017/${testId.id}")
     .configure("metrics.enabled" -> false)
     .configure("auditing.enabled" -> false)
     .configure("topics" -> topicsConfig)
@@ -97,13 +93,15 @@ class Setup private (topics: Set[Topic]) {
   private val port: Int = runningServer.endpoints.httpEndpoint
     .fold(throw new IllegalStateException("No HTTP port available for test server"))(_.port)
 
-  val client: WSClient = application.injector.instanceOf[WSClient]
+  private val client: WSClient = application.injector.instanceOf[WSClient]
+  private val mongoComponent: MongoComponent = application.injector.instanceOf[MongoComponent]
 
-  def resource(path: String): String = s"http://localhost:$port/${-/(path)}"
+  val subscribers: Set[Subscriber] = subscriberServers
+    .flatMap(_.subscriberServers.map(_._2))
 
   def postToTopic(topicName: String, event: Event): Future[WSResponse] =
     client
-      .url(resource(s"/event-hub/publish/$topicName"))
+      .url(s"http://localhost:$port/event-hub/publish/${-/(topicName)}")
       .withHttpHeaders("Content-Type" -> "application/json")
       .post(Json.toJson(event))
 
@@ -112,9 +110,20 @@ class Setup private (topics: Set[Topic]) {
       .flatMap(_.subscriberServers.find(_._2.name == subscriptionName).map(_._1))
       .headOption
 
-  def shutdown(): Unit = {
-    subscriberServers.foreach(_.subscriberServers.foreach(_._1.stop()))
-    runningServer.stopServer.close()
-    application.stop().futureValue
+  private def shutdown(): Unit = {
+    subscriberServers
+      .foreach(_.subscriberServers.foreach(_._1.stop()))
+
+    mongoComponent.database
+      .drop()
+      .toFuture()
+      .futureValue
+
+    runningServer.stopServer
+      .close()
+
+    application
+      .stop()
+      .futureValue
   }
 }

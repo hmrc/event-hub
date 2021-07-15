@@ -16,26 +16,26 @@
 
 package uk.gov.hmrc.eventhub.subscription
 
+import akka.http.scaladsl.model.StatusCodes.{ InternalServerError, OK }
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.http.Status.CREATED
 import uk.gov.hmrc.eventhub.model.Event
-import uk.gov.hmrc.eventhub.subscription.Setup.scope
-import uk.gov.hmrc.eventhub.subscription.TestModels.Http.requestPatternBuilderOps
-import uk.gov.hmrc.eventhub.subscription.TestModels.{ Events, Subscriptions }
-import scala.concurrent.ExecutionContext.Implicits.global
-import Subscriptions._
-import Events._
-import Arbitraries._
+import uk.gov.hmrc.eventhub.subscription.model.Arbitraries._
+import uk.gov.hmrc.eventhub.subscription.model.TestModels.Events._
+import uk.gov.hmrc.eventhub.subscription.model.TestModels.Subscriptions._
+import uk.gov.hmrc.eventhub.utils.ISpec
+import uk.gov.hmrc.eventhub.utils.Setup.scope
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with ScalaCheckDrivenPropertyChecks {
 
   behavior of "SubscriberPushSubscriptions"
 
-  it should "push an event to a registered subscriber" in scope(channelPreferencesBouncedEmails) { setup =>
+  it should "push an event to a registered subscriber" in scope(channelPreferencesBouncedEmails returning OK) { setup =>
     val response = setup
       .postToTopic(BoundedEmailsTopic, event)
       .futureValue
@@ -52,7 +52,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
     }
   }
 
-  it should "push an event to registered subscribers" in scope(bouncedEmails) { setup =>
+  it should "push an event to registered subscribers" in scope(bouncedEmails returning OK) { setup =>
     val response = setup
       .postToTopic(BoundedEmailsTopic, event)
       .futureValue
@@ -76,7 +76,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
     }
   }
 
-  it should "push events to all registered subscribers" in scope(bouncedEmails) { setup =>
+  it should "push events to all registered subscribers" in scope(bouncedEmails returning OK) { setup =>
     forAll { eventList: List[Event] =>
       val responses = Future
         .sequence(eventList.map { event =>
@@ -87,23 +87,46 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
 
       responses.foreach(_.status mustBe CREATED)
 
-      val channelPreferencesServer = setup
-        .subscriberServer(ChannelPreferencesBounced)
-        .value
+      setup.subscribers
+        .foreach { subscriber =>
+          val server = setup
+            .subscriberServer(subscriber.name)
+            .value
 
-      val anotherPartyServer = setup
-        .subscriberServer(AnotherPartyBounced)
-        .value
-
-      fiveMinutes {
-        eventList.foreach { event =>
-          channelPreferencesServer
-            .verify(postRequestedFor(urlEqualTo(ChannelPreferencesBouncedPath)).withEventJson(event))
-
-          anotherPartyServer
-            .verify(postRequestedFor(urlEqualTo(AnotherPartyBouncedPath)).withEventJson(event))
+          oneMinute {
+            eventList.foreach { event =>
+              server
+                .verify(
+                  postRequestedFor(urlEqualTo(subscriber.uri.path.toString)).withEventJson(event)
+                )
+            }
+          }
         }
-      }
+    }
+  }
+
+  it should "apply retry with exponential back-off" in scope(channelPreferencesBouncedEmails returning InternalServerError) { setup =>
+    forAll { event: Event =>
+      val response = setup
+        .postToTopic(BoundedEmailsTopic, event)
+        .futureValue
+
+      response.status mustBe CREATED
+
+      setup.subscribers
+        .foreach { subscriber =>
+          val server = setup
+            .subscriberServer(subscriber.name)
+            .value
+
+          oneSecond {
+            server
+              .verify(
+                subscriber.maxRetries + 1,
+                postRequestedFor(urlEqualTo(subscriber.uri.path.toString)).withEventJson(event)
+              )
+          }
+        }
     }
   }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscription
+package uk.gov.hmrc.eventhub.subscription.model
 
 import org.scalacheck.Gen
 import play.api.libs.json.{ JsObject, JsString, JsValue }

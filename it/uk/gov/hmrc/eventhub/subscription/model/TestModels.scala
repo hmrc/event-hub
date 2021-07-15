@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscription
+package uk.gov.hmrc.eventhub.subscription.model
 
 import akka.http.scaladsl.model.{ HttpMethods, Uri }
-import com.github.tomakehurst.wiremock.client.WireMock.{ equalTo, equalToJson }
-import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import play.api.libs.json.Json
 import uk.gov.hmrc.eventhub.model.{ Event, Subscriber, Topic }
+import scala.concurrent.duration._
 
 import java.time.LocalDateTime
 import java.util.UUID
-import scala.concurrent.duration._
 
 object TestModels {
 
@@ -57,7 +55,7 @@ object TestModels {
     val ChannelPreferencesBouncedPath = "/channel-preferences/process/bounce"
 
     val Elements = 100
-    val MaxRetries = 0
+    val MaxRetries = 5
 
     val channelPreferences: Subscriber = Subscriber(
       name = ChannelPreferencesBounced,
@@ -65,8 +63,8 @@ object TestModels {
       httpMethod = HttpMethods.POST,
       elements = Elements,
       per = 3.seconds,
-      minBackOff = 100.millis,
-      maxBackOff = 5.minutes,
+      minBackOff = 10.millis,
+      maxBackOff = 1.second,
       maxRetries = MaxRetries,
     )
 
@@ -84,12 +82,10 @@ object TestModels {
       maxRetries = MaxRetries,
     )
 
-    val channelPreferencesBouncedEmails: Set[Topic] = Set(
-      Topic(
-        BoundedEmailsTopic,
-        List(
-          channelPreferences
-        )
+    val channelPreferencesBouncedEmails: Topic = Topic(
+      BoundedEmailsTopic,
+      List(
+        channelPreferences
       )
     )
 
@@ -102,15 +98,5 @@ object TestModels {
         )
       )
     )
-  }
-
-  object Http {
-    implicit class requestPatternBuilderOps(val requestPatternBuilder: RequestPatternBuilder) extends AnyVal {
-      def withJsonContentHeader: RequestPatternBuilder =
-        requestPatternBuilder.withHeader("Content-Type", equalTo("application/json"))
-      def withEventJson(event: Event): RequestPatternBuilder =
-        requestPatternBuilder.withJsonContentHeader
-          .withRequestBody(equalToJson(Json.toJson(event).toString()))
-    }
   }
 }

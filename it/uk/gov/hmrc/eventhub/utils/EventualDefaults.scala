@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.subscription
+package uk.gov.hmrc.eventhub.utils
 
-import com.github.tomakehurst.wiremock.WireMockServer
-import uk.gov.hmrc.eventhub.model.Subscriber
+import org.scalatest.concurrent.Eventually.eventually
+import org.scalatest.concurrent.Waiters.{ interval, timeout }
+import scala.concurrent.duration._
 
-case class SubscriberServers(topicName: String, subscriberServers: List[(WireMockServer, Subscriber)])
+trait EventualDefaults {
+  def oneSecond[T](fun: => T): T = eventually(timeout(1.second), interval(100.milliseconds)) { fun }
+
+  def oneMinute[T](fun: => T): T = eventually(timeout(1.minute), interval(100.milliseconds)) { fun }
+}
