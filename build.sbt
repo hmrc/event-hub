@@ -36,6 +36,7 @@ lazy val microservice = Project(appName, file("."))
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
   .settings(resolvers += Resolver.jcenterRepo)
+  .settings(ScoverageSettings())
   .settings(
     inConfig(IntegrationTest)(
     scalafmtCoreSettings ++

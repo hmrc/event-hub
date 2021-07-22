@@ -17,18 +17,12 @@
 package uk.gov.hmrc.eventhub.subscription
 
 import akka.NotUsed
-import akka.actor.ActorSystem
-import akka.http.scaladsl.HttpExt
-import akka.stream.Attributes.LogLevels
-import akka.stream.scaladsl.{ Keep, Sink, Source }
-import akka.stream.{ Attributes, KillSwitches, Materializer, SharedKillSwitch }
+import akka.stream.scaladsl.{ Keep, Sink }
+import akka.stream.{ KillSwitches, Materializer, SharedKillSwitch }
 import play.api.Logging
 import play.api.inject.ApplicationLifecycle
-import uk.gov.hmrc.eventhub.model.{ Event, Subscriber, Topic }
-import uk.gov.hmrc.eventhub.respository.SubscriberEventRepositoryFactory
-import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{ EventSendStatus, ResponseParallelism }
-import uk.gov.hmrc.eventhub.subscription.http.{ HttpEventRequestBuilder, HttpResponseHandler, HttpRetryHandler }
-import uk.gov.hmrc.eventhub.subscription.stream.{ SubscriberEventHttpFlow, _ }
+import uk.gov.hmrc.eventhub.model.Topic
+import uk.gov.hmrc.eventhub.subscription.stream._
 
 import javax.inject.{ Inject, Named, Singleton }
 import scala.concurrent.{ ExecutionContext, Future }
@@ -36,12 +30,10 @@ import scala.concurrent.{ ExecutionContext, Future }
 @Singleton
 class SubscriberPushSubscriptions @Inject()(
   @Named("eventTopics") topics: Set[Topic],
-  subscriberEventRepositoryFactory: SubscriberEventRepositoryFactory,
-  httpExt: HttpExt,
+  subscriptionStreamBuilder: SubscriptionStreamBuilder,
   lifecycle: ApplicationLifecycle
 )(
   implicit
-  actorSystem: ActorSystem,
   materializer: Materializer,
   executionContext: ExecutionContext
 ) extends Logging {
@@ -58,32 +50,11 @@ class SubscriberPushSubscriptions @Inject()(
     topics.flatMap { topic =>
       topic.subscribers
         .map { subscriber =>
-          val stream = buildStream(subscriber, topic.name)
+          val stream = subscriptionStreamBuilder.build(subscriber, topic.name)
           stream
             .viaMat(subscribersKillSwitch.flow)(Keep.left)
             .to(Sink.ignore)
             .run()
         }
     }
-
-  private def buildStream(subscriber: Subscriber, topic: String): Source[EventSendStatus, NotUsed] = {
-    val repository = subscriberEventRepositoryFactory(subscriber, topic)
-    val requestBuilder = (event: Event) => HttpEventRequestBuilder.build(subscriber, event) -> event
-    val source = new SubscriberEventSource(repository)(actorSystem.scheduler, executionContext).source
-    val responseHandler = new HttpResponseHandler(repository).handle(_)
-    val httpFlow = new SubscriberEventHttpFlow(subscriber, HttpRetryHandler, httpExt).flow
-
-    source
-      .map(requestBuilder)
-      .via(httpFlow)
-      .mapAsync(parallelism = ResponseParallelism)(responseHandler)
-      .log(s"$topic-${subscriber.name} subscription")
-      .withAttributes(
-        Attributes.logLevels(
-          onElement = LogLevels.Debug,
-          onFinish = LogLevels.Info,
-          onFailure = LogLevels.Error
-        )
-      )
-  }
 }

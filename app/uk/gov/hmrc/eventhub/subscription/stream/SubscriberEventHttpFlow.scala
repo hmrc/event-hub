@@ -23,6 +23,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{ Flow, RetryFlow }
 import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
 import uk.gov.hmrc.eventhub.subscription.http.HttpRetryHandler
+import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpFlow.{ HttpsScheme, RandomFactor }
 
 import scala.util.Try
 
@@ -31,12 +32,19 @@ class SubscriberEventHttpFlow(
   httpRetryHandler: HttpRetryHandler,
   httpExt: HttpExt
 )(implicit materializer: Materializer) {
-  private val RandomFactor = 0.2
 
-  private val httpFlow = httpExt.cachedHostConnectionPool[Event](
-    subscriber.uri.authority.host.toString(),
-    subscriber.uri.authority.port
-  )
+  private val httpFlow = {
+    val poolCons = if (subscriber.uri.scheme == HttpsScheme) {
+      httpExt.cachedHostConnectionPoolHttps[Event](_: String, _: Int)
+    } else {
+      httpExt.cachedHostConnectionPool[Event](_: String, _: Int)
+    }
+
+    poolCons(
+      subscriber.uri.authority.host.toString(),
+      subscriber.uri.authority.port
+    )
+  }
 
   def flow: Flow[(HttpRequest, Event), SubscriberEventHttpResponse, NotUsed] = {
     val retryHttpFlow: Flow[(HttpRequest, Event), (Try[HttpResponse], Event), Http.HostConnectionPool] =
@@ -59,4 +67,9 @@ class SubscriberEventHttpFlow(
       response.map(_.entity.discardBytes())
       SubscriberEventHttpResponse(response, event, subscriber)
   }
+}
+
+object SubscriberEventHttpFlow {
+  val HttpsScheme = "https"
+  val RandomFactor = 0.2
 }
