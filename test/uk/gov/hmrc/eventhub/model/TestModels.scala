@@ -17,10 +17,12 @@
 package uk.gov.hmrc.eventhub.model
 
 import akka.http.scaladsl.model.{ HttpMethods, Uri }
+import org.bson.types.ObjectId
 import play.api.libs.json.Json
-import scala.concurrent.duration._
+import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
 
-import java.time.LocalDateTime
+import scala.concurrent.duration._
+import java.time.{ Instant, LocalDateTime }
 import java.util.UUID
 
 trait TestModels {
@@ -43,6 +45,18 @@ trait TestModels {
     groupId = "in the bar",
     timeStamp = LocalDateTime.now(),
     event = eventJson
+  )
+
+  val subscriberWorkItem: SubscriberWorkItem = SubscriberWorkItem(event)
+  val now: Instant = Instant.now()
+  val workItem: WorkItem[SubscriberWorkItem] = WorkItem(
+    ObjectId.get,
+    now,
+    now,
+    now,
+    ProcessingStatus.ToDo,
+    0,
+    subscriberWorkItem
   )
 
   val subscriber: Subscriber = Subscriber(
