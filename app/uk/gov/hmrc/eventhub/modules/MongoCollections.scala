@@ -19,31 +19,30 @@ package uk.gov.hmrc.eventhub.modules
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.{ IndexModel, IndexOptions }
 import play.api.Configuration
-import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
+import uk.gov.hmrc.eventhub.model.{ Event, Topic }
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.workitem.{ WorkItemFields, WorkItemRepository }
 
 import java.time.{ Duration, Instant }
-import javax.inject.Inject
+import javax.inject.{ Inject, Named }
 import scala.concurrent.ExecutionContext
 
 trait MongoCollections
 
-class MongoSetup @Inject()(mongo: MongoComponent, configuration: Configuration)(implicit ec: ExecutionContext) extends MongoCollections {
-
-  val topics: Map[String, List[Subscriber]] = configuration.get[Map[String, List[Subscriber]]]("topics")
+class MongoSetup @Inject()(mongo: MongoComponent, configuration: Configuration, @Named("eventTopics") val topics: Set[Topic])(implicit ec: ExecutionContext)
+    extends MongoCollections {
 
   def collectionName(topic: String, subscriptionName: String): String = s"${topic}_${subscriptionName}_queue"
 
-  def subscriberRepositories: Seq[(String, WorkItemRepository[Event])] =
+  def subscriberRepositories: Set[(String, WorkItemRepository[Event])] =
     for {
-      topic      <- topics.toList
-      subscriber <- topic._2
-      name = collectionName(topic._1, subscriber.name)
+      topic      <- topics
+      subscriber <- topic.subscribers
+      name = collectionName(topic.name, subscriber.name)
     } yield {
       (
-        topic._1,
+        topic.name,
         new WorkItemRepository[Event](
           name,
           mongo,

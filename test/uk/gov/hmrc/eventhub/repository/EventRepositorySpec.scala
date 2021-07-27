@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.eventhub.repository
 
-import org.mockito.MockitoSugar
 import org.mongodb.scala.ClientSession
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -31,7 +30,7 @@ import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class EventRepositorySpec @Inject() extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar {
+class EventRepositorySpec @Inject() extends PlaySpec with GuiceOneAppPerSuite {
 
   "addEvent" must {
     "return true" in new TestCase {

@@ -48,7 +48,7 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
 
     "return NoEventTopic if topic doesn't exist" in new TestCase {
       when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq()))
-      when(mongoSetup.topics).thenReturn(Map("not exist" -> List()))
+      when(mongoSetup.topics).thenReturn(Set(Topic("not exist", List())))
       val publisherService =
         new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
       await(publisherService.publishIfUnique("email", event)) mustBe Left(NoEventTopic("No such topic"))
@@ -57,7 +57,7 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
     "return NoSubscribersForTopic if subscribers are empty" in new TestCase {
       when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq()))
 
-      when(mongoSetup.topics).thenReturn(Map("email" -> List()))
+      when(mongoSetup.topics).thenReturn(Set(Topic("email", List())))
       val publisherService =
         new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
       await(publisherService.publishIfUnique("email", event)) mustBe Left(NoSubscribersForTopic("No subscribers for topic"))
@@ -86,9 +86,9 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
       val subscriberItemsRepo: WorkItemRepository[Event] = mock[WorkItemRepository[Event]]
       val mongoClient: MongoClient = MongoClient()
 
-      when(mongoSetup.topics).thenReturn(Map("email" -> List(TestModels.subscriber)))
+      when(mongoSetup.topics).thenReturn(Set(Topic("email", List(TestModels.subscriber))))
       when(mongoSetup.subscriberRepositories)
-        .thenReturn(Seq(("email", subscriberItemsRepo), ("email", subscriberItemsRepo)))
+        .thenReturn(Set(("email", subscriberItemsRepo), ("email", subscriberItemsRepo)))
       when(mongoComponent.client).thenReturn(mongoClient)
 
       val eventId = UUID.randomUUID().toString

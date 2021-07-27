@@ -82,7 +82,7 @@ class Setup private (testTopics: Set[TestTopic], testId: TestId) {
   }.toMap
 
   private val application: Application = new GuiceApplicationBuilder()
-    .configure("mongodb.uri" -> s"mongodb://localhost:27017/${testId.id}")
+    .configure("mongodb.uri" -> s"mongodb://mongo:27017/${testId.id}")
     .configure("metrics.enabled" -> false)
     .configure("auditing.enabled" -> false)
     .configure("topics" -> topicsConfig)

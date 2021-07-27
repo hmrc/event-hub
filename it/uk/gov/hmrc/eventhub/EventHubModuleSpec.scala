@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.eventhub
 
+import akka.http.scaladsl.model.HttpMethods
 import play.api.libs.json.Json
 import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
+import scala.concurrent.duration._
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -30,10 +32,11 @@ class EventHubModuleSpec extends ISpec {
     "include topics configuration1" in {
       mongoSetup.topics mustBe Map(
         "notConfigured" -> List(),
-        "preferences"   -> List(Subscriber("bounces", "http://localhost:9000/subscriber/email")),
+        "preferences"   -> List(Subscriber("bounces", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, 10.millis, 100.millis, 0)),
         "email" -> List(
-          Subscriber("subscriberName1", "http://localhost:9000/subscriber/email"),
-          Subscriber("subscriberName2", "http://localhost:9000/subscriber/email"))
+          Subscriber("subscriberName1", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, 10.millis, 100.millis, 0),
+          Subscriber("subscriberName2", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, 10.millis, 100.millis, 0)
+        )
       )
     }
   }
@@ -45,7 +48,7 @@ class EventHubModuleSpec extends ISpec {
   "subscriberRepositories" must {
     "create subscriber repositories" in {
       mongoSetup.subscriberRepositories.map(_._2.collectionName) mustBe
-        List("preferences_bounces_queue", "email_subscriberName1_queue", "email_subscriberName2_queue")
+        Set("preferences_bounces_queue", "email_subscriberName1_queue", "email_subscriberName2_queue")
     }
   }
   override def externalServices: Seq[String] = Seq.empty[String]

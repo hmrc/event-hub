@@ -62,16 +62,16 @@ class PublisherService @Inject()(
     }
 
   private def publishIfValid(topic: String, event: Event): Either[PublishError, Future[Unit]] =
-    mongoSetup.topics.get(topic) match {
+    mongoSetup.topics.find(_.name == topic) match {
       case None                                     => Left(NoEventTopic("No such topic"))
-      case Some(subscribers) if subscribers.isEmpty => Left(NoSubscribersForTopic("No subscribers for topic"))
+      case Some(topic) if topic.subscribers.isEmpty => Left(NoSubscribersForTopic("No subscribers for topic"))
       case Some(_)                                  => Right(publish(event, subscriberRepos(topic)))
     }
 
-  private[service] def subscriberRepos(topic: String) =
+  private[service] def subscriberRepos(topic: String): Set[WorkItemRepository[Event]] =
     mongoSetup.subscriberRepositories.filter(_._1 == topic).map(_._2)
 
-  private[service] def publish(event: Event, subscriberRepos: Seq[WorkItemRepository[Event]]): Future[Unit] = {
+  private[service] def publish(event: Event, subscriberRepos: Set[WorkItemRepository[Event]]): Future[Unit] = {
     mongoComponent.client
       .startSession(sessionOptions)
       .flatMap(clientSession => {
