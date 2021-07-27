@@ -16,29 +16,35 @@
 
 package uk.gov.hmrc.eventhub.controllers
 
-import play.api.libs.json.{JsError, JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents}
-import uk.gov.hmrc.eventhub.model.{DuplicateEvent, Event, NoEventTopic, NoSubscribersForTopic}
+import play.api.libs.json.{ JsError, JsValue, Json }
+import play.api.mvc.{ Action, ControllerComponents }
+import uk.gov.hmrc.eventhub.models.{ DuplicateEvent, Event, NoEventTopic, NoSubscribersForTopic }
 import uk.gov.hmrc.eventhub.service.PublisherService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 class PublishController @Inject()(cc: ControllerComponents, publisher: PublisherService)(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
   def publish(topic: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    request.body.validate[Event].fold(errors => {
-      Future.successful(BadRequest(Json.obj("Invalid Event payload: " -> JsError.toJson(errors))))
-    },
-      event => publisher.publishIfUnique(topic, event).map {
-        case Right(_) => Created
-        case Left(error) => error match {
-          case e: DuplicateEvent => Created(e.message)
-          case e: NoEventTopic => NotFound(e.message)
-          case e: NoSubscribersForTopic => Created(e.message)
-          case e => InternalServerError(e.message)
+    request.body
+      .validate[Event]
+      .fold(
+        errors => {
+          Future.successful(BadRequest(Json.obj("Invalid Event payload: " -> JsError.toJson(errors))))
+        },
+        event =>
+          publisher.publishIfUnique(topic, event).map {
+            case Right(_) => Created
+            case Left(error) =>
+              error match {
+                case e: DuplicateEvent        => Created(e.message)
+                case e: NoEventTopic          => NotFound(e.message)
+                case e: NoSubscribersForTopic => Created(e.message)
+                case e                        => InternalServerError(e.message)
+              }
         }
-      } )
+      )
   }
-  }
+}

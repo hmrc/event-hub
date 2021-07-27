@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.utils
 
-import org.mongodb.scala.{ClientSessionOptions, ReadConcern, TransactionOptions, WriteConcern}
+import org.mongodb.scala.{ ClientSessionOptions, ReadConcern, TransactionOptions, WriteConcern }
 
 object TransactionConfiguration {
   val sessionOptions =
@@ -26,7 +26,8 @@ object TransactionConfiguration {
       .build()
 
   val transactionOptions =
-    TransactionOptions.builder()
+    TransactionOptions
+      .builder()
       .readConcern(ReadConcern.SNAPSHOT)
       .writeConcern(WriteConcern.MAJORITY)
       .build()

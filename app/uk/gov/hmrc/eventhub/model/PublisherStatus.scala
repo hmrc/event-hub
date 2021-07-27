@@ -18,7 +18,6 @@ package uk.gov.hmrc.eventhub.model
 
 sealed class PublishError(val message: String)
 
-
 final case class DuplicateEvent(override val message: String) extends PublishError(message)
 final case class NoEventTopic(override val message: String) extends PublishError(message)
 final case class NoSubscribersForTopic(override val message: String) extends PublishError(message)
