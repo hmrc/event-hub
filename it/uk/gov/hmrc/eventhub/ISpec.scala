@@ -32,19 +32,9 @@ trait ISpec extends PlaySpec with ServiceSpec with BeforeAndAfterEach {
   val wsClient: WSClient = app.injector.instanceOf[WSClient]
   val mongoSetup = app.injector.instanceOf[MongoSetup]
 
-  //TODO fix this it doesnt delete database
   override protected def afterEach(): Unit = {
-//    val mongoClient: MongoClient = MongoClient("mongodb://mongo:27017/event-hub?replicaSet=devrs")
-//    val mongoDatabase: MongoDatabase = mongoClient.getDatabase(testName)
-//     val collection =   mongoDatabase.getCollection("event")
-//   await(collection.drop().toFuture())
-  }
-
-  override protected def beforeEach(): Unit = {
-
-//    val mongoClient: MongoClient = MongoClient("mongodb://mongo:27017/event-hub?replicaSet=devrs")
-//    val mongoDatabase: MongoDatabase = mongoClient.getDatabase(testName)
-//    val collection =   mongoDatabase.getCollection("event")
-//    await(collection.drop().toFuture())
+    val mongoClient: MongoClient = MongoClient(s"mongodb://mongo:27017/$testName?replicaSet=devrs")
+    val mongoDatabase: MongoDatabase = mongoClient.getDatabase(testName)
+    mongoDatabase.drop().toFuture().futureValue
   }
 }
