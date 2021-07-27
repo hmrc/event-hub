@@ -23,7 +23,7 @@ import akka.stream.Attributes
 import akka.stream.Attributes.LogLevels
 import akka.stream.scaladsl.Source
 import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
-import uk.gov.hmrc.eventhub.respository.SubscriberEventRepositoryFactory
+import uk.gov.hmrc.eventhub.repository.SubscriberEventRepositoryFactory
 import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{ EventSendStatus, ResponseParallelism }
 import uk.gov.hmrc.eventhub.subscription.http.{ HttpEventRequestBuilder, HttpResponseHandler, HttpRetryHandler }
 

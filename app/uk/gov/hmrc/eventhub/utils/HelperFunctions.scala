@@ -21,7 +21,6 @@ import uk.gov.hmrc.eventhub.model.PublishError
 import scala.concurrent.{ ExecutionContext, Future }
 
 object HelperFunctions {
-  def liftFuture[A](e: Either[PublishError, Future[A]])(
-    implicit ec: ExecutionContext): Future[Either[PublishError, A]] =
+  def liftFuture[A](e: Either[PublishError, Future[A]])(implicit ec: ExecutionContext): Future[Either[PublishError, A]] =
     e.fold((l: PublishError) => Future(Left(l)), (r: Future[A]) => r.map(value => Right(value)))
 }

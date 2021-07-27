@@ -16,15 +16,16 @@
 
 package uk.gov.hmrc.eventhub.repository
 
+import org.mockito.MockitoSugar
 import org.mongodb.scala.ClientSession
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.test.Helpers.{ await, defaultAwaitTimeout }
-import uk.gov.hmrc.eventhub.models._
+import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject

@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.respository
+package uk.gov.hmrc.eventhub.repository
 
 import cats.data.OptionT
 import cats.syntax.option._
-import org.mongodb.scala.model.Filters.equal
 import play.api.Logging
-import uk.gov.hmrc.eventhub.model.{ Event, SubscriberWorkItem }
-import uk.gov.hmrc.mongo.workitem.WorkItem
+import uk.gov.hmrc.eventhub.model.Event
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -31,11 +29,11 @@ class WorkItemSubscriberEventRepository(
     extends SubscriberEventRepository with Logging {
   override def next(): Future[Option[Event]] =
     subscriberQueueRepository.getEvent
-      .map(_.map(_.item.event))
+      .map(_.map(_.item))
 
   override def failed(event: Event): Future[Option[Boolean]] =
     (for {
-      workItem <- OptionT(findAsWorkItem(event))
+      workItem <- OptionT(subscriberQueueRepository.findAsWorkItem(event))
       result   <- OptionT(subscriberQueueRepository.failed(workItem).map(_.some))
     } yield {
       logger.info(s"marking $event as failed: $result")
@@ -44,15 +42,10 @@ class WorkItemSubscriberEventRepository(
 
   override def sent(event: Event): Future[Option[Boolean]] =
     (for {
-      workItem <- OptionT(findAsWorkItem(event))
+      workItem <- OptionT(subscriberQueueRepository.findAsWorkItem(event))
       result   <- OptionT(subscriberQueueRepository.completeAndDelete(workItem.id).map(_.some))
     } yield {
       logger.info(s"marking $event as sent: $result")
       result
     }).value
-
-  private def findAsWorkItem(event: Event): Future[Option[WorkItem[SubscriberWorkItem]]] =
-    subscriberQueueRepository.collection
-      .find(equal("item.event.eventId", event.eventId.toString))
-      .headOption()
 }

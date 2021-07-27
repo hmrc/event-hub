@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.respository
+package uk.gov.hmrc.eventhub.repository
 
 import uk.gov.hmrc.eventhub.model.Event
 

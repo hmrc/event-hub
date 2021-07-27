@@ -47,16 +47,15 @@ trait TestModels {
     event = eventJson
   )
 
-  val subscriberWorkItem: SubscriberWorkItem = SubscriberWorkItem(event)
   val now: Instant = Instant.now()
-  val workItem: WorkItem[SubscriberWorkItem] = WorkItem(
+  val workItem: WorkItem[Event] = WorkItem(
     ObjectId.get,
     now,
     now,
     now,
     ProcessingStatus.ToDo,
     0,
-    subscriberWorkItem
+    event
   )
 
   val subscriber: Subscriber = Subscriber(
