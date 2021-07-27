@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub
 
-import org.mongodb.scala.{MongoClient, MongoDatabase}
+import org.mongodb.scala.{ MongoClient, MongoDatabase }
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.ws.WSClient
