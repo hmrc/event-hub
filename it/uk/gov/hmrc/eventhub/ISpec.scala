@@ -16,11 +16,9 @@
 
 package uk.gov.hmrc.eventhub
 
-import org.mongodb.scala.{ MongoClient, MongoDatabase }
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.ws.WSClient
-import play.api.test.Helpers.{ await, defaultAwaitTimeout }
 import uk.gov.hmrc.eventhub.modules.MongoSetup
 import uk.gov.hmrc.integration.ServiceSpec
 

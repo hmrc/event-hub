@@ -35,11 +35,15 @@ class PublishEventISpec extends ISpec {
           "uri"  -> "uri"
         ))).toMap
 
-  override def fakeApplication(): Application =
-    GuiceApplicationBuilder(environment = Environment.simple(mode = applicationMode.getOrElse(Mode.Test)))
-      .configure("topics" -> topics)
-      .overrides(additionalOverrides: _*)
-      .build()
+//  override def fakeApplication(): Application =
+//    GuiceApplicationBuilder(environment = Environment.simple(mode = applicationMode.getOrElse(Mode.Test)))
+//      .configure("topics" -> topics)
+//      .overrides(additionalOverrides: _*)
+//      .build()
+
+  override def additionalConfig: Map[String, _] = Map(
+    "topics" -> topics
+  )
 
   "A POST request to publish/:topic" must {
 

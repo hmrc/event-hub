@@ -23,10 +23,10 @@ import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import javax.inject.{ Inject, Singleton }
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 
 @Singleton
-class EventRepository @Inject()()(implicit ec: ExecutionContext) {
+class EventRepository @Inject()() {
 
   def addEvent(cs: ClientSession, eventRepository: PlayMongoRepository[Event], event: Event): SingleObservable[InsertOneResult] =
     eventRepository.collection.insertOne(cs, event)
