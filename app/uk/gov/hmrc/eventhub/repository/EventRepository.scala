@@ -18,12 +18,12 @@ package uk.gov.hmrc.eventhub.repository
 
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.result.InsertOneResult
-import org.mongodb.scala.{ClientSession, SingleObservable}
+import org.mongodb.scala.{ ClientSession, SingleObservable }
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.{ Inject, Singleton }
+import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
 class EventRepository @Inject()()(implicit ec: ExecutionContext) {

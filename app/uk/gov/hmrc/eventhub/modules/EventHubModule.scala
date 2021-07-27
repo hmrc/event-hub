@@ -16,17 +16,41 @@
 
 package uk.gov.hmrc.eventhub.modules
 
+import akka.actor.ActorSystem
+import akka.http.scaladsl.{ Http, HttpExt }
 import akka.pattern.FutureTimeoutSupport
 import com.google.inject.{ AbstractModule, Provides }
 import play.api.Configuration
 import play.api.libs.concurrent.AkkaGuiceSupport
 import uk.gov.hmrc.eventhub.model.{ Subscriber, Topic }
-import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.eventhub.repository.{ SubscriberEventRepositoryFactory, WorkItemSubscriberEventRepositoryFactory }
+import uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptions
+
 import javax.inject.{ Named, Singleton }
-import scala.concurrent.{ ExecutionContext, Future }
 
 class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTimeoutSupport {
-  override def configure(): Unit =
+  override def configure(): Unit = {
+    bind(classOf[SubscriberEventRepositoryFactory])
+      .to(classOf[WorkItemSubscriberEventRepositoryFactory])
+
+    bind(classOf[SubscriberPushSubscriptions]).asEagerSingleton()
+
     bind(classOf[MongoCollections]).to(classOf[MongoSetup])
-  super.configure()
+
+    super.configure()
+  }
+
+  @Provides
+  @Singleton
+  def createHttpExt(system: ActorSystem): HttpExt =
+    Http()(system)
+
+  @Provides
+  @Named("eventTopics")
+  @Singleton
+  def configTopics(configuration: Configuration): Set[Topic] =
+    configuration
+      .get[Map[String, List[Subscriber]]](path = "topics")
+      .map { case (k, v) => Topic(k, v) }
+      .toSet
 }
