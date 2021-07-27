@@ -63,20 +63,20 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
       await(publisherService.publishIfUnique("email", event)) mustBe Left(NoSubscribersForTopic("No subscribers for topic"))
     }
 
-//TODO: This test is better if its mocked
-    "return success if publish is returned" in new TestCase {
-      val appEventRepository = app.injector.instanceOf[EventRepository]
-      val appMongoComponent = app.injector.instanceOf[MongoComponent]
-      val appSubscriberQueuesRepository = app.injector.instanceOf[SubscriberQueuesRepository]
-      val appMongoSetup = app.injector.instanceOf[MongoSetup]
-
-      val publisherService =
-        new PublisherService(appMongoComponent, appEventRepository, appSubscriberQueuesRepository, appMongoSetup)
-
-      val subscriberRepos = publisherService.subscriberRepos("email")
-
-      await(publisherService.publish(event, subscriberRepos).map(_ => ())) mustBe ()
-    }
+////TODO: This test is better if its mocked
+//    "return success if publish is returned" in new TestCase {
+//      val appEventRepository = app.injector.instanceOf[EventRepository]
+//      val appMongoComponent = app.injector.instanceOf[MongoComponent]
+//      val appSubscriberQueuesRepository = app.injector.instanceOf[SubscriberQueuesRepository]
+//      val appMongoSetup = app.injector.instanceOf[MongoSetup]
+//
+//      val publisherService =
+//        new PublisherService(appMongoComponent, appEventRepository, appSubscriberQueuesRepository, appMongoSetup)
+//
+//      val subscriberRepos = publisherService.subscriberRepos("email")
+//
+//      await(publisherService.publish(event, subscriberRepos).map(_ => ())) mustBe ()
+//    }
 
     class TestCase {
       val mongoComponent: MongoComponent = mock[MongoComponent]
