@@ -17,33 +17,24 @@
 package uk.gov.hmrc.eventhub
 
 import play.api.http.{ ContentTypes, HeaderNames }
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{ await, defaultAwaitTimeout }
-import play.api.{ Application, Environment, Mode }
+import uk.gov.hmrc.eventhub.model.TestModels
 import uk.gov.hmrc.eventhub.repository.EventRepository
+import uk.gov.hmrc.eventhub.subscription.SubscriberConfigOps
+
 import java.io.File
 
 class PublishEventISpec extends ISpec {
   override def externalServices: Seq[String] = Seq.empty[String]
-  val eventRepository = app.injector.instanceOf[EventRepository]
 
-  private val topics: Map[String, List[Map[String, Any]]] = List(
-    "email" ->
-      List(
-        Map(
-          "name" -> "subscriberName",
-          "uri"  -> "uri"
-        ))).toMap
-
-//  override def fakeApplication(): Application =
-//    GuiceApplicationBuilder(environment = Environment.simple(mode = applicationMode.getOrElse(Mode.Test)))
-//      .configure("topics" -> topics)
-//      .overrides(additionalOverrides: _*)
-//      .build()
+  private val topics =
+    Map("email" -> List(TestModels.subscriber.asConfigMap))
 
   override def additionalConfig: Map[String, _] = Map(
     "topics" -> topics
   )
+
+  lazy val eventRepository = app.injector.instanceOf[EventRepository]
 
   "A POST request to publish/:topic" must {
 
