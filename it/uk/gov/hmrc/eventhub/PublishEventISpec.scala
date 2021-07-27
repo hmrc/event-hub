@@ -27,20 +27,6 @@ class PublishEventISpec extends ISpec {
   override def externalServices: Seq[String] = Seq.empty[String]
   val eventRepository = app.injector.instanceOf[EventRepository]
 
-  private val topics: Map[String, List[Map[String, Any]]] = List(
-    "email" ->
-      List(
-        Map(
-          "name" -> "subscriberName",
-          "uri"  -> "uri"
-        ))).toMap
-
-  override def fakeApplication(): Application =
-    GuiceApplicationBuilder(environment = Environment.simple(mode = applicationMode.getOrElse(Mode.Test)))
-      .configure("topics" -> topics)
-      .overrides(additionalOverrides: _*)
-      .build()
-
   "A POST request to publish/:topic" must {
 
     "return 201 if event is successfully processed" in {
