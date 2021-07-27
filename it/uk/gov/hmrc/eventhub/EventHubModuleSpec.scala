@@ -17,7 +17,7 @@
 package uk.gov.hmrc.eventhub
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.eventhub.models.{ Event, Subscriber }
+import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
 import java.time.LocalDateTime
 import java.util.UUID
 

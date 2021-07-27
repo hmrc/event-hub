@@ -16,21 +16,22 @@
 
 package uk.gov.hmrc.eventhub.service
 
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.Mockito.when
+import org.mockito.MockitoSugar.mock
 import org.mongodb.scala.MongoClient
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.test.Helpers.{ await, defaultAwaitTimeout }
-import uk.gov.hmrc.eventhub.models._
+import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.modules.MongoSetup
 import uk.gov.hmrc.eventhub.repository.{ EventRepository, SubscriberQueuesRepository }
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.workitem.WorkItemRepository
+
 import java.time.LocalDateTime
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -42,8 +43,7 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
       when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq(event)))
       val publisherService =
         new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
-      await(publisherService.publishIfUnique("email", event)) mustBe Left(
-        DuplicateEvent("Duplicate Event: Event with eventId already exists"))
+      await(publisherService.publishIfUnique("email", event)) mustBe Left(DuplicateEvent("Duplicate Event: Event with eventId already exists"))
     }
 
     "return NoEventTopic if topic doesn't exist" in new TestCase {
@@ -60,8 +60,7 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
       when(mongoSetup.topics).thenReturn(Map("email" -> List()))
       val publisherService =
         new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
-      await(publisherService.publishIfUnique("email", event)) mustBe Left(
-        NoSubscribersForTopic("No subscribers for topic"))
+      await(publisherService.publishIfUnique("email", event)) mustBe Left(NoSubscribersForTopic("No subscribers for topic"))
     }
 
 //TODO: This test is better if its mocked
@@ -87,18 +86,13 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
       val subscriberItemsRepo: WorkItemRepository[Event] = mock[WorkItemRepository[Event]]
       val mongoClient: MongoClient = MongoClient()
 
-      when(mongoSetup.topics).thenReturn(Map("email" -> List(Subscriber("name", "uri"))))
+      when(mongoSetup.topics).thenReturn(Map("email" -> List(TestModels.subscriber)))
       when(mongoSetup.subscriberRepositories)
         .thenReturn(Seq(("email", subscriberItemsRepo), ("email", subscriberItemsRepo)))
       when(mongoComponent.client).thenReturn(mongoClient)
 
       val eventId = UUID.randomUUID().toString
-      val event = Event(
-        UUID.fromString(eventId),
-        "sub",
-        "group",
-        LocalDateTime.MIN,
-        Json.parse("""{"reason":"email not valid"}"""))
+      val event = Event(UUID.fromString(eventId), "sub", "group", LocalDateTime.MIN, Json.parse("""{"reason":"email not valid"}"""))
     }
   }
 }

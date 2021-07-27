@@ -21,8 +21,7 @@ import org.mongodb.scala.{ MongoCollection, Observable }
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import uk.gov.hmrc.eventhub.model.SubscriberWorkItem
-import uk.gov.hmrc.eventhub.respository.{ SubscriberQueueRepository, WorkItemSubscriberEventRepository }
+import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.model.TestModels.{ event, workItem }
 import uk.gov.hmrc.mongo.workitem.WorkItem
 
@@ -49,7 +48,7 @@ class WorkItemSubscriberEventRepositorySpec extends AnyFlatSpec with Matchers wi
   }
 
   trait Scope {
-    val mongoCollection: MongoCollection[WorkItem[SubscriberWorkItem]] = mock[MongoCollection[WorkItem[SubscriberWorkItem]]]
+    val mongoCollection: MongoCollection[WorkItem[Event]] = mock[MongoCollection[WorkItem[Event]]]
     val subscriberQueueRepository: SubscriberQueueRepository = mock[SubscriberQueueRepository]
 
     mongoCollection willBe returned by subscriberQueueRepository.collection
@@ -58,14 +57,14 @@ class WorkItemSubscriberEventRepositorySpec extends AnyFlatSpec with Matchers wi
       subscriberQueueRepository
     )(scala.concurrent.ExecutionContext.global)
 
-    def someFutureWorkItem: Future[Option[WorkItem[SubscriberWorkItem]]] =
+    def someFutureWorkItem: Future[Option[WorkItem[Event]]] =
       Future.successful(Some(workItem))
 
-    def observableWorkItem: Observable[WorkItem[SubscriberWorkItem]] =
+    def observableWorkItem: Observable[WorkItem[Event]] =
       Observable(Seq(workItem))
 
     def futureNone: Future[None.type] = Future.successful(None)
 
-    def trueFuture: Future[Boolean] = Future.successful(true)
+    def futureTrue: Future[Boolean] = Future.successful(true)
   }
 }

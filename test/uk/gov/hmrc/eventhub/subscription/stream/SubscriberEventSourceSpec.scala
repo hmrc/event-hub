@@ -30,7 +30,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Seconds, Span }
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.model.TestModels.event
-import uk.gov.hmrc.eventhub.respository.SubscriberEventRepository
+import uk.gov.hmrc.eventhub.repository.SubscriberEventRepository
 
 import scala.concurrent.Future
 

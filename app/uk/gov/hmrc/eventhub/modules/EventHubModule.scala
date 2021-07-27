@@ -20,7 +20,7 @@ import akka.pattern.FutureTimeoutSupport
 import com.google.inject.{ AbstractModule, Provides }
 import play.api.Configuration
 import play.api.libs.concurrent.AkkaGuiceSupport
-import uk.gov.hmrc.eventhub.models.{ Subscriber, Topic }
+import uk.gov.hmrc.eventhub.model.{ Subscriber, Topic }
 import uk.gov.hmrc.mongo.MongoComponent
 import javax.inject.{ Named, Singleton }
 import scala.concurrent.{ ExecutionContext, Future }

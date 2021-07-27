@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.respository
+package uk.gov.hmrc.eventhub.repository
 
+import org.mongodb.scala.model.Filters.equal
 import play.api.Configuration
-import uk.gov.hmrc.eventhub.model.{ Subscriber, SubscriberWorkItem }
+import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.PermanentlyFailed
 import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem, WorkItemFields, WorkItemRepository }
@@ -31,10 +32,10 @@ class SubscriberQueueRepository(
   configuration: Configuration,
   mongo: MongoComponent
 )(implicit ec: ExecutionContext)
-    extends WorkItemRepository[SubscriberWorkItem](
+    extends WorkItemRepository[Event](
       mongoComponent = mongo,
-      collectionName = s"$topic-${subscriber.name}-queue",
-      itemFormat = SubscriberWorkItem.subscriberWorkItemFormat,
+      collectionName = s"${topic}_${subscriber.name}_queue",
+      itemFormat = Event.eventFormat,
       workItemFields = WorkItemFields.default
     ) {
 
@@ -48,18 +49,17 @@ class SubscriberQueueRepository(
 
   val retryFailedAfter: Duration = configuration.underlying.getDuration("queue.retryFailedAfter")
 
-  def addSubscriberWorkItems(s: Seq[SubscriberWorkItem]): Future[Seq[WorkItem[SubscriberWorkItem]]] =
-    pushNewBatch(s)
-
-  def getEvent: Future[Option[WorkItem[SubscriberWorkItem]]] =
+  def getEvent: Future[Option[WorkItem[Event]]] =
     pullOutstanding(failedBefore = now().minus(retryFailedAfter), availableBefore = now())
 
-  def deleteEvent(e: WorkItem[SubscriberWorkItem]): Future[Boolean] =
-    completeAndDelete(e.id)
-
-  def failed(e: WorkItem[SubscriberWorkItem]): Future[Boolean] =
+  def failed(e: WorkItem[Event]): Future[Boolean] =
     if (e.failureCount > numberOfRetries) permanentlyFailed(e) else markAs(e.id, ProcessingStatus.Failed)
 
-  def permanentlyFailed(e: WorkItem[SubscriberWorkItem]): Future[Boolean] =
+  private def permanentlyFailed(e: WorkItem[Event]): Future[Boolean] =
     complete(e.id, PermanentlyFailed)
+
+  def findAsWorkItem(event: Event): Future[Option[WorkItem[Event]]] =
+    collection
+      .find(equal("item.eventId", event.eventId.toString))
+      .headOption()
 }

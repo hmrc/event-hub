@@ -22,7 +22,7 @@ import akka.pattern.Patterns.after
 import akka.stream.scaladsl.Source
 import play.api.Logging
 import uk.gov.hmrc.eventhub.model.Event
-import uk.gov.hmrc.eventhub.respository.SubscriberEventRepository
+import uk.gov.hmrc.eventhub.repository.SubscriberEventRepository
 
 import java.util.concurrent.Callable
 import scala.concurrent.duration._

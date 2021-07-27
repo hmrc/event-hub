@@ -18,17 +18,14 @@ package uk.gov.hmrc.eventhub.repository
 
 import org.mongodb.scala.result.InsertOneResult
 import org.mongodb.scala.{ ClientSession, SingleObservable }
-import uk.gov.hmrc.eventhub.models.Event
+import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.mongo.workitem.{ WorkItem, WorkItemRepository }
 
 import javax.inject.Inject
 
 class SubscriberQueuesRepository @Inject()() {
 
-  def addWorkItem(
-    clientSession: ClientSession,
-    repository: WorkItemRepository[Event],
-    eventWorkItem: WorkItem[Event]): SingleObservable[InsertOneResult] =
+  def addWorkItem(clientSession: ClientSession, repository: WorkItemRepository[Event], eventWorkItem: WorkItem[Event]): SingleObservable[InsertOneResult] =
     repository.collection.insertOne(clientSession, eventWorkItem)
 
 }

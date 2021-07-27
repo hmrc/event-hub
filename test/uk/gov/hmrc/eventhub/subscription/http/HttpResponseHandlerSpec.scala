@@ -24,7 +24,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.eventhub.model.TestModels
-import uk.gov.hmrc.eventhub.respository.SubscriberEventRepository
+import uk.gov.hmrc.eventhub.repository.SubscriberEventRepository
 import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{ EventSendStatus, Failed, Sent }
 import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpResponse
 
