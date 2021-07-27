@@ -16,51 +16,55 @@
 
 package uk.gov.hmrc.eventhub
 
-
-import org.scalatestplus.play.components.OneAppPerSuiteWithComponents
-import play.api.{Application, BuiltInComponents, BuiltInComponentsFromContext, Configuration, Environment, Mode, NoHttpFiltersComponents}
-import play.api.http.{ContentTypes, HeaderNames}
+import play.api.http.{ ContentTypes, HeaderNames }
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json
-import play.api.mvc.Results
-import play.api.routing.Router
-import play.api.test.Helpers.await
-import uk.gov.hmrc.eventhub.modules.{MongoCollections, MongoSetup}
+import play.api.test.Helpers.{ await, defaultAwaitTimeout }
+import play.api.{ Application, Environment, Mode }
 import uk.gov.hmrc.eventhub.repository.EventRepository
-import uk.gov.hmrc.eventhub.service.PublisherService
-import play.api.test.Helpers.{await, defaultAwaitTimeout}
-
 import java.io.File
-import java.util.UUID
 
 class PublishEventISpec extends ISpec {
   override def externalServices: Seq[String] = Seq.empty[String]
   val eventRepository = app.injector.instanceOf[EventRepository]
 
-  override def fakeApplication(): Application = {
+  private val topics: Map[String, List[Map[String, Any]]] = List(
+    "email" ->
+      List(
+        Map(
+          "name" -> "subscriberName",
+          "uri"  -> "uri"
+        ))).toMap
+
+  override def fakeApplication(): Application =
     GuiceApplicationBuilder(environment = Environment.simple(mode = applicationMode.getOrElse(Mode.Test)))
-      .configure()
-      .overrides(additionalOverrides :_*)
+      .configure("topics" -> topics)
+      .overrides(additionalOverrides: _*)
       .build()
-  }
+
   "A POST request to publish/:topic" must {
 
     "return 201 if event is successfully processed" in {
       val topic = "email"
-      val response = wsClient.url(resource(s"/event-hub/publish/$topic")).withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
+      val response = wsClient
+        .url(resource(s"/event-hub/publish/$topic"))
+        .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
         .post(new File("./it/resources/valid-event.json"))
         .futureValue
-          response.status mustBe 201
+      response.status mustBe 201
     }
 
     "return 201 with DuplicateEvent message if event is already processed" in {
       val topic = "email"
-      val response1 = wsClient.url(resource(s"/event-hub/publish/$topic")).withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
+      val response1 = wsClient
+        .url(resource(s"/event-hub/publish/$topic"))
+        .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
         .post(new File("./it/resources/valid-event.json"))
         .futureValue
       response1.status mustBe 201
 
-      val response2 = wsClient.url(resource(s"/event-hub/publish/$topic")).withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
+      val response2 = wsClient
+        .url(resource(s"/event-hub/publish/$topic"))
+        .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
         .post(new File("./it/resources/valid-event.json"))
         .futureValue
       response2.status mustBe 201
@@ -72,7 +76,9 @@ class PublishEventISpec extends ISpec {
 
     "return 404 if topic is not configured" in {
       val topic = "unknown"
-      val response = wsClient.url(resource(s"/event-hub/publish/$topic")).withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
+      val response = wsClient
+        .url(resource(s"/event-hub/publish/$topic"))
+        .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
         .post(new File("./it/resources/valid-event-min.json"))
         .futureValue
       response.status mustBe 404
@@ -80,13 +86,12 @@ class PublishEventISpec extends ISpec {
 
     "return 201 if no subscribers configured for topic" in {
       val topic = "notConfigured"
-      val response = wsClient.url(resource(s"/event-hub/publish/$topic")).withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
+      val response = wsClient
+        .url(resource(s"/event-hub/publish/$topic"))
+        .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
         .post(new File("./it/resources/valid-event-min.json"))
         .futureValue
       response.status mustBe 201
     }
-
   }
-
-
 }

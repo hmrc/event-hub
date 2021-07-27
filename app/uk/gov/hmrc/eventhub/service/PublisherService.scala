@@ -17,76 +17,76 @@
 package uk.gov.hmrc.eventhub.service
 
 import org.mongodb.scala.bson.ObjectId
-import org.mongodb.scala.{ClientSession, MongoException, Observable, ToSingleObservableVoid}
+import org.mongodb.scala.result.InsertOneResult
+import org.mongodb.scala.{ ClientSession, MongoException, Observable, SingleObservable, ToSingleObservableVoid }
 import play.api.i18n.Lang.logger
 import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.modules.MongoSetup
-import uk.gov.hmrc.eventhub.repository.{EventRepository, SubscriberQueuesRepository}
+import uk.gov.hmrc.eventhub.repository.{ EventRepository, SubscriberQueuesRepository }
 import uk.gov.hmrc.eventhub.utils.HelperFunctions.liftFuture
-import uk.gov.hmrc.eventhub.utils.TransactionConfiguration.{sessionOptions, transactionOptions}
+import uk.gov.hmrc.eventhub.utils.TransactionConfiguration.{ sessionOptions, transactionOptions }
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem, WorkItemRepository}
+import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem, WorkItemRepository }
+
 import java.time.Instant
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.{ Inject, Singleton }
+import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
-class PublisherService @Inject()( mongoComponent: MongoComponent,
-                                  eventRepository: EventRepository,
-                                  subscriberQueuesRepository: SubscriberQueuesRepository,
-                                  mongoSetup: MongoSetup
+class PublisherService @Inject()(
+  mongoComponent: MongoComponent,
+  eventRepository: EventRepository,
+  subscriberQueuesRepository: SubscriberQueuesRepository,
+  mongoSetup: MongoSetup)(implicit ec: ExecutionContext) {
 
-   )(implicit ec: ExecutionContext) {
-
- private def commitAndRetry(clientSession: ClientSession): Observable[Unit] = {
+  private[service] def commitAndRetry(clientSession: ClientSession): Observable[Unit] =
     clientSession
       .commitTransaction()
       .map(_ => ())
       .recoverWith(recovery(clientSession))
       .map(_ => clientSession.close())
-  }
 
   private def recovery(clientSession: ClientSession): PartialFunction[Throwable, Observable[Unit]] = {
     case e: MongoException if e.hasErrorLabel(MongoException.TRANSIENT_TRANSACTION_ERROR_LABEL) =>
       logger.error("TransientTransactionError, this could be one-time network glitch so retrying ...")
       commitAndRetry(clientSession)
-    case e: MongoException  =>
+    case e: MongoException =>
       logger.error("UnknownTransactionCommitResult, retrying commit operation ...")
-    throw new Exception(s"Unknown Transaction error $e")
+      throw new Exception(s"Unknown Transaction error $e")
   }
 
-  def publishIfUnique(topic: String, event: Event): Future[Either[PublishError, Unit]] = {
-    eventRepository.find(event.eventId.toString, mongoSetup.eventRepository).map(_.isEmpty) flatMap   {
+  def publishIfUnique(topic: String, event: Event): Future[Either[PublishError, Unit]] =
+    eventRepository.find(event.eventId.toString, mongoSetup.eventRepository).map(_.isEmpty) flatMap {
       case true => liftFuture(publishIfValid(topic, event))
-      case _ => Future.successful(Left(DuplicateEvent("Duplicate Event: Event with eventId already exists")))
+      case _    => Future.successful(Left(DuplicateEvent("Duplicate Event: Event with eventId already exists")))
     }
-  }
 
- private def publishIfValid(topic: String, event: Event): Either[PublishError, Future[Unit]] = {
-   mongoSetup.topics.get(topic) match {
-     case None => Left(NoEventTopic("No such topic"))
-     case Some(subscribers) if subscribers.isEmpty => Left(NoSubscribersForTopic("No subscribers for topic"))
-     case Some(_) => Right(publish(event, subscriberRepos(topic)))
-   }
-}
+  private def publishIfValid(topic: String, event: Event): Either[PublishError, Future[Unit]] =
+    mongoSetup.topics.get(topic) match {
+      case None                                     => Left(NoEventTopic("No such topic"))
+      case Some(subscribers) if subscribers.isEmpty => Left(NoSubscribersForTopic("No subscribers for topic"))
+      case Some(_)                                  => Right(publish(event, subscriberRepos(topic)))
+    }
 
- private def subscriberRepos(topic: String) = mongoSetup.subscriberRepositories.filter(_._1 == topic).map(_._2)
+  private[service] def subscriberRepos(topic: String) =
+    mongoSetup.subscriberRepositories.filter(_._1 == topic).map(_._2)
 
- private def publish(event: Event, subscriberRepos: Seq[WorkItemRepository[Event]]): Future[Unit] = {
-        mongoComponent.client.startSession(sessionOptions).flatMap(clientSession => {
-          clientSession.startTransaction(transactionOptions)
-          val eventInsert = eventRepository.addEvent(clientSession, mongoSetup.eventRepository, event)
+  private[service] def publish(event: Event, subscriberRepos: Seq[WorkItemRepository[Event]]): Future[Unit] = {
+    mongoComponent.client
+      .startSession(sessionOptions)
+      .flatMap(clientSession => {
+        clientSession.startTransaction(transactionOptions)
+        val eventInsert: SingleObservable[InsertOneResult] =
+          eventRepository.addEvent(clientSession, mongoSetup.eventRepository, event)
 
-          val sequenced = subscriberRepos.foldLeft(eventInsert) {
-            (acc, repository) =>
-              acc.flatMap { _ =>
-               subscriberQueuesRepository.addWorkItem(clientSession, repository, subscriberWorkItem(event))
-              }
+        val sequenced: SingleObservable[InsertOneResult] = subscriberRepos.foldLeft(eventInsert) { (acc, repository) =>
+          acc.flatMap { _ =>
+            subscriberQueuesRepository.addWorkItem(clientSession, repository, subscriberWorkItem(event))
           }
-          sequenced.map(_ => clientSession)
-        })
-      }.flatMap(commitAndRetry).head()
-
+        }
+        sequenced.map(_ => clientSession)
+      })
+  }.flatMap(commitAndRetry).head()
 
   private def subscriberWorkItem(event: Event): WorkItem[Event] =
     WorkItem(
