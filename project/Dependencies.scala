@@ -27,6 +27,8 @@ object Dependencies {
     val Pureconfig = "com.github.pureconfig"    %% "pureconfig"                        % "0.16.0"
     val Cats = "org.typelevel"                  %% "cats-core"                         % "2.6.1"
     val Swagger = "org.webjars"                 % "swagger-ui"                         % "3.50.0"
+    val Enumeration =  "com.beachape"            %% "enumeratum-play"                   % "1.5.17"
+    val MongoScalaDriver = "org.mongodb.scala"   %% "mongo-scala-driver"                % "4.2.3"
     val BootstrapTest = "uk.gov.hmrc"           %% "bootstrap-test-play-28"            % "5.4.0"
     val HmrcMongoTest = "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-28"           % "0.52.0"
     val Scalatest = "org.scalatest"             %% "scalatest"                         % "3.1.0"
@@ -49,6 +51,8 @@ object Dependencies {
     Pureconfig,
     Cats,
     Swagger,
+    Enumeration,
+    MongoScalaDriver,
     BootstrapTest          % Test,
     HmrcMongoTest          % Test,
     Scalatest              % Test,

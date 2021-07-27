@@ -1,0 +1,15 @@
+{
+  "eventId":"1ebbc004-d2ce-11eb-b8bc-0242ac130003",
+  "subject":"subject",
+  "groupId": "groupid",
+  "timeStamp":"2021-02-11T23:00:00.000Z",
+  "event":{
+    "enrolmentIdentifier": "EORINumber",
+    "enrolmentValue": "GB744638982000",
+    "emailAddress": "email@email.com",
+    "event": "someEvent",
+    "detected": "2021-05-14T10:59:45.811+01:00",
+    "code": 12,
+    "reason": "email inbox is full"
+  }
+}

@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  mongo:
+    container_name: mongo
+    hostname: mongo
+    image: mongo:4.2
+    ports:
+      - "27017:27017"
+    networks:
+      - mongo-net
+    volumes:
+      - data:/data/db
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "devrs" ]
+
+  mongosetup:
+    image: mongo:4.2
+    depends_on:
+      - mongo
+    restart: "no"
+    networks:
+      - mongo-net
+    entrypoint: [ "bash", "-c", "sleep 10 && mongo --host mongo --eval 'rs.initiate()'" ]
+
+networks:
+  mongo-net:
+    driver: bridge
+
+volumes:
+  data:
