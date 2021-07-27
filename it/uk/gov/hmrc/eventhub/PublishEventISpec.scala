@@ -16,23 +16,14 @@
 
 package uk.gov.hmrc.eventhub
 
-import play.api.http.{ ContentTypes, HeaderNames }
-import play.api.test.Helpers.{ await, defaultAwaitTimeout }
-import uk.gov.hmrc.eventhub.model.TestModels
+import play.api.http.{ContentTypes, HeaderNames}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.eventhub.repository.EventRepository
-import uk.gov.hmrc.eventhub.subscription.SubscriberConfigOps
-
 import java.io.File
 
 class PublishEventISpec extends ISpec {
   override def externalServices: Seq[String] = Seq.empty[String]
 
-  private val topics =
-    Map("email" -> List(TestModels.subscriber.asConfigMap))
-
-  override def additionalConfig: Map[String, _] = Map(
-    "topics" -> topics
-  )
 
   lazy val eventRepository = app.injector.instanceOf[EventRepository]
 
