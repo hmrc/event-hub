@@ -26,6 +26,7 @@ import play.api.libs.json.Json
 import play.api.libs.ws.{ WSClient, WSResponse }
 import play.api.test.{ DefaultTestServerFactory, RunningServer }
 import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
+import uk.gov.hmrc.eventhub.subscription.SubscriberConfigOps
 import uk.gov.hmrc.eventhub.subscription.model.{ SubscriberServers, SubscriberStub, TestTopic }
 import uk.gov.hmrc.integration.UrlHelper.-/
 import uk.gov.hmrc.mongo.MongoComponent
@@ -67,17 +68,7 @@ class Setup private (testTopics: Set[TestTopic], testId: TestId) {
 
   private val topicsConfig = subscriberServers.map { topic =>
     topic.topicName -> topic.subscriberServers.map {
-      case (_, subscriber) =>
-        Map(
-          "name"         -> subscriber.name,
-          "uri"          -> subscriber.uri.toString(),
-          "http-method"  -> subscriber.httpMethod.value,
-          "elements"     -> subscriber.elements,
-          "per"          -> subscriber.per.toString(),
-          "min-back-off" -> subscriber.minBackOff.toString(),
-          "max-back-off" -> subscriber.maxBackOff.toString(),
-          "max-retries"  -> subscriber.maxRetries
-        )
+      case (_, subscriber) => subscriber.asConfigMap
     }
   }.toMap
 
