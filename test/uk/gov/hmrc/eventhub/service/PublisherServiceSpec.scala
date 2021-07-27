@@ -14,72 +14,91 @@
  * limitations under the License.
  */
 
-
 package uk.gov.hmrc.eventhub.service
 
-import com.mongodb.client.result.InsertOneResult
-import org.bson.{BsonNull, BsonValue}
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.mongodb.scala.result.InsertOneResult
-import org.mongodb.scala.{ClientSession, MongoClient, Observable, SingleObservable}
+import org.mockito.Mockito.when
+import org.mongodb.scala.MongoClient
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar.mock
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
-import play.api.test.Helpers.await
-import uk.gov.hmrc.eventhub.models.{DuplicateEvent, Event, NoEventTopic, NoSubscribersForTopic, PublishError, Subscriber}
+import play.api.test.Helpers.{ await, defaultAwaitTimeout }
+import uk.gov.hmrc.eventhub.models._
 import uk.gov.hmrc.eventhub.modules.MongoSetup
-import uk.gov.hmrc.eventhub.repository.{EventRepository, SubscriberQueuesRepository}
+import uk.gov.hmrc.eventhub.repository.{ EventRepository, SubscriberQueuesRepository }
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import uk.gov.hmrc.mongo.workitem.{WorkItem, WorkItemFields, WorkItemRepository}
-import play.api.test.Helpers.{await, defaultAwaitTimeout}
-
-import java.time.{Duration, Instant, LocalDateTime}
+import uk.gov.hmrc.mongo.workitem.WorkItemRepository
+import java.time.LocalDateTime
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class PublisherServiceSpec extends AnyWordSpec with Matchers {
+class PublisherServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
+  "publishIfUnique" must {
+    "return DuplicateEvent if Event Already exists" in new TestCase {
+      when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq(event)))
+      val publisherService =
+        new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
+      await(publisherService.publishIfUnique("email", event)) mustBe Left(
+        DuplicateEvent("Duplicate Event: Event with eventId already exists"))
+    }
 
-"publishIfUnique" must {
-"return DuplicateEvent if Event Already exists" in new TestCase {
-  when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq(event)))
-  val publisherService = new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
- await(publisherService.publishIfUnique("email", event)) mustBe Left(DuplicateEvent("Duplicate Event: Event with eventId already exists"))
-}
+    "return NoEventTopic if topic doesn't exist" in new TestCase {
+      when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq()))
+      when(mongoSetup.topics).thenReturn(Map("not exist" -> List()))
+      val publisherService =
+        new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
+      await(publisherService.publishIfUnique("email", event)) mustBe Left(NoEventTopic("No such topic"))
+    }
 
-  "return NoEventTopic if topic doesn't exist" in new TestCase {
-    when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq()))
-    when(mongoSetup.topics).thenReturn(Map("not exist" -> List()))
-        val publisherService = new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
-    await(publisherService.publishIfUnique("email", event)) mustBe Left(NoEventTopic("No such topic"))
+    "return NoSubscribersForTopic if subscribers are empty" in new TestCase {
+      when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq()))
+
+      when(mongoSetup.topics).thenReturn(Map("email" -> List()))
+      val publisherService =
+        new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
+      await(publisherService.publishIfUnique("email", event)) mustBe Left(
+        NoSubscribersForTopic("No subscribers for topic"))
+    }
+
+//TODO: This test is better if its mocked
+    "return success if publish is returned" in new TestCase {
+      val appEventRepository = app.injector.instanceOf[EventRepository]
+      val appMongoComponent = app.injector.instanceOf[MongoComponent]
+      val appSubscriberQueuesRepository = app.injector.instanceOf[SubscriberQueuesRepository]
+      val appMongoSetup = app.injector.instanceOf[MongoSetup]
+
+      val publisherService =
+        new PublisherService(appMongoComponent, appEventRepository, appSubscriberQueuesRepository, appMongoSetup)
+
+      val subscriberRepos = publisherService.subscriberRepos("email")
+
+      await(publisherService.publish(event, subscriberRepos).map(_ => ())) mustBe ()
+    }
+
+    class TestCase {
+      val mongoComponent: MongoComponent = mock[MongoComponent]
+      val eventRepository: EventRepository = mock[EventRepository]
+      val subscriberQueuesRepository: SubscriberQueuesRepository = mock[SubscriberQueuesRepository]
+      val mongoSetup: MongoSetup = mock[MongoSetup]
+      val subscriberItemsRepo: WorkItemRepository[Event] = mock[WorkItemRepository[Event]]
+      val mongoClient: MongoClient = MongoClient()
+
+      when(mongoSetup.topics).thenReturn(Map("email" -> List(Subscriber("name", "uri"))))
+      when(mongoSetup.subscriberRepositories)
+        .thenReturn(Seq(("email", subscriberItemsRepo), ("email", subscriberItemsRepo)))
+      when(mongoComponent.client).thenReturn(mongoClient)
+
+      val eventId = UUID.randomUUID().toString
+      val event = Event(
+        UUID.fromString(eventId),
+        "sub",
+        "group",
+        LocalDateTime.MIN,
+        Json.parse("""{"reason":"email not valid"}"""))
+    }
   }
-
-  "return NoSubscribersForTopic if subscribers are empty" in new TestCase{
-    when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq()))
-
-    when(mongoSetup.topics).thenReturn(Map("email" -> List()))
-    val publisherService = new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
-    await(publisherService.publishIfUnique("email", event)) mustBe Left(NoSubscribersForTopic("No subscribers for topic"))
-  }
-
-  class TestCase {
-     val mongoComponent: MongoComponent = mock[MongoComponent]
-     val eventRepository: EventRepository = mock[EventRepository]
-     val subscriberQueuesRepository: SubscriberQueuesRepository = mock[SubscriberQueuesRepository]
-     val mongoSetup: MongoSetup = mock[MongoSetup]
-     val subscriberItemsRepo: WorkItemRepository[Event] = mock[WorkItemRepository[Event]]
-     val mongoClient: MongoClient = MongoClient()
-
-    when(mongoSetup.topics).thenReturn(Map("email" -> List(Subscriber("name", "uri"))))
-    when(mongoSetup.subscriberRepositories).thenReturn(Seq(("email", subscriberItemsRepo), ("email", subscriberItemsRepo)))
-    when(mongoComponent.client).thenReturn(mongoClient)
-
-    val eventId = UUID.randomUUID().toString
-    val event = Event(UUID.fromString(eventId), "sub", "group", LocalDateTime.MIN,
-      Json.parse("""{"reason":"email not valid"}"""))
-  }
-}
 }
