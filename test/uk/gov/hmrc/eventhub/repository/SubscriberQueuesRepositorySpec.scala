@@ -17,49 +17,60 @@
 package uk.gov.hmrc.eventhub.repository
 
 import org.mongodb.scala.ClientSession
+import org.mongodb.scala.bson.ObjectId
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play._
+import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.test.Helpers.{ await, defaultAwaitTimeout }
-import uk.gov.hmrc.eventhub.models._
+import uk.gov.hmrc.eventhub.models.Event
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import java.time.LocalDateTime
+import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem, WorkItemFields, WorkItemRepository }
+import scala.concurrent.ExecutionContext.Implicits.global
+import java.time.{ Duration, Instant, LocalDateTime }
 import java.util.UUID
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext.Implicits.global
 
-class EventRepositorySpec @Inject() extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar {
+class SubscriberQueuesRepositorySpec @Inject() extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar {
 
-  "addEvent" must {
+  "addWorkItem" must {
     "return true" in new TestCase {
-      await(eventRepository.addEvent(clientSession, repository, event).toFuture().map(_.wasAcknowledged())) mustBe true
-    }
-  }
-
-  "saveEvent" must {
-    "return Event if exists" in new TestCase {
-      await(eventRepository.addEvent(clientSession, repository, event).toFuture())
-      await(eventRepository.find(eventId, repository)).head.eventId mustBe UUID.fromString(eventId)
+      await(
+        subscriberQueuesRepo
+          .addWorkItem(clientSession, repository, eventWorkItem)
+          .toFuture()
+          .map(_.wasAcknowledged())) mustBe true
     }
   }
 
   class TestCase {
     val mongo = app.injector.instanceOf[MongoComponent]
     val eventId = UUID.randomUUID().toString
-    val repository = new PlayMongoRepository[Event](
-      mongoComponent = mongo,
-      "event",
+    val repository = new WorkItemRepository[Event](
+      "subscriberName",
+      mongo,
       Event.eventFormat,
-      indexes = Seq(),
-    )
+      WorkItemFields.default,
+      false
+    ) {
+      override def inProgressRetryAfter: Duration = Duration.ofSeconds(1)
+      override def now(): Instant = Instant.now()
+    }
 
-    val eventRepository = new EventRepository()
+    val subscriberQueuesRepo = new SubscriberQueuesRepository()
 
     val event =
       Event(UUID.fromString(eventId), "sub", "group", LocalDateTime.MIN, Json.parse("""{"reason":"email not valid"}"""))
 
+    val eventWorkItem = WorkItem(
+      id = new ObjectId(),
+      receivedAt = Instant.now(),
+      updatedAt = Instant.now(),
+      availableAt = Instant.now(),
+      status = ProcessingStatus.ToDo,
+      failureCount = 0,
+      item = event
+    )
     val clientSession: ClientSession = await(mongo.client.startSession().head())
   }
 }

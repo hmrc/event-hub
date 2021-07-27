@@ -24,10 +24,10 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar.mock
-import play.api.http.{ContentTypes, Status}
+import play.api.http.{ ContentTypes, Status }
 import play.api.libs.json.Json
-import play.api.test.Helpers.{CONTENT_TYPE, contentAsString, defaultAwaitTimeout, status}
-import play.api.test.{FakeHeaders, FakeRequest, Helpers}
+import play.api.test.Helpers.{ CONTENT_TYPE, contentAsString, defaultAwaitTimeout, status }
+import play.api.test.{ FakeHeaders, FakeRequest, Helpers }
 import uk.gov.hmrc.eventhub.models._
 import uk.gov.hmrc.eventhub.service.PublisherService
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -39,7 +39,8 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
     "return Created if payload id valid and publish response is success" in new TestSetup {
       when(publisherServiceMock.publishIfUnique(any[String], any[Event])).thenReturn(Future.successful(Right()))
 
-      val controller: PublishController = new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
+      val controller: PublishController =
+        new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
 
       private val fakeRequest = FakeRequest(
         "POST",
@@ -48,13 +49,15 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
         Json.parse(validPayload))
 
       val result = controller.publish("email")(fakeRequest)
-      status(result) shouldBe  Status.CREATED
+      status(result) shouldBe Status.CREATED
     }
 
     "return Created if publish response is Duplicate" in new TestSetup {
-      when(publisherServiceMock.publishIfUnique(any[String], any[Event])).thenReturn(Future.successful(Left(DuplicateEvent("Event with Id already exists"))))
+      when(publisherServiceMock.publishIfUnique(any[String], any[Event]))
+        .thenReturn(Future.successful(Left(DuplicateEvent("Event with Id already exists"))))
 
-      val controller: PublishController = new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
+      val controller: PublishController =
+        new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
 
       private val fakeRequest = FakeRequest(
         "POST",
@@ -63,14 +66,16 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
         Json.parse(validPayload))
 
       val result = controller.publish("email")(fakeRequest)
-      status(result) shouldBe  Status.CREATED
-      contentAsString(result) shouldBe  "Event with Id already exists"
+      status(result) shouldBe Status.CREATED
+      contentAsString(result) shouldBe "Event with Id already exists"
     }
 
     "return NotFound if publish response is NoEventTopic" in new TestSetup {
-      when(publisherServiceMock.publishIfUnique(any[String], any[Event])).thenReturn(Future.successful(Left(NoEventTopic("No topic exits"))))
+      when(publisherServiceMock.publishIfUnique(any[String], any[Event]))
+        .thenReturn(Future.successful(Left(NoEventTopic("No topic exits"))))
 
-      val controller: PublishController = new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
+      val controller: PublishController =
+        new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
 
       private val fakeRequest = FakeRequest(
         "POST",
@@ -79,14 +84,16 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
         Json.parse(validPayload))
 
       val result = controller.publish("email")(fakeRequest)
-      status(result) shouldBe  Status.NOT_FOUND
-      contentAsString(result) shouldBe  "No topic exits"
+      status(result) shouldBe Status.NOT_FOUND
+      contentAsString(result) shouldBe "No topic exits"
     }
 
     "return Created if publish response is NoSubscriberForTopic" in new TestSetup {
-      when(publisherServiceMock.publishIfUnique(any[String], any[Event])).thenReturn(Future.successful(Left(NoSubscribersForTopic("No subscribers for topic"))))
+      when(publisherServiceMock.publishIfUnique(any[String], any[Event]))
+        .thenReturn(Future.successful(Left(NoSubscribersForTopic("No subscribers for topic"))))
 
-      val controller: PublishController = new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
+      val controller: PublishController =
+        new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
 
       private val fakeRequest = FakeRequest(
         "POST",
@@ -95,14 +102,16 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
         Json.parse(validPayload))
 
       val result = controller.publish("email")(fakeRequest)
-      status(result) shouldBe  Status.CREATED
-      contentAsString(result) shouldBe  "No subscribers for topic"
+      status(result) shouldBe Status.CREATED
+      contentAsString(result) shouldBe "No subscribers for topic"
     }
 
     "return InternalServerError if publish response is Not known" in new TestSetup {
-      when(publisherServiceMock.publishIfUnique(any[String], any[Event])).thenReturn(Future.successful(Left(UnknownError("unknown error"))))
+      when(publisherServiceMock.publishIfUnique(any[String], any[Event]))
+        .thenReturn(Future.successful(Left(UnknownError("unknown error"))))
 
-      val controller: PublishController = new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
+      val controller: PublishController =
+        new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
 
       private val fakeRequest = FakeRequest(
         "POST",
@@ -111,27 +120,27 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
         Json.parse(validPayload))
 
       val result = controller.publish("email")(fakeRequest)
-      status(result) shouldBe  Status.INTERNAL_SERVER_ERROR
-      contentAsString(result) shouldBe  "unknown error"
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      contentAsString(result) shouldBe "unknown error"
     }
 
     "return BadRequest with message if event payload id invalid" in new TestSetup {
-      val controller: PublishController = new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
-       val fakeRequest = FakeRequest(
+      val controller: PublishController =
+        new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
+      val fakeRequest = FakeRequest(
         "POST",
         routes.PublishController.publish("email").url,
         FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)),
         Json.parse(inValidPayload))
 
       val result = controller.publish("email")(fakeRequest)
-      status(result) mustBe  Status.BAD_REQUEST
+      status(result) mustBe Status.BAD_REQUEST
       contentAsString(result).toString must include("Invalid Event payload:")
     }
   }
 
   class TestSetup {
     val publisherServiceMock = mock[PublisherService]
-
 
     implicit val mat: Materializer = NoMaterializer
 

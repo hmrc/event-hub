@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.utils
+package uk.gov.hmrc.eventhub.modules
 
-import uk.gov.hmrc.eventhub.models.PublishError
-
+import akka.pattern.FutureTimeoutSupport
+import com.google.inject.{ AbstractModule, Provides }
+import play.api.Configuration
+import play.api.libs.concurrent.AkkaGuiceSupport
+import uk.gov.hmrc.eventhub.models.{ Subscriber, Topic }
+import uk.gov.hmrc.mongo.MongoComponent
+import javax.inject.{ Named, Singleton }
 import scala.concurrent.{ ExecutionContext, Future }
 
-object HelperFunctions {
-  def liftFuture[A](e: Either[PublishError, Future[A]])(
-    implicit ec: ExecutionContext): Future[Either[PublishError, A]] =
-    e.fold((l: PublishError) => Future(Left(l)), (r: Future[A]) => r.map(value => Right(value)))
+class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTimeoutSupport {
+  override def configure(): Unit =
+    bind(classOf[MongoCollections]).to(classOf[MongoSetup])
+  super.configure()
 }
