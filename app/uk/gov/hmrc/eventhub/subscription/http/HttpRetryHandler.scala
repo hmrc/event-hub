@@ -34,9 +34,14 @@ trait HttpRetryHandler extends Logging {
         case _ => Some(inputs)
       }
     case (inputs @ (_, _), (Failure(ex), _)) =>
+      logger.info(s"failed to send event due to ${ex.getClass.getSimpleName}: ${ex.getMessage}.")
       ex match {
-        case e: RuntimeException if e.getMessage.contains("The http server closed the connection unexpectedly") => Some(inputs)
-        case _                                                                                                  => None
+        case e: RuntimeException if e.getMessage.contains("The http server closed the connection unexpectedly") =>
+          logger.info(s"retrying... with inputs: $inputs")
+          Some(inputs)
+        case _ =>
+          logger.info("failed with exception and will not retry")
+          None
       }
   }
 }
