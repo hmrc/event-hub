@@ -33,7 +33,11 @@ trait HttpRetryHandler extends Logging {
           None
         case _ => Some(inputs)
       }
-    case ((_, _), (Failure(_), _)) => None
+    case (inputs @ (_, _), (Failure(ex), _)) =>
+      ex match {
+        case e: RuntimeException if e.getMessage.contains("The http server closed the connection unexpectedly") => Some(inputs)
+        case _                                                                                                  => None
+      }
   }
 }
 
