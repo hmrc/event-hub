@@ -17,41 +17,41 @@
 package uk.gov.hmrc.eventhub.subscription.stream
 
 import akka.NotUsed
+import akka.http.scaladsl.HttpExt
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.{ Http, HttpExt }
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Flow, RetryFlow }
 import play.api.Logging
 import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
 import uk.gov.hmrc.eventhub.subscription.http.HttpRetryHandler
-import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpFlow.{ HttpsScheme, RandomFactor }
+import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpFlow.RandomFactor
 
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 class SubscriberEventHttpFlow(
   subscriber: Subscriber,
   httpRetryHandler: HttpRetryHandler,
   httpExt: HttpExt
-)(implicit materializer: Materializer)
+)(implicit materializer: Materializer, executionContext: ExecutionContext)
     extends Logging {
 
-  private val httpFlow = {
-    val poolCons = if (subscriber.uri.scheme == HttpsScheme) {
-      logger.info(s"creating https connection pool for ${subscriber.uri.authority.host.toString()} on port: ${subscriber.uri.authority.port}")
-      httpExt.cachedHostConnectionPoolHttps[Event](_: String, _: Int)
-    } else {
-      logger.info(s"creating http connection pool for ${subscriber.uri.authority.host.toString()} on port: ${subscriber.uri.authority.port}")
-      httpExt.cachedHostConnectionPool[Event](_: String, _: Int)
-    }
+  private val parallelism = 4
 
-    poolCons(
-      subscriber.uri.authority.host.toString(),
-      subscriber.uri.authority.port
-    )
+  private val httpFlow = {
+    Flow[(HttpRequest, Event)]
+      .mapAsyncUnordered(parallelism) {
+        case (request, event) =>
+          httpExt
+            .singleRequest(request)
+            .transform { result =>
+              Try(result -> event)
+            }
+      }
   }
 
   def flow: Flow[(HttpRequest, Event), SubscriberEventHttpResponse, NotUsed] = {
-    val retryHttpFlow: Flow[(HttpRequest, Event), (Try[HttpResponse], Event), Http.HostConnectionPool] =
+    val retryHttpFlow: Flow[(HttpRequest, Event), (Try[HttpResponse], Event), NotUsed] =
       RetryFlow.withBackoff(
         minBackoff = subscriber.minBackOff,
         maxBackoff = subscriber.maxBackOff,
@@ -74,6 +74,5 @@ class SubscriberEventHttpFlow(
 }
 
 object SubscriberEventHttpFlow {
-  val HttpsScheme = "https"
   val RandomFactor = 0.2
 }
