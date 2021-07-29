@@ -36,7 +36,7 @@ class WorkItemSubscriberEventRepository(
       workItem <- OptionT(subscriberQueueRepository.findAsWorkItem(event))
       result   <- OptionT(subscriberQueueRepository.failed(workItem).map(_.some))
     } yield {
-      logger.info(s"marking $event as failed: $result")
+      logger.debug(s"marking $event as failed: $result")
       result
     }).value
 
@@ -45,7 +45,7 @@ class WorkItemSubscriberEventRepository(
       workItem <- OptionT(subscriberQueueRepository.findAsWorkItem(event))
       result   <- OptionT(subscriberQueueRepository.completeAndDelete(workItem.id).map(_.some))
     } yield {
-      logger.info(s"marking $event as sent: $result")
+      logger.debug(s"marking $event as sent: $result")
       result
     }).value
 }

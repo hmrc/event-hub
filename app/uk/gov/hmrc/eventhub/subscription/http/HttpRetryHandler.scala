@@ -18,30 +18,22 @@ package uk.gov.hmrc.eventhub.subscription.http
 
 import akka.http.scaladsl.model.{ HttpRequest, HttpResponse, StatusCodes }
 import akka.stream.Materializer
-import play.api.Logging
 import uk.gov.hmrc.eventhub.model.Event
 
 import scala.util.{ Failure, Success, Try }
 
-trait HttpRetryHandler extends Logging {
+trait HttpRetryHandler {
   def shouldRetry()(implicit materializer: Materializer): ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] = {
-    case (inputs @ (request, _), (Success(resp), _)) =>
+    case (inputs @ (_, _), (Success(resp), _)) =>
       resp.entity.discardBytes()
       resp.status match {
-        case StatusCodes.Success(_) | StatusCodes.ClientError(_) =>
-          logger.info(s"\nresponse status:\n ${resp.status}.\nfor request:\n $request.\nwill not retry.")
-          None
-        case _ => Some(inputs)
+        case StatusCodes.Success(_) | StatusCodes.ClientError(_) => None
+        case _                                                   => Some(inputs)
       }
     case (inputs @ (_, _), (Failure(ex), _)) =>
-      logger.info(s"failed to send event due to ${ex.getClass.getSimpleName}: ${ex.getMessage}.")
       ex match {
-        case e: RuntimeException if e.getMessage.contains("The http server closed the connection unexpectedly") =>
-          logger.info(s"retrying... with inputs: $inputs")
-          Some(inputs)
-        case _ =>
-          logger.info("failed with exception and will not retry")
-          None
+        case e: RuntimeException if e.getMessage.contains("The http server closed the connection unexpectedly") => Some(inputs)
+        case _                                                                                                  => None
       }
   }
 }

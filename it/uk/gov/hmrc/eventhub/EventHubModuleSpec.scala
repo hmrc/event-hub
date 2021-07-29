@@ -23,33 +23,33 @@ import scala.concurrent.duration._
 import java.time.LocalDateTime
 import java.util.UUID
 
-//class EventHubModuleSpec extends ISpec {
-//
-//  val event =
-//    Event(UUID.randomUUID(), "sub", "group", LocalDateTime.MIN, Json.parse("""{"reason":"email not valid"}"""))
-//
-//  "Configuration" must {
-//    "include topics configuration1" in {
-//      mongoSetup.topics mustBe Map(
-//        "notConfigured" -> List(),
-//        "preferences"   -> List(Subscriber("bounces", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, 10.millis, 100.millis, 0)),
-//        "email" -> List(
-//          Subscriber("subscriberName1", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, 10.millis, 100.millis, 0),
-//          Subscriber("subscriberName2", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, 10.millis, 100.millis, 0)
-//        )
-//      )
-//    }
-//  }
-//  "eventRepository" must {
-//    "create event repository" in {
-//      mongoSetup.eventRepository.collectionName mustBe "event"
-//    }
-//  }
-//  "subscriberRepositories" must {
-//    "create subscriber repositories" in {
-//      mongoSetup.subscriberRepositories.map(_._2.collectionName) mustBe
-//        Set("preferences_bounces_queue", "email_subscriberName1_queue", "email_subscriberName2_queue")
-//    }
-//  }
-//  override def externalServices: Seq[String] = Seq.empty[String]
-//}
+class EventHubModuleSpec extends ISpec {
+
+  val event =
+    Event(UUID.randomUUID(), "sub", "group", LocalDateTime.MIN, Json.parse("""{"reason":"email not valid"}"""))
+
+  "Configuration" ignore {
+    "include topics configuration1" in {
+      mongoSetup.topics mustBe Map(
+        "notConfigured" -> List(),
+        "preferences"   -> List(Subscriber("bounces", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, 10.millis, 100.millis, 0)),
+        "email" -> List(
+          Subscriber("subscriberName1", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, 10.millis, 100.millis, 0),
+          Subscriber("subscriberName2", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, 10.millis, 100.millis, 0)
+        )
+      )
+    }
+  }
+  "eventRepository" ignore {
+    "create event repository" in {
+      mongoSetup.eventRepository.collectionName mustBe "event"
+    }
+  }
+  "subscriberRepositories" ignore {
+    "create subscriber repositories" in {
+      mongoSetup.subscriberRepositories.map(_._2.collectionName) mustBe
+        Set("preferences_bounces_queue", "email_subscriberName1_queue", "email_subscriberName2_queue")
+    }
+  }
+  override def externalServices: Seq[String] = Seq.empty[String]
+}
