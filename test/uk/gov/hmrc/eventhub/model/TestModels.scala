@@ -58,12 +58,15 @@ trait TestModels {
     event
   )
 
+  val MaxConnections = 4
+
   val subscriber: Subscriber = Subscriber(
     name = "foo subscriber",
     uri = Uri("http://localhost:8080/foo"),
     httpMethod = HttpMethods.POST,
     elements = 0,
     per = 1.second,
+    maxConnections = MaxConnections,
     minBackOff = 1.second,
     maxBackOff = 2.seconds,
     maxRetries = 2

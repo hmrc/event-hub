@@ -56,6 +56,7 @@ object TestModels {
 
     val Elements = 100
     val MaxRetries = 5
+    val MaxConnections = 4
 
     val channelPreferences: Subscriber = Subscriber(
       name = ChannelPreferencesBounced,
@@ -63,6 +64,7 @@ object TestModels {
       httpMethod = HttpMethods.POST,
       elements = Elements,
       per = 3.seconds,
+      maxConnections = MaxConnections,
       minBackOff = 10.millis,
       maxBackOff = 1.second,
       maxRetries = MaxRetries,
@@ -77,6 +79,7 @@ object TestModels {
       httpMethod = HttpMethods.POST,
       elements = Elements,
       per = 3.seconds,
+      maxConnections = MaxConnections,
       minBackOff = 100.millis,
       maxBackOff = 5.minutes,
       maxRetries = MaxRetries,
