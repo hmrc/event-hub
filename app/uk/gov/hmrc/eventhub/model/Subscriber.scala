@@ -33,6 +33,7 @@ case class Subscriber(
   httpMethod: HttpMethod,
   elements: Int,
   per: FiniteDuration,
+  maxConnections: Int,
   minBackOff: FiniteDuration,
   maxBackOff: FiniteDuration,
   maxRetries: Int
@@ -40,14 +41,18 @@ case class Subscriber(
 
 object Subscriber {
   implicit val uriReader: ConfigReader[Uri] = (cur: ConfigCursor) => cur.asString.map(s => Uri(s))
-  implicit val httpMethodReader: ConfigReader[HttpMethod] = (cur: ConfigCursor) =>
-    cur.asString.map(
-      s =>
-        HttpMethods
-          .getForKeyCaseInsensitive(s)
-          .getOrElse(
-            throw new IllegalArgumentException(s"could not convert $s to HttpMethod")
-        ))
+  implicit val httpMethodReader: ConfigReader[HttpMethod] = (cur: ConfigCursor) => cur.asString.map(postOrPut)
+
+  private def postOrPut(configValue: String): HttpMethod =
+    HttpMethods
+      .getForKeyCaseInsensitive(configValue)
+      .flatMap(postOrPut)
+      .getOrElse(throw new IllegalArgumentException(s"expected one of [POST, PUT], but got: $configValue."))
+
+  private def postOrPut(httpMethod: HttpMethod): Option[HttpMethod] = httpMethod match {
+    case postOrPut @ (POST | PUT) => Some(postOrPut)
+    case _                        => None
+  }
 
   implicit val configLoader: ConfigLoader[Map[String, List[Subscriber]]] = (rootConfig: Config, path: String) =>
     ConfigSource

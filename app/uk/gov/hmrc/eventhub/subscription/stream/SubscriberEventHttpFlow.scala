@@ -36,11 +36,9 @@ class SubscriberEventHttpFlow(
 )(implicit materializer: Materializer, executionContext: ExecutionContext)
     extends Logging {
 
-  private val parallelism = 4
-
   private val httpFlow = {
     Flow[(HttpRequest, Event)]
-      .mapAsyncUnordered(parallelism) {
+      .mapAsyncUnordered(subscriber.maxConnections) {
         case (request, event) =>
           httpExt
             .singleRequest(request)

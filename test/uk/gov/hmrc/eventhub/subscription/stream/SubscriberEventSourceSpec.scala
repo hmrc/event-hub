@@ -31,6 +31,7 @@ import org.scalatest.time.{ Seconds, Span }
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.model.TestModels.event
 import uk.gov.hmrc.eventhub.repository.SubscriberEventRepository
+import scala.concurrent.duration._
 
 import scala.concurrent.Future
 
@@ -71,23 +72,25 @@ class SubscriberEventSourceSpec extends AnyFlatSpec with Matchers with Idiomatic
       .take(1)
       .runWith(Sink.seq)
 
-    val timeInSeconds = 10
+    val timeInSeconds = 2
 
     eventually(timeout = Timeout(Span(timeInSeconds, Seconds))) {
-      val soManyTimes = ((timeInSeconds - 1) * 1000) / 500 // 500 is the polling delay in millis
+      val soManyTimes: Int = ((timeInSeconds - 1) * 1000) / pollingDelay.toMillis.toInt
       subscriberEventRepository.next() wasCalled AtLeast(soManyTimes)
     }
   }
 
   trait Scope {
     val subscriberEventRepository: SubscriberEventRepository = mock[SubscriberEventRepository]
+    val pollingDelay: FiniteDuration = 500.millis
 
     val system: ActorSystem = ActorSystem()
     private val scheduler = system.scheduler
     implicit val materializer: Materializer = Materializer(system)
 
     val subscriberEventSource = new SubscriberEventSource(
-      subscriberEventRepository
+      subscriberEventRepository,
+      pollingDelay
     )(scheduler, scala.concurrent.ExecutionContext.global)
 
     def someFutureEvent: Future[Some[Event]] = Future.successful(Some(event))

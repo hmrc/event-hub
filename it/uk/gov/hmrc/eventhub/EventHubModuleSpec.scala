@@ -28,14 +28,17 @@ class EventHubModuleSpec extends ISpec {
   val event =
     Event(UUID.randomUUID(), "sub", "group", LocalDateTime.MIN, Json.parse("""{"reason":"email not valid"}"""))
 
+  val maxConnections = 4
+
   "Configuration" ignore {
     "include topics configuration1" in {
       mongoSetup.topics mustBe Map(
         "notConfigured" -> List(),
-        "preferences"   -> List(Subscriber("bounces", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, 10.millis, 100.millis, 0)),
+        "preferences" -> List(
+          Subscriber("bounces", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, maxConnections, 10.millis, 100.millis, 0)),
         "email" -> List(
-          Subscriber("subscriberName1", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, 10.millis, 100.millis, 0),
-          Subscriber("subscriberName2", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, 10.millis, 100.millis, 0)
+          Subscriber("subscriberName1", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, maxConnections, 10.millis, 100.millis, 0),
+          Subscriber("subscriberName2", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, maxConnections, 10.millis, 100.millis, 0)
         )
       )
     }

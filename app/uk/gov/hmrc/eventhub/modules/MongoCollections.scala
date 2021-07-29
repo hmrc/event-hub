@@ -30,7 +30,7 @@ import scala.concurrent.ExecutionContext
 
 trait MongoCollections
 
-class MongoSetup @Inject()(mongo: MongoComponent, configuration: Configuration, @Named("eventTopics") val topics: Set[Topic])(implicit ec: ExecutionContext)
+class MongoSetup @Inject()(mongo: MongoComponent, configuration: Configuration, val topics: Set[Topic])(implicit ec: ExecutionContext)
     extends MongoCollections {
 
   def collectionName(topic: String, subscriptionName: String): String = s"${topic}_${subscriptionName}_queue"

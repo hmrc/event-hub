@@ -32,16 +32,14 @@ import scala.concurrent.{ ExecutionContext, Future }
   * Polls for work items, emits when there is an available work item and downstream demand
   */
 class SubscriberEventSource(
-  subscriberEventRepository: SubscriberEventRepository
+  subscriberEventRepository: SubscriberEventRepository,
+  pollingDelay: FiniteDuration
 )(
   implicit
   scheduler: Scheduler,
   executionContext: ExecutionContext)
     extends Logging {
 
-  /**
-    * TODO make `after` delay configurable
-    */
   private def onPull: Unit => Future[Option[(Unit, Event)]] = { _ =>
     subscriberEventRepository
       .next()
@@ -50,9 +48,9 @@ class SubscriberEventSource(
 
   private def pullLogic(readResult: Option[Event]): Future[Option[(Unit, Event)]] = readResult match {
     case None =>
-      after(500.millis, scheduler, executionContext, onPullCallable)
+      after(pollingDelay, scheduler, executionContext, onPullCallable)
     case Some(event) =>
-      logger.info(s"\nfound event:\n $event")
+      logger.debug(s"\nfound event:\n $event")
       Future.successful(Some(() -> event))
   }
 

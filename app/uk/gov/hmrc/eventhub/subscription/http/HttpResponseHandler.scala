@@ -63,8 +63,6 @@ class HttpResponseHandler(
 }
 
 object HttpResponseHandler {
-  val ResponseParallelism = 4
-
   sealed trait SendStatus
 
   case object Sent extends SendStatus

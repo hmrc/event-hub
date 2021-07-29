@@ -35,14 +35,15 @@ package object subscription {
   implicit class SubscriberConfigOps(val subscriber: Subscriber) extends AnyVal {
     def asConfigMap: Map[String, Any] =
       Map(
-        "name"         -> subscriber.name,
-        "uri"          -> subscriber.uri.toString(),
-        "http-method"  -> subscriber.httpMethod.value,
-        "elements"     -> subscriber.elements,
-        "per"          -> subscriber.per.toString(),
-        "min-back-off" -> subscriber.minBackOff.toString(),
-        "max-back-off" -> subscriber.maxBackOff.toString(),
-        "max-retries"  -> subscriber.maxRetries
+        "name"            -> subscriber.name,
+        "uri"             -> subscriber.uri.toString(),
+        "http-method"     -> subscriber.httpMethod.value,
+        "elements"        -> subscriber.elements,
+        "per"             -> subscriber.per.toString(),
+        "max-connections" -> subscriber.maxConnections,
+        "min-back-off"    -> subscriber.minBackOff.toString(),
+        "max-back-off"    -> subscriber.maxBackOff.toString(),
+        "max-retries"     -> subscriber.maxRetries
       )
   }
 

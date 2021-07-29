@@ -24,12 +24,12 @@ import play.api.inject.ApplicationLifecycle
 import uk.gov.hmrc.eventhub.model.Topic
 import uk.gov.hmrc.eventhub.subscription.stream._
 
-import javax.inject.{ Inject, Named, Singleton }
+import javax.inject.{ Inject, Singleton }
 import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
 class SubscriberPushSubscriptions @Inject()(
-  @Named("eventTopics") topics: Set[Topic],
+  topics: Set[Topic],
   subscriptionStreamBuilder: SubscriptionStreamBuilder,
   lifecycle: ApplicationLifecycle
 )(
