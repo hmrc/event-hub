@@ -16,20 +16,21 @@
 
 package uk.gov.hmrc.eventhub
 
-import play.api.http.{ ContentTypes, HeaderNames }
-import play.api.test.Helpers.{ await, defaultAwaitTimeout }
+import play.api.http.{ContentTypes, HeaderNames}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.eventhub.repository.EventRepository
 import java.io.File
 
 //class PublishEventISpec extends ISpec {
 //  override def externalServices: Seq[String] = Seq.empty[String]
 //
-//  lazy val eventRepository = app.injector.instanceOf[EventRepository]
+//  val topicFromConfig = app.configuration.underlying.getObject("topics").keySet().toArray.head
+//  val eventRepository = app.injector.instanceOf[EventRepository]
 //
 //  "A POST request to publish/:topic" must {
 //
 //    "return 201 if event is successfully processed" in {
-//      val topic = "email"
+//      val topic = topicFromConfig
 //      val response = wsClient
 //        .url(resource(s"/event-hub/publish/$topic"))
 //        .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
@@ -39,7 +40,7 @@ import java.io.File
 //    }
 //
 //    "return 201 with DuplicateEvent message if event is already processed" in {
-//      val topic = "email"
+//      val topic = topicFromConfig
 //      val response1 = wsClient
 //        .url(resource(s"/event-hub/publish/$topic"))
 //        .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
@@ -69,14 +70,5 @@ import java.io.File
 //      response.status mustBe 404
 //    }
 //
-//    "return 201 if no subscribers configured for topic" in {
-//      val topic = "notConfigured"
-//      val response = wsClient
-//        .url(resource(s"/event-hub/publish/$topic"))
-//        .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
-//        .post(new File("./it/resources/valid-event-min.json"))
-//        .futureValue
-//      response.status mustBe 201
-//    }
 //  }
 //}
