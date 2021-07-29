@@ -21,6 +21,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.{ Http, HttpExt }
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Flow, RetryFlow }
+import play.api.Logging
 import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
 import uk.gov.hmrc.eventhub.subscription.http.HttpRetryHandler
 import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpFlow.{ HttpsScheme, RandomFactor }
@@ -31,12 +32,15 @@ class SubscriberEventHttpFlow(
   subscriber: Subscriber,
   httpRetryHandler: HttpRetryHandler,
   httpExt: HttpExt
-)(implicit materializer: Materializer) {
+)(implicit materializer: Materializer)
+    extends Logging {
 
   private val httpFlow = {
     val poolCons = if (subscriber.uri.scheme == HttpsScheme) {
+      logger.info(s"creating https connection pool for ${subscriber.uri.authority.host.toString()} on port: ${subscriber.uri.authority.port}")
       httpExt.cachedHostConnectionPoolHttps[Event](_: String, _: Int)
     } else {
+      logger.info(s"creating http connection pool for ${subscriber.uri.authority.host.toString()} on port: ${subscriber.uri.authority.port}")
       httpExt.cachedHostConnectionPool[Event](_: String, _: Int)
     }
 
