@@ -61,7 +61,6 @@ class SubscriberEventHttpFlow(
       )(httpRetryHandler.shouldRetry())
 
     Flow[(HttpRequest, Event)]
-      .throttle(subscriber.elements, subscriber.per)
       .via(retryHttpFlow)
       .map(response)
   }

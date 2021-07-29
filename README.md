@@ -24,3 +24,21 @@ curl -X POST -H "Content-Type: application/json" http://localhost:9050/event-hub
     }
 }'
 ```
+
+```
+curl -X POST -H "Content-Type: application/json" https://event-hub.protected.mdtp/event-hub/publish/bounced-emails -d '
+{
+    "eventId": "b5374fb2-e741-492e-aa49-be076f774500", 
+    "subject": "calling", 
+    "groupId": "su users",
+    "timeStamp": "2021-07-01T13:09:29Z",
+    "event" : {
+        "event": "failed",
+        "emailAddress": "hmrc-customer@some-domain.org",
+        "detected": "2021-04-07T09:46:29+00:00",
+        "code": 605,
+        "reason": "Not delivering to previously bounced address",
+        "enrolment": "HMRC-MTD-VAT~VRN~GB123456789"
+    }
+}'
+```
