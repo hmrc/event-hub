@@ -40,7 +40,7 @@ class SubscriptionStreamBuilder @Inject()(
 
   def build(subscriber: Subscriber, topic: String): Source[EventSendStatus, NotUsed] = {
     val repository = subscriberEventRepositoryFactory(subscriber, topic)
-    val source = new SubscriberEventSource(repository, subscriberStreamConfig.eventPollingDelay)(actorSystem.scheduler, executionContext).source
+    val source = new SubscriberEventSource(repository, subscriberStreamConfig.eventPollingInterval)(actorSystem.scheduler, executionContext).source
     val requestBuilder = (event: Event) => HttpEventRequestBuilder.build(subscriber, event) -> event
     val httpFlow = new SubscriberEventHttpFlow(subscriber, HttpRetryHandler, httpExt).flow
     val responseHandler = new HttpResponseHandler(repository).handle(_)
