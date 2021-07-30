@@ -24,7 +24,7 @@ import pureconfig.generic.auto._
 import scala.concurrent.duration.FiniteDuration
 
 case class SubscriberStreamConfig(
-  eventPollingDelay: FiniteDuration
+  eventPollingInterval: FiniteDuration
 )
 
 object SubscriberStreamConfig {

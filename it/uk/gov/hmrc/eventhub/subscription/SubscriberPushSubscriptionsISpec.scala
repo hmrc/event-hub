@@ -80,19 +80,10 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
     forAll { eventList: List[Event] =>
       val sentEvents =
         Source(eventList)
-          .mapAsyncUnordered(1) { event =>
-            setup.postToTopic(BoundedEmailsTopic, event).map(_ -> event)
-          }
-          .map {
-            case (result, event) =>
-              result.status match {
-                case CREATED => Some(event)
-                case _       => None
-              }
-          }
+          .mapAsyncUnordered(1)(event => setup.postToTopic(BoundedEmailsTopic, event).map(_ -> event))
+          .collect { case (result, event) if result.status == CREATED => event }
           .runWith(Sink.seq)(setup.materializer)
           .futureValue
-          .flatten
 
       setup.subscribers
         .foreach { subscriber =>
