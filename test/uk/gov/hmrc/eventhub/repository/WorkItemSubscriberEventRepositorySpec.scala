@@ -17,7 +17,7 @@
 package uk.gov.hmrc.eventhub.repository
 
 import org.mockito.IdiomaticMockito
-import org.mongodb.scala.{ MongoCollection, Observable }
+import org.mongodb.scala.Observable
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -48,10 +48,7 @@ class WorkItemSubscriberEventRepositorySpec extends AnyFlatSpec with Matchers wi
   }
 
   trait Scope {
-    val mongoCollection: MongoCollection[WorkItem[Event]] = mock[MongoCollection[WorkItem[Event]]]
     val subscriberQueueRepository: SubscriberQueueRepository = mock[SubscriberQueueRepository]
-
-    mongoCollection willBe returned by subscriberQueueRepository.collection
 
     val workItemSubscriberEventRepository: WorkItemSubscriberEventRepository = new WorkItemSubscriberEventRepository(
       subscriberQueueRepository

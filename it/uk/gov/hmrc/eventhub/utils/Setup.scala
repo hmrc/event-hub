@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.eventhub.utils
 
+import akka.stream.Materializer
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
@@ -89,6 +90,8 @@ class Setup private (testTopics: Set[TestTopic], testId: TestId) {
 
   val subscribers: Set[Subscriber] = subscriberServers
     .flatMap(_.subscriberServers.map(_._2))
+
+  val materializer: Materializer = application.injector.instanceOf[Materializer]
 
   def postToTopic(topicName: String, event: Event): Future[WSResponse] =
     client

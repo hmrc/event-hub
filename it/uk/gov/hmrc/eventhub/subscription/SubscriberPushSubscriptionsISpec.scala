@@ -17,6 +17,7 @@
 package uk.gov.hmrc.eventhub.subscription
 
 import akka.http.scaladsl.model.StatusCodes.{ InternalServerError, OK }
+import akka.stream.scaladsl.{ Sink, Source }
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -29,7 +30,6 @@ import uk.gov.hmrc.eventhub.utils.ISpec
 import uk.gov.hmrc.eventhub.utils.Setup.scope
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with ScalaCheckDrivenPropertyChecks {
 
@@ -78,14 +78,21 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
 
   ignore should "push events to all registered subscribers" in scope(bouncedEmails returning OK) { setup =>
     forAll { eventList: List[Event] =>
-      val responses = Future
-        .sequence(eventList.map { event =>
-          setup
-            .postToTopic(BoundedEmailsTopic, event)
-        })
-        .futureValue
-
-      responses.foreach(_.status mustBe CREATED)
+      val sentEvents =
+        Source(eventList)
+          .mapAsyncUnordered(1) { event =>
+            setup.postToTopic(BoundedEmailsTopic, event).map(_ -> event)
+          }
+          .map {
+            case (result, event) =>
+              result.status match {
+                case CREATED => Some(event)
+                case _       => None
+              }
+          }
+          .runWith(Sink.seq)(setup.materializer)
+          .futureValue
+          .flatten
 
       setup.subscribers
         .foreach { subscriber =>
@@ -94,7 +101,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
             .value
 
           oneMinute {
-            eventList.foreach { event =>
+            sentEvents.foreach { event =>
               server
                 .verify(
                   postRequestedFor(urlEqualTo(subscriber.uri.path.toString)).withEventJson(event)
