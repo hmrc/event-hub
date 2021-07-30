@@ -22,7 +22,7 @@ import akka.pattern.FutureTimeoutSupport
 import com.google.inject.{ AbstractModule, Provides }
 import play.api.Configuration
 import play.api.libs.concurrent.AkkaGuiceSupport
-import uk.gov.hmrc.eventhub.config.SubscriberStreamConfig
+import uk.gov.hmrc.eventhub.config.{ SubscriberStreamConfig, SubscriptionDefaults }
 import uk.gov.hmrc.eventhub.model.{ Subscriber, Topic }
 import uk.gov.hmrc.eventhub.repository.{ SubscriberEventRepositoryFactory, WorkItemSubscriberEventRepositoryFactory }
 import uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptions
@@ -48,15 +48,19 @@ class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTim
 
   @Provides
   @Singleton
-  def configTopics(configuration: Configuration): Set[Topic] =
-    configuration
-      .get[Map[String, List[Subscriber]]](path = "topics")
-      .map { case (k, v) => Topic(k, v) }
-      .toSet
-
-  @Provides
-  @Singleton
   def subscriberStreamConfig(configuration: Configuration): SubscriberStreamConfig =
     configuration
       .get[SubscriberStreamConfig](path = "subscriber-stream-config")
+
+  @Provides
+  @Singleton
+  def subscriptionDefaults(configuration: Configuration): SubscriptionDefaults =
+    configuration
+      .get[SubscriptionDefaults](path = "subscription-defaults")
+
+  @Provides
+  @Singleton
+  def configTopics(configuration: Configuration, subscriptionDefaults: SubscriptionDefaults): Set[Topic] =
+    configuration
+      .get[Set[Topic]](path = "topics")(Subscriber.configLoader(subscriptionDefaults))
 }

@@ -58,6 +58,7 @@ swaggerDomainNameSpaces := Seq(
     "uk.gov.hmrc.eventhub.models"
   )
 
+scalacOptions += "-Ypartial-unification"
 swaggerTarget := baseDirectory.value / "public"
 swaggerFileName := "schema.json"
 swaggerPrettyJson := true

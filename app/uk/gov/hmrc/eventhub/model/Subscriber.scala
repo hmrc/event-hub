@@ -16,94 +16,113 @@
 
 package uk.gov.hmrc.eventhub.model
 
-import akka.http.scaladsl.model.HttpMethods.{ POST, PUT }
-import akka.http.scaladsl.model.{ HttpMethod, HttpMethods, Uri }
-import com.typesafe.config.Config
+import akka.http.scaladsl.model.{ HttpMethod, Uri }
+import cats.kernel.Semigroup
+import cats.syntax.either._
+import cats.instances.either._
+import cats.syntax.parallel._
+import cats.instances.list._
+import com.typesafe.config.{ Config, ConfigObject, ConfigValue }
 import play.api.ConfigLoader
-import play.api.libs.json._
-import pureconfig._
-import pureconfig.generic.auto._
+import pureconfig.ConfigReader._
+import pureconfig.error.ConfigReaderFailures
+import uk.gov.hmrc.eventhub.config.ConfigReaders._
+import uk.gov.hmrc.eventhub.config.SubscriptionDefaults
 
-import scala.concurrent.duration.{ Duration, FiniteDuration }
-import scala.util.Try
+import scala.collection.JavaConverters._
+import scala.concurrent.duration.FiniteDuration
 
 case class Subscriber(
-  name: String,
-  uri: Uri,
-  httpMethod: HttpMethod,
-  elements: Int,
-  per: FiniteDuration,
-  maxConnections: Int,
-  minBackOff: FiniteDuration,
-  maxBackOff: FiniteDuration,
-  maxRetries: Int
+    name: String,
+    uri: Uri,
+    httpMethod: HttpMethod,
+    elements: Int,
+    per: FiniteDuration,
+    maxConnections: Int,
+    minBackOff: FiniteDuration,
+    maxBackOff: FiniteDuration,
+    maxRetries: Int
 )
 
 object Subscriber {
-  implicit val uriReader: ConfigReader[Uri] = (cur: ConfigCursor) => cur.asString.map(s => Uri(s))
-  implicit val httpMethodReader: ConfigReader[HttpMethod] = (cur: ConfigCursor) => cur.asString.map(postOrPut)
-
-  private def postOrPut(configValue: String): HttpMethod =
-    HttpMethods
-      .getForKeyCaseInsensitive(configValue)
-      .flatMap(postOrPut)
-      .getOrElse(throw new IllegalArgumentException(s"expected one of [POST, PUT], but got: $configValue."))
-
-  private def postOrPut(httpMethod: HttpMethod): Option[HttpMethod] = httpMethod match {
-    case postOrPut @ (POST | PUT) => Some(postOrPut)
-    case _                        => None
+  implicit object semigroupConfigReaderFailures
+      extends Semigroup[ConfigReaderFailures] {
+    override def combine(x: ConfigReaderFailures,
+                         y: ConfigReaderFailures): ConfigReaderFailures =
+      x.++(y)
   }
 
-  implicit val configLoader: ConfigLoader[Map[String, List[Subscriber]]] = (rootConfig: Config, path: String) =>
-    ConfigSource
-      .fromConfig(rootConfig.getConfig(path))
-      .load[Map[String, List[Subscriber]]] match {
-      case Left(value) =>
-        throw new IllegalArgumentException(s"could not load subscriber config: ${value.toList.mkString(" | ")}")
-      case Right(value) => value
-  }
-
-  implicit object FiniteDurationFormat extends Format[FiniteDuration] {
-    override def reads(json: JsValue): JsResult[FiniteDuration] = json match {
-      case JsString(value) =>
-        Duration(value) match {
-          case infinite: Duration.Infinite => JsError(s"expected a finite duration, but got infinite: $infinite")
-          case duration: FiniteDuration    => JsSuccess(duration)
-        }
-      case x => JsError(s"expected a JsString, but got: $x")
+  def configLoader(
+      subscriptionDefaults: SubscriptionDefaults): ConfigLoader[Set[Topic]] =
+    (rootConfig: Config, path: String) =>
+      rootConfig
+        .getObject(path)
+        .asScala
+        .toList
+        .parTraverse(topicConfig(_, subscriptionDefaults)) match {
+        case Right(topics) => topics.toSet
+        case Left(configReaderFailures) =>
+          throw new IllegalArgumentException(configReaderFailures.prettyPrint())
     }
 
-    override def writes(o: FiniteDuration): JsValue = JsString(o.toString())
+  private def topicConfig(
+      configValue: (String, ConfigValue),
+      subscriptionDefaults: SubscriptionDefaults
+  ): Either[ConfigReaderFailures, Topic] = configValue match {
+    case (name, subscriberList) =>
+      subscribersConfig(subscriberList, subscriptionDefaults).map(
+        Topic(name, _))
   }
 
-  implicit object UriFormat extends Format[Uri] {
-    override def reads(json: JsValue): JsResult[Uri] = json match {
-      case JsString(value) => JsResult.fromTry(Try(Uri(value)))
-      case x               => JsError(s"expected a JsString, but got: $x")
+  private def subscribersConfig(configValue: ConfigValue,
+                                subscriptionDefaults: SubscriptionDefaults)
+    : Either[ConfigReaderFailures, List[Subscriber]] =
+    configObjectConfigReader
+      .from(configValue)
+      .flatMap(subscribersFromConfigObject(_, subscriptionDefaults))
+
+  private def subscribersFromConfigObject(
+      configObject: ConfigObject,
+      subscriptionDefaults: SubscriptionDefaults)
+    : Either[ConfigReaderFailures, List[Subscriber]] =
+    configObject.asScala.toList
+      .parTraverse(subscriberConfig(_, subscriptionDefaults))
+
+  private def subscriberConfig(configValue: (String, ConfigValue),
+                               subscriptionDefaults: SubscriptionDefaults)
+    : Either[ConfigReaderFailures, Subscriber] =
+    configValue match {
+      case (name, configValue) =>
+        configObjectConfigReader
+          .from(configValue)
+          .map(_.toConfig)
+          .flatMap { config =>
+            (
+              name.asRight,
+              uriReader
+                .from(config.getValue("uri")),
+              httpMethodReader
+                .from(config.getValue("http-method"))
+                .orElse(subscriptionDefaults.httpMethod.asRight),
+              intConfigReader
+                .from(config.getValue("elements"))
+                .orElse(subscriptionDefaults.elements.asRight),
+              finiteDurationConfigReader
+                .from(config.getValue("per"))
+                .orElse(subscriptionDefaults.per.asRight),
+              intConfigReader
+                .from(config.getValue("max-connections"))
+                .orElse(subscriptionDefaults.maxConnections.asRight),
+              finiteDurationConfigReader
+                .from(config.getValue("min-back-off"))
+                .orElse(subscriptionDefaults.minBackOff.asRight),
+              finiteDurationConfigReader
+                .from(config.getValue("max-back-off"))
+                .orElse(subscriptionDefaults.maxBackOff.asRight),
+              intConfigReader
+                .from(config.getValue("max-retries"))
+                .orElse(subscriptionDefaults.maxRetries.asRight)
+            ).parMapN(Subscriber.apply)
+          }
     }
-
-    override def writes(o: Uri): JsValue = JsString(o.toString())
-  }
-
-  implicit object HttpMethodFormat extends Format[HttpMethod] {
-    override def reads(json: JsValue): JsResult[HttpMethod] = json match {
-      case JsString(value) =>
-        HttpMethods
-          .getForKeyCaseInsensitive(value)
-          .flatMap(postOrPut)
-          .map(JsSuccess(_))
-          .getOrElse(throw new IllegalArgumentException(s"expected one of [POST, PUT], but got: $value."))
-      case x => JsError(s"expected a JsString, but got: $x")
-    }
-
-    override def writes(o: HttpMethod): JsValue = JsString(o.toString())
-
-    private def postOrPut(httpMethod: HttpMethod): Option[HttpMethod] =
-      httpMethod match {
-        case postOrPut @ (POST | PUT) => Some(postOrPut)
-        case _                        => None
-      }
-  }
-
-  implicit val subscriberFormat: OFormat[Subscriber] = Json.format[Subscriber]
 }

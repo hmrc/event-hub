@@ -25,7 +25,7 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.workitem.{ WorkItemFields, WorkItemRepository }
 
 import java.time.{ Duration, Instant }
-import javax.inject.{ Inject, Named }
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 trait MongoCollections
