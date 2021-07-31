@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.eventhub.config
 
-import akka.http.scaladsl.model.HttpMethods.{ POST, PUT }
-import akka.http.scaladsl.model.{ HttpMethod, HttpMethods, Uri }
-import pureconfig.{ ConfigCursor, ConfigReader }
+import akka.http.scaladsl.model.HttpMethods.{POST, PUT}
+import akka.http.scaladsl.model.{HttpMethod, HttpMethods, Uri}
+import pureconfig.{ConfigCursor, ConfigReader}
 
 object ConfigReaders {
   implicit val uriReader: ConfigReader[Uri] = (cur: ConfigCursor) => cur.asString.map(s => Uri(s))

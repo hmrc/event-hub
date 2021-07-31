@@ -21,15 +21,14 @@ import cats.syntax.option._
 import play.api.Logging
 import uk.gov.hmrc.eventhub.model.Event
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 class WorkItemSubscriberEventRepository(
   subscriberQueueRepository: SubscriberQueueRepository
 )(implicit executionContext: ExecutionContext)
     extends SubscriberEventRepository with Logging {
   override def next(): Future[Option[Event]] =
-    subscriberQueueRepository.getEvent
-      .map(_.map(_.item))
+    subscriberQueueRepository.getEvent.map(_.map(_.item))
 
   override def failed(event: Event): Future[Option[Boolean]] =
     (for {

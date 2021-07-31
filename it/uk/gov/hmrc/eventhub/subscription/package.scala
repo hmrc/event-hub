@@ -17,10 +17,11 @@
 package uk.gov.hmrc.eventhub
 
 import akka.http.scaladsl.model.StatusCode
-import com.github.tomakehurst.wiremock.client.WireMock.{ equalTo, equalToJson }
+import com.github.tomakehurst.wiremock.client.WireMock.{equalTo, equalToJson}
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import play.api.libs.json.Json
-import uk.gov.hmrc.eventhub.model.{ Event, Subscriber, Topic }
+import uk.gov.hmrc.eventhub.config.{Subscriber, Topic}
+import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.subscription.model.TestTopic
 
 package object subscription {

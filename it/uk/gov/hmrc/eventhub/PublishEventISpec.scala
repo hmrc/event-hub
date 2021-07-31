@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.eventhub
 
-import play.api.http.{ ContentTypes, HeaderNames }
-import play.api.test.Helpers.{ await, defaultAwaitTimeout }
+import play.api.http.{ContentTypes, HeaderNames}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.eventhub.repository.EventRepository
 import java.io.File
 

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.subscription.http
 
-import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import cats.syntax.option._
 import org.mockito.IdiomaticMockito
 import org.mockito.MockitoSugar.when
@@ -25,12 +25,12 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.eventhub.model.TestModels
 import uk.gov.hmrc.eventhub.repository.SubscriberEventRepository
-import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{ EventSendStatus, Failed, Sent }
+import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{EventSendStatus, Failed, Sent}
 import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpResponse
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 class HttpResponseHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
 
@@ -56,9 +56,7 @@ class HttpResponseHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMo
     private val handler = new HttpResponseHandler(subscriberEventRepository)
 
     def handle(subscriberEventHttpResponse: SubscriberEventHttpResponse): EventSendStatus =
-      handler
-        .handle(subscriberEventHttpResponse)
-        .futureValue
+      handler.handle(subscriberEventHttpResponse).futureValue
 
     val successfulResponse: SubscriberEventHttpResponse = SubscriberEventHttpResponse(
       response = Success(HttpResponse()),

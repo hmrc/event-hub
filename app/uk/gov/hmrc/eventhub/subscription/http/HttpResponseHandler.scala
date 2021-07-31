@@ -18,12 +18,13 @@ package uk.gov.hmrc.eventhub.subscription.http
 
 import akka.http.scaladsl.model.StatusCodes
 import play.api.Logging
-import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
+import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpResponse
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Failure, Success }
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 import HttpResponseHandler._
+import uk.gov.hmrc.eventhub.config.Subscriber
 import uk.gov.hmrc.eventhub.repository.SubscriberEventRepository
 
 class HttpResponseHandler(

@@ -17,6 +17,6 @@
 package uk.gov.hmrc.eventhub.subscription.model
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import uk.gov.hmrc.eventhub.model.Subscriber
+import uk.gov.hmrc.eventhub.config.Subscriber
 
 case class SubscriberServers(topicName: String, subscriberServers: List[(WireMockServer, Subscriber)])

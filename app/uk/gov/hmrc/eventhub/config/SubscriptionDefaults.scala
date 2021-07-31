@@ -37,11 +37,9 @@ case class SubscriptionDefaults(
 
 object SubscriptionDefaults {
   implicit val configLoader: ConfigLoader[SubscriptionDefaults] = (rootConfig: Config, path: String) =>
-    ConfigSource
-      .fromConfig(rootConfig.getConfig(path))
-      .load[SubscriptionDefaults] match {
+    ConfigSource.fromConfig(rootConfig.getConfig(path)).load[SubscriptionDefaults] match {
       case Left(value) =>
         throw new IllegalArgumentException(s"could not load subscription defaults: ${value.toList.mkString(" | ")}")
       case Right(value) => value
-  }
+    }
 }

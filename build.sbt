@@ -3,7 +3,7 @@ import com.iheart.sbtPlaySwagger.SwaggerPlugin.autoImport.swaggerDomainNameSpace
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.SbtBobbyPlugin.BobbyKeys.bobbyRulesURL
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
-import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
+import org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings
 
 import java.net.URL
 
@@ -39,7 +39,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(ScoverageSettings())
   .settings(
     inConfig(IntegrationTest)(
-    scalafmtCoreSettings ++
+    scalafmtConfigSettings ++
       Seq(compileInputs in compile := Def.taskDyn {
         val task = test in (resolvedScoped.value.scope in scalafmt.key)
         val previousInputs = (compileInputs in compile).value

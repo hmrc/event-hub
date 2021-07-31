@@ -27,7 +27,7 @@ import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.time.{ Seconds, Span }
+import org.scalatest.time.{Seconds, Span}
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.model.TestModels.event
 import uk.gov.hmrc.eventhub.repository.SubscriberEventRepository
@@ -45,22 +45,15 @@ class SubscriberEventSourceSpec extends AnyFlatSpec with Matchers with Idiomatic
       .andThenAnswer(someFutureEvent)
       .andThenAnswer(someFutureEvent)
 
-    subscriberEventSource.source
-      .take(3)
-      .runWith(Sink.seq)
-      .futureValue shouldBe Seq(event, event, event)
+    subscriberEventSource.source.take(3).runWith(Sink.seq).futureValue shouldBe Seq(event, event, event)
 
     subscriberEventRepository.next() wasCalled threeTimes
   }
 
   it should "provide an event for a single ask" in new Scope {
-    when(subscriberEventRepository.next())
-      .thenReturn(someFutureEvent)
+    when(subscriberEventRepository.next()).thenReturn(someFutureEvent)
 
-    subscriberEventSource.source
-      .take(1)
-      .runWith(Sink.seq)
-      .futureValue shouldBe Seq(event)
+    subscriberEventSource.source.take(1).runWith(Sink.seq).futureValue shouldBe Seq(event)
 
     subscriberEventRepository.next() wasCalled once
   }
@@ -68,9 +61,7 @@ class SubscriberEventSourceSpec extends AnyFlatSpec with Matchers with Idiomatic
   it should "continuously poll the repository for events when there is unsatisfied demand" in new Scope {
     when(subscriberEventRepository.next()).thenReturn(Future.successful(None))
 
-    subscriberEventSource.source
-      .take(1)
-      .runWith(Sink.seq)
+    subscriberEventSource.source.take(1).runWith(Sink.seq)
 
     val timeInSeconds = 2
 

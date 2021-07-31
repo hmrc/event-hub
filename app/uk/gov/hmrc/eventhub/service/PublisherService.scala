@@ -18,33 +18,30 @@ package uk.gov.hmrc.eventhub.service
 
 import org.mongodb.scala.bson.ObjectId
 import org.mongodb.scala.result.InsertOneResult
-import org.mongodb.scala.{ ClientSession, MongoException, Observable, SingleObservable, ToSingleObservableVoid }
+import org.mongodb.scala.{ClientSession, MongoException, Observable, SingleObservable, ToSingleObservableVoid}
 import play.api.i18n.Lang.logger
 import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.modules.MongoSetup
-import uk.gov.hmrc.eventhub.repository.{ EventRepository, SubscriberQueuesRepository }
+import uk.gov.hmrc.eventhub.repository.{EventRepository, SubscriberQueuesRepository}
 import uk.gov.hmrc.eventhub.utils.HelperFunctions.liftFuture
-import uk.gov.hmrc.eventhub.utils.TransactionConfiguration.{ sessionOptions, transactionOptions }
+import uk.gov.hmrc.eventhub.utils.TransactionConfiguration.{sessionOptions, transactionOptions}
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem, WorkItemRepository }
+import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem, WorkItemRepository}
 
 import java.time.Instant
-import javax.inject.{ Inject, Singleton }
-import scala.concurrent.{ ExecutionContext, Future }
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PublisherService @Inject()(
+class PublisherService @Inject() (
   mongoComponent: MongoComponent,
   eventRepository: EventRepository,
   subscriberQueuesRepository: SubscriberQueuesRepository,
-  mongoSetup: MongoSetup)(implicit ec: ExecutionContext) {
+  mongoSetup: MongoSetup
+)(implicit ec: ExecutionContext) {
 
   private[service] def commitAndRetry(clientSession: ClientSession): Observable[Unit] =
-    clientSession
-      .commitTransaction()
-      .map(_ => ())
-      .recoverWith(recovery(clientSession))
-      .map(_ => clientSession.close())
+    clientSession.commitTransaction().map(_ => ()).recoverWith(recovery(clientSession)).map(_ => clientSession.close())
 
   private def recovery(clientSession: ClientSession): PartialFunction[Throwable, Observable[Unit]] = {
     case e: MongoException if e.hasErrorLabel(MongoException.TRANSIENT_TRANSACTION_ERROR_LABEL) =>
@@ -71,10 +68,11 @@ class PublisherService @Inject()(
   private[service] def subscriberRepos(topic: String): Set[WorkItemRepository[Event]] =
     mongoSetup.subscriberRepositories.filter(_._1 == topic).map(_._2)
 
-  private[service] def publish(event: Event, subscriberRepos: Set[WorkItemRepository[Event]]): Future[Unit] = {
-    mongoComponent.client
+  private[service] def publish(event: Event, subscriberRepos: Set[WorkItemRepository[Event]]): Future[Unit] =
+    mongoComponent
+      .client
       .startSession(sessionOptions)
-      .flatMap(clientSession => {
+      .flatMap { clientSession =>
         clientSession.startTransaction(transactionOptions)
         val eventInsert: SingleObservable[InsertOneResult] =
           eventRepository.addEvent(clientSession, mongoSetup.eventRepository, event)
@@ -85,8 +83,9 @@ class PublisherService @Inject()(
           }
         }
         sequenced.map(_ => clientSession)
-      })
-  }.flatMap(commitAndRetry).head()
+      }
+      .flatMap(commitAndRetry)
+      .head()
 
   private def subscriberWorkItem(event: Event): WorkItem[Event] =
     WorkItem(
