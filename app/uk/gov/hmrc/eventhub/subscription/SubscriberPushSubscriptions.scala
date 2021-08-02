@@ -52,7 +52,10 @@ class SubscriberPushSubscriptions @Inject() (
           .subscribers
           .map { subscriber =>
             val stream = subscriptionStreamBuilder.build(subscriber, topic.name)
-            stream.viaMat(subscribersKillSwitch.flow)(Keep.left).to(Sink.ignore).run()
+            stream
+              .viaMat(subscribersKillSwitch.flow)(Keep.left)
+              .to(Sink.ignore)
+              .run()
           }
       }
 }

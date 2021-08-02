@@ -20,13 +20,12 @@ import akka.http.scaladsl.model.HttpMethod
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 import pureconfig.ConfigSource
-import ConfigReaders._
+import akka.http.scaladsl.model.HttpMethods.POST
 import pureconfig.generic.auto._
 
 import scala.concurrent.duration.FiniteDuration
 
 case class SubscriptionDefaults(
-  httpMethod: HttpMethod,
   elements: Int,
   per: FiniteDuration,
   maxConnections: Int,
@@ -36,10 +35,12 @@ case class SubscriptionDefaults(
 )
 
 object SubscriptionDefaults {
+  val DefaultHttpMethod: HttpMethod = POST
+
   implicit val configLoader: ConfigLoader[SubscriptionDefaults] = (rootConfig: Config, path: String) =>
     ConfigSource.fromConfig(rootConfig.getConfig(path)).load[SubscriptionDefaults] match {
       case Left(value) =>
-        throw new IllegalArgumentException(s"could not load subscription defaults: ${value.toList.mkString(" | ")}")
+        throw new IllegalArgumentException(s"could not load subscription defaults: ${value.prettyPrint()}")
       case Right(value) => value
     }
 }

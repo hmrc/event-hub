@@ -20,8 +20,9 @@ import akka.http.scaladsl.model.{HttpMethod, Uri}
 import cats.syntax.either._
 import cats.syntax.parallel._
 import com.typesafe.config.{Config, ConfigObject, ConfigValue}
+import pureconfig.ConfigReader
 import pureconfig.ConfigReader._
-import pureconfig.error.ConfigReaderFailures
+import pureconfig.error.{ConfigReaderFailures, ConvertFailure, UnknownKey}
 import uk.gov.hmrc.eventhub.config.ConfigReaders._
 
 import scala.collection.JavaConverters._
@@ -40,6 +41,19 @@ case class Subscriber(
 )
 
 object Subscriber {
+  private implicit class ConfigOps(val config: Config) extends AnyVal {
+    def resultValue(path: String): Result[ConfigValue] =
+      Either
+        .catchNonFatal(config.getValue(path))
+        .leftMap(_ => ConfigReaderFailures(new ConvertFailure(UnknownKey(path), None, path)))
+
+    def readOrDefault[T](path: String, configReader: ConfigReader[T], default: T): Result[T] =
+      if (config.hasPath(path)) {
+        config.resultValue(path).flatMap(configReader.from)
+      } else {
+        default.asRight
+      }
+  }
 
   def subscribersFromConfig(
     configValue: ConfigValue,
@@ -71,7 +85,7 @@ object Subscriber {
             (
               name.asRight,
               readUri(config),
-              readHttpMethod(config, subscriptionDefaults),
+              readHttpMethod(config),
               readElements(config, subscriptionDefaults),
               readElementsPer(config, subscriptionDefaults),
               readMaxConnections(config, subscriptionDefaults),
@@ -83,52 +97,68 @@ object Subscriber {
     }
 
   def readUri(config: Config): Result[Uri] =
-    uriReader.from(config.getValue("uri"))
+    config
+      .resultValue(path = "uri")
+      .flatMap(uriReader.from)
 
-  def readHttpMethod(config: Config, subscriptionDefaults: SubscriptionDefaults): Result[HttpMethod] =
-    httpMethodReader
-      .from(config.getValue("http-method"))
-      .orElse(subscriptionDefaults.httpMethod.asRight)
+  def readHttpMethod(config: Config): Result[HttpMethod] =
+    config.readOrDefault(
+      path = "http-method",
+      configReader = httpMethodReader,
+      default = SubscriptionDefaults.DefaultHttpMethod
+    )
 
   def readElements(config: Config, subscriptionDefaults: SubscriptionDefaults): Either[ConfigReaderFailures, Int] =
-    intConfigReader
-      .from(config.getValue("elements"))
-      .orElse(subscriptionDefaults.elements.asRight)
+    config.readOrDefault(
+      path = "elements",
+      configReader = intConfigReader,
+      default = subscriptionDefaults.elements
+    )
 
   def readElementsPer(
     config: Config,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, FiniteDuration] =
-    finiteDurationConfigReader
-      .from(config.getValue("per"))
-      .orElse(subscriptionDefaults.per.asRight)
+    config.readOrDefault(
+      path = "per",
+      configReader = finiteDurationConfigReader,
+      default = subscriptionDefaults.per
+    )
 
   def readMaxConnections(
     config: Config,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, Int] =
-    intConfigReader
-      .from(config.getValue("max-connections"))
-      .orElse(subscriptionDefaults.maxConnections.asRight)
+    config.readOrDefault(
+      path = "max-connections",
+      configReader = intConfigReader,
+      default = subscriptionDefaults.maxConnections
+    )
 
   def readMinBackOff(
     config: Config,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, FiniteDuration] =
-    finiteDurationConfigReader
-      .from(config.getValue("min-back-off"))
-      .orElse(subscriptionDefaults.minBackOff.asRight)
+    config.readOrDefault(
+      path = "min-back-off",
+      configReader = finiteDurationConfigReader,
+      default = subscriptionDefaults.minBackOff
+    )
 
   def readMaxBackOff(
     config: Config,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, FiniteDuration] =
-    finiteDurationConfigReader
-      .from(config.getValue("max-back-off"))
-      .orElse(subscriptionDefaults.maxBackOff.asRight)
+    config.readOrDefault(
+      path = "max-back-off",
+      configReader = finiteDurationConfigReader,
+      default = subscriptionDefaults.maxBackOff
+    )
 
   def readMaxRetries(config: Config, subscriptionDefaults: SubscriptionDefaults): Either[ConfigReaderFailures, Int] =
-    intConfigReader
-      .from(config.getValue("max-retries"))
-      .orElse(subscriptionDefaults.maxRetries.asRight)
+    config.readOrDefault(
+      path = "max-retries",
+      configReader = intConfigReader,
+      default = subscriptionDefaults.maxRetries
+    )
 }

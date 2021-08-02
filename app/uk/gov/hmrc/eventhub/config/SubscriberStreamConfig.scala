@@ -31,7 +31,7 @@ object SubscriberStreamConfig {
   implicit val configReader: ConfigLoader[SubscriberStreamConfig] = (rootConfig: Config, path: String) =>
     ConfigSource.fromConfig(rootConfig.getConfig(path)).load[SubscriberStreamConfig] match {
       case Left(value) =>
-        throw new IllegalArgumentException(s"could not load subscriber stream config: ${value.toList.mkString(" | ")}")
+        throw new IllegalArgumentException(s"could not load subscriber stream config: ${value.prettyPrint()}")
       case Right(value) => value
     }
 }

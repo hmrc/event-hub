@@ -22,7 +22,7 @@ import akka.pattern.FutureTimeoutSupport
 import com.google.inject.{AbstractModule, Provides}
 import play.api.Configuration
 import play.api.libs.concurrent.AkkaGuiceSupport
-import uk.gov.hmrc.eventhub.config.{Subscriber, SubscriberStreamConfig, SubscriptionDefaults, Topic}
+import uk.gov.hmrc.eventhub.config.{SubscriberStreamConfig, SubscriptionDefaults, Topic}
 import uk.gov.hmrc.eventhub.repository.{SubscriberEventRepositoryFactory, WorkItemSubscriberEventRepositoryFactory}
 import uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptions
 

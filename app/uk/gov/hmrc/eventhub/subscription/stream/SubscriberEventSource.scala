@@ -32,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 class SubscriberEventSource(
   subscriberEventRepository: SubscriberEventRepository,
-  pollingDelay: FiniteDuration
+  pollingInterval: FiniteDuration
 )(implicit scheduler: Scheduler, executionContext: ExecutionContext)
     extends Logging {
 
@@ -44,13 +44,13 @@ class SubscriberEventSource(
 
   private def pullLogic(readResult: Option[Event]): Future[Option[(Unit, Event)]] = readResult match {
     case None =>
-      after(pollingDelay, scheduler, executionContext, onPullCallable)
+      after(pollingInterval, scheduler, executionContext, onPullCallable)
     case Some(event) =>
       logger.debug(s"\nfound event:\n $event")
       Future.successful(Some(() -> event))
   }
 
-  private def onPullCallable: Callable[Future[Option[(Unit, Event)]]] =
+  private val onPullCallable: Callable[Future[Option[(Unit, Event)]]] =
     new Callable[Future[Option[(Unit, Event)]]] {
       override def call: Future[Option[(Unit, Event)]] = onPull(())
     }
