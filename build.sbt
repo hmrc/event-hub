@@ -3,7 +3,7 @@ import com.iheart.sbtPlaySwagger.SwaggerPlugin.autoImport.swaggerDomainNameSpace
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.SbtBobbyPlugin.BobbyKeys.bobbyRulesURL
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
-import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
+import org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings
 
 import java.net.URL
 
@@ -36,18 +36,12 @@ lazy val microservice = Project(appName, file("."))
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
   .settings(resolvers += Resolver.jcenterRepo)
-  inConfig(IntegrationTest)(
-  scalafmtCoreSettings ++
-    Seq(compileInputs in compile := Def.taskDyn {
-      val task = test in (resolvedScoped.value.scope in scalafmt.key)
-      val previousInputs = (compileInputs in compile).value
-      task.map(_ => previousInputs)
-    }.value)
-)
+  .settings(ScoverageSettings())
+  .settings(inConfig(IntegrationTest)(org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings))
 
-lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
-compileScalastyle := scalastyle.in(Compile).toTask("").value
-(compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
+//lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
+//compileScalastyle := scalastyle.in(Compile).toTask("").value
+//(compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
 
 PlayKeys.playDefaultPort := 9050
 
@@ -55,6 +49,7 @@ swaggerDomainNameSpaces := Seq(
     "uk.gov.hmrc.eventhub.models"
   )
 
+scalacOptions += "-Ypartial-unification"
 swaggerTarget := baseDirectory.value / "public"
 swaggerFileName := "schema.json"
 swaggerPrettyJson := true

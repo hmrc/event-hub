@@ -21,23 +21,31 @@ import sbt._
 object Dependencies {
 
   object Library {
-    val Bootstrap = "uk.gov.hmrc"                %% "bootstrap-backend-play-28"         % "5.4.0"
-    val HmrcMongo = "uk.gov.hmrc.mongo"          %% "hmrc-mongo-play-28"                % "0.51.0"
-    val HmrcMongoWorkItem = "uk.gov.hmrc.mongo"  %% "hmrc-mongo-work-item-repo-play-28" % "0.51.0"
-    val Pureconfig = "com.github.pureconfig"     %% "pureconfig"                        % "0.16.0"
-    val Cats = "org.typelevel"                   %% "cats-core"                         % "2.6.1"
-    val Swagger = "org.webjars"                  % "swagger-ui"                         % "3.50.0"
-    val BootstrapTest = "uk.gov.hmrc"            %% "bootstrap-test-play-28"            % "5.4.0"
-    val HmrcMongoTest = "uk.gov.hmrc.mongo"      %% "hmrc-mongo-test-play-28"           % "0.51.0"
-    val Scalatest = "org.scalatest"              %% "scalatest"                         % "3.1.0"
-    val PlayTest = "com.typesafe.play"           %% "play-test"                         % current
-    val Flexmark = "com.vladsch.flexmark"        % "flexmark-all"                       % "0.35.10"
-    val Scalatestplus = "org.scalatestplus.play" %% "scalatestplus-play"                % "5.1.0"
+    val AkkaHttp = "com.typesafe.akka"          %% "akka-http"                         % "10.2.5"
+    val Bootstrap = "uk.gov.hmrc"               %% "bootstrap-backend-play-28"         % "5.4.0"
+    val HmrcMongo = "uk.gov.hmrc.mongo"         %% "hmrc-mongo-play-28"                % "0.52.0"
+    val HmrcMongoWorkItem = "uk.gov.hmrc.mongo" %% "hmrc-mongo-work-item-repo-play-28" % "0.52.0"
+    val Pureconfig = "com.github.pureconfig"    %% "pureconfig"                        % "0.16.0"
+    val Cats = "org.typelevel"                  %% "cats-core"                         % "2.6.1"
+    val Swagger = "org.webjars"                 % "swagger-ui"                         % "3.50.0"
+    val Enumeration = "com.beachape"            %% "enumeratum-play"                   % "1.5.17"
+    val MongoScalaDriver = "org.mongodb.scala"  %% "mongo-scala-driver"                % "4.3.0"
+    val BootstrapTest = "uk.gov.hmrc"           %% "bootstrap-test-play-28"            % "5.4.0"
+    val HmrcMongoTest = "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-28"           % "0.52.0"
+    val Scalatest = "org.scalatest"             %% "scalatest"                         % "3.1.0"
+    val PlayTest = "com.typesafe.play"          %% "play-test"                         % current
+    val Flexmark = "com.vladsch.flexmark"       % "flexmark-all"                       % "0.35.10"
+    val Scalatestplus = "org.scalatestplus"     %% "scalatestplus-scalacheck"          % "3.1.0.0-RC2"
+    val Mockito = "org.mockito"                 %% "mockito-scala"                     % "1.16.37"
+    val ServiceIntegrationTest = "uk.gov.hmrc"  %% "service-integration-test"          % "1.1.0-play-28"
+    val WireMock = "com.github.tomakehurst"     % "wiremock-standalone"                % "2.27.2"
+    val ScalaCheck = "org.scalacheck"           %% "scalacheck"                        % "1.15.4"
   }
 
   import Library._
 
   val libraries = Seq(
+    AkkaHttp,
     ws,
     Bootstrap,
     HmrcMongo,
@@ -45,11 +53,17 @@ object Dependencies {
     Pureconfig,
     Cats,
     Swagger,
-    BootstrapTest % Test,
-    HmrcMongoTest % Test,
-    Scalatest     % Test,
-    PlayTest      % Test,
-    Flexmark      % "test, it",
-    Scalatestplus % "test, it"
+    Enumeration,
+    MongoScalaDriver,
+    BootstrapTest          % Test,
+    HmrcMongoTest          % Test,
+    Scalatest              % Test,
+    PlayTest               % Test,
+    Mockito                % Test,
+    WireMock               % "it",
+    Flexmark               % "test, it",
+    Scalatestplus          % "test, it",
+    ServiceIntegrationTest % "test, it",
+    ScalaCheck             % "it"
   )
 }

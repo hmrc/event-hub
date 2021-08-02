@@ -5,7 +5,7 @@
   "paths" : {
     "/event-hub/publish/{topic}" : {
       "post" : {
-        "operationId" : "publishEvent",
+        "operationId" : "publish",
         "tags" : [ "app" ],
         "summary" : "Post Event",
         "responses" : {
@@ -33,7 +33,7 @@
     "produces" : [ "application/json" ],
     "description" : "report failed emails",
     "title" : "Event Hub API",
-    "version" : "0.4.0-SNAPSHOT",
+    "version" : "0.10.0-SNAPSHOT",
     "consumes" : [ "application/json" ]
   },
   "tags" : [ {
