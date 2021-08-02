@@ -15,12 +15,12 @@ Facilitate reporting of delivery of failed email's
  * You can choose to startup locally with configuration overrides from a config file, some are provided already in `dev.conf` which will provision a default topic and subscriber:
    - `sbt "start -Dconfig.resource=dev.conf"`
  * Alternatively you can pass system properties at startup like so: 
-   - `sbt "start -Dtopics.bounced-emails.channel-preferences-bounced-emails.uri=http://localhost:9052/channel-preferences/process/bounce"`
+   - `sbt "start -Dtopics.email.channel-preferences-bounced-emails.uri=http://localhost:9052/channel-preferences/process/bounce"`
 
 ### An example request that targets the subscriber configured in `dev.conf`
 
 ```
-curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-hub/publish/bounced-emails -d '
+curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-hub/publish/email -d '
 {
     "eventId": "623b6f96-d36f-4014-8874-7f3f8287f9e6", 
     "subject": "calling", 

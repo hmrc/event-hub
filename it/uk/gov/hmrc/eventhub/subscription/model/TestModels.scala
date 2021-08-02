@@ -43,15 +43,15 @@ object TestModels {
 
     val event: Event = Event(
       eventId = UUID.randomUUID(),
-      subject = "foo bar",
-      groupId = "in the bar",
+      subject = "bounced",
+      groupId = "foo bar baz",
       timeStamp = LocalDateTime.now(),
       event = eventJson
     )
   }
 
   object Subscriptions {
-    val BoundedEmailsTopic = "bounced-emails"
+    val EmailTopic = "email"
     val ChannelPreferencesBounced = "channel-preferences-bounced"
     val ChannelPreferencesBouncedPath = "/channel-preferences/process/bounce"
 
@@ -87,7 +87,7 @@ object TestModels {
     )
 
     val channelPreferencesBouncedEmails: Topic = Topic(
-      BoundedEmailsTopic,
+      EmailTopic,
       List(
         channelPreferences
       )
@@ -95,7 +95,7 @@ object TestModels {
 
     val bouncedEmails: Set[Topic] = Set(
       Topic(
-        BoundedEmailsTopic,
+        EmailTopic,
         List(
           channelPreferences,
           anotherParty

@@ -38,7 +38,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
   ignore should "push an event to a registered subscriber" in scope(channelPreferencesBouncedEmails returning OK) {
     setup =>
       val response = setup
-        .postToTopic(BoundedEmailsTopic, event)
+        .postToTopic(EmailTopic, event)
         .futureValue
 
       response.status mustBe CREATED
@@ -55,7 +55,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
 
   ignore should "push an event to registered subscribers" in scope(bouncedEmails returning OK) { setup =>
     val response = setup
-      .postToTopic(BoundedEmailsTopic, event)
+      .postToTopic(EmailTopic, event)
       .futureValue
 
     response.status mustBe CREATED
@@ -81,7 +81,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
     forAll { eventList: List[Event] =>
       val sentEvents =
         Source(eventList)
-          .mapAsyncUnordered(1)(event => setup.postToTopic(BoundedEmailsTopic, event).map(_ -> event))
+          .mapAsyncUnordered(1)(event => setup.postToTopic(EmailTopic, event).map(_ -> event))
           .collect { case (result, event) if result.status == CREATED => event }
           .runWith(Sink.seq)(setup.materializer)
           .futureValue
@@ -110,7 +110,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
   ) { setup =>
     forAll { event: Event =>
       val response = setup
-        .postToTopic(BoundedEmailsTopic, event)
+        .postToTopic(EmailTopic, event)
         .futureValue
 
       response.status mustBe CREATED
