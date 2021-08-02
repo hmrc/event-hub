@@ -5,10 +5,6 @@ This code is open source software licensed under the [Apache 2.0 License]("http:
 
 Facilitate reporting of delivery of failed email's
 
-## Configuration
-
-//TODO
-
 ### Starting locally
  * Depending on the subscribers you have configured you will need to assess which services you need to have running. Starting `DC_ALL` in service manager, `sm --start DC_ALL` works for the channel preferences example in this readme.
  * Mongo needs to be running with a replica set, you can start an instance by running `docker-compose up` from the project root.

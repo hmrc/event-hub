@@ -58,23 +58,26 @@ object Subscriber {
   }
 
   def subscribersFromConfig(
+    topicName: String,
     configValue: ConfigValue,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, List[Subscriber]] =
     configObjectConfigReader
       .from(configValue)
-      .flatMap(subscribersFromConfigObject(_, subscriptionDefaults))
+      .flatMap(subscribersFromConfigObject(topicName, _, subscriptionDefaults))
 
   private def subscribersFromConfigObject(
+    topicName: String,
     configObject: ConfigObject,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, List[Subscriber]] =
     configObject
       .asScala
       .toList
-      .parTraverse(subscriberFromConfig(_, subscriptionDefaults))
+      .parTraverse(subscriberFromConfig(topicName, _, subscriptionDefaults))
 
   private def subscriberFromConfig(
+    topicName: String,
     configValue: (String, ConfigValue),
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, Subscriber] =
@@ -84,16 +87,17 @@ object Subscriber {
           .from(configValue)
           .map(_.toConfig)
           .flatMap { config =>
+            val parentPath = s"$topicName.$name"
             (
               name.asRight,
-              readUri(config, name),
-              readHttpMethod(config, name),
-              readElements(config, name, subscriptionDefaults),
-              readElementsPer(config, name, subscriptionDefaults),
-              readMaxConnections(config, name, subscriptionDefaults),
-              readMinBackOff(config, name, subscriptionDefaults),
-              readMaxBackOff(config, name, subscriptionDefaults),
-              readMaxRetries(config, name, subscriptionDefaults)
+              readUri(config, parentPath),
+              readHttpMethod(config, parentPath),
+              readElements(config, parentPath, subscriptionDefaults),
+              readElementsPer(config, parentPath, subscriptionDefaults),
+              readMaxConnections(config, parentPath, subscriptionDefaults),
+              readMinBackOff(config, parentPath, subscriptionDefaults),
+              readMaxBackOff(config, parentPath, subscriptionDefaults),
+              readMaxRetries(config, parentPath, subscriptionDefaults)
             ).parMapN(Subscriber.apply)
           }
     }
@@ -111,7 +115,11 @@ object Subscriber {
       default = SubscriptionDefaults.DefaultHttpMethod
     )
 
-  def readElements(config: Config, name: String, subscriptionDefaults: SubscriptionDefaults): Either[ConfigReaderFailures, Int] =
+  def readElements(
+    config: Config,
+    name: String,
+    subscriptionDefaults: SubscriptionDefaults
+  ): Either[ConfigReaderFailures, Int] =
     config.readOrDefault(
       path = "elements",
       parentPath = name,
@@ -167,7 +175,11 @@ object Subscriber {
       default = subscriptionDefaults.maxBackOff
     )
 
-  def readMaxRetries(config: Config, name: String, subscriptionDefaults: SubscriptionDefaults): Either[ConfigReaderFailures, Int] =
+  def readMaxRetries(
+    config: Config,
+    name: String,
+    subscriptionDefaults: SubscriptionDefaults
+  ): Either[ConfigReaderFailures, Int] =
     config.readOrDefault(
       path = "max-retries",
       parentPath = name,

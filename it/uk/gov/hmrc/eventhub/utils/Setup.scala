@@ -62,10 +62,10 @@ class Setup private (testTopics: Set[TestTopic], testId: TestId) {
     SubscriberServers(topic.name, subscriberServers)
   }
 
-  private val topicsConfig = subscriberServers.map { topic =>
-    topic.topicName -> topic.subscriberServers.map { case (_, subscriber) =>
-      subscriber.asConfigMap
-    }
+  private val topicsConfig = subscriberServers.flatMap { topic =>
+    topic.subscriberServers.flatMap { case (_, subscriber) =>
+      subscriber.asConfigMap(topic.topicName)
+    }.toMap
   }.toMap
 
   private val application: Application = new GuiceApplicationBuilder()

@@ -35,8 +35,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "load a topic with a subscriber only defining its `uri` property - all other properties should default" in {
-    val config: Config = ConfigFactory.parseString(
-      s"""
+    val config: Config = ConfigFactory.parseString(s"""
         |topics.email.${subscriber.name}.uri="${subscriber.uri}"
         |""".stripMargin)
 
@@ -46,8 +45,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "load a topic with a subscriber defining its `uri` & `http-method` properties" in {
-    val config: Config = ConfigFactory.parseString(
-      s"""
+    val config: Config = ConfigFactory.parseString(s"""
          |topics.email.${subscriber.name}.uri="${subscriber.uri}"
          |topics.email.${subscriber.name}.http-method=PUT
          |""".stripMargin)
@@ -56,10 +54,9 @@ class TopicSpec extends AnyFlatSpec with Matchers {
       .configLoader(subscriptionDefaults)
       .load(config, "topics") shouldBe Set(Topic("email", List(subscriber.copy(httpMethod = PUT))))
   }
-  
+
   it should "load a topic with a subscriber defining its `uri` & `elements` properties" in {
-    val config: Config = ConfigFactory.parseString(
-      s"""
+    val config: Config = ConfigFactory.parseString(s"""
          |topics.email.${subscriber.name}.uri="${subscriber.uri}"
          |topics.email.${subscriber.name}.elements=0
          |""".stripMargin)
@@ -70,8 +67,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "load a topic with a subscriber defining its `uri` & `per` properties" in {
-    val config: Config = ConfigFactory.parseString(
-      s"""
+    val config: Config = ConfigFactory.parseString(s"""
          |topics.email.${subscriber.name}.uri="${subscriber.uri}"
          |topics.email.${subscriber.name}.per=5.seconds
          |""".stripMargin)
@@ -82,8 +78,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "load a topic with a subscriber defining its `uri` & `max-connections` properties" in {
-    val config: Config = ConfigFactory.parseString(
-      s"""
+    val config: Config = ConfigFactory.parseString(s"""
          |topics.email.${subscriber.name}.uri="${subscriber.uri}"
          |topics.email.${subscriber.name}.max-connections=1
          |""".stripMargin)
@@ -94,8 +89,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "load a topic with a subscriber defining its `uri` & `min-back-off` properties" in {
-    val config: Config = ConfigFactory.parseString(
-      s"""
+    val config: Config = ConfigFactory.parseString(s"""
          |topics.email.${subscriber.name}.uri="${subscriber.uri}"
          |topics.email.${subscriber.name}.http-method=PUT
          |""".stripMargin)
@@ -106,8 +100,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "load a topic with a subscriber defining its `uri` & `max-back-off` properties" in {
-    val config: Config = ConfigFactory.parseString(
-      s"""
+    val config: Config = ConfigFactory.parseString(s"""
          |topics.email.${subscriber.name}.uri="${subscriber.uri}"
          |topics.email.${subscriber.name}.max-back-off=1.hour
          |""".stripMargin)
@@ -118,8 +111,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "load a topic with a subscriber defining its `uri` & `max-retries` properties" in {
-    val config: Config = ConfigFactory.parseString(
-      s"""
+    val config: Config = ConfigFactory.parseString(s"""
          |topics.email.${subscriber.name}.uri="${subscriber.uri}"
          |topics.email.${subscriber.name}.max-retries=0
          |""".stripMargin)
@@ -131,21 +123,20 @@ class TopicSpec extends AnyFlatSpec with Matchers {
 
   it should "load a complex set of topics" in new Scope {
     val config: Config = ConfigFactory.parseString(complexConfig)
-    
+
     Topic
       .configLoader(subscriptionDefaults)
       .load(config, "topics") shouldBe complexTopics
   }
 
   it should "fail to load when a subscribers uri property is not defined" in {
-    val config: Config = ConfigFactory.parseString(
-      s"""
+    val config: Config = ConfigFactory.parseString(s"""
          |topics.email.${subscriber.name}.http-method="POST"
          |""".stripMargin)
 
     the[IllegalArgumentException] thrownBy Topic
       .configLoader(subscriptionDefaults)
-      .load(config, "topics") should have message s"at '${subscriber.name}.uri':\n  - Unknown key."
+      .load(config, "topics") should have message s"at 'email.${subscriber.name}.uri':\n  - Unknown key."
   }
 
   trait Scope {
@@ -160,7 +151,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
          |topics.letter.${subscriberThree.name}.uri="${subscriberThree.uri}"
          |topics.telephone.${subscriberFour.name}.uri="${subscriberFour.uri}"
          |""".stripMargin
-    
+
     val complexTopics: Set[Topic] =
       Set(
         Topic("email", List(subscriber, subscriberTwo)),

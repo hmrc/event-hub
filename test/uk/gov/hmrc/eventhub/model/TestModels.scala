@@ -16,13 +16,10 @@
 
 package uk.gov.hmrc.eventhub.model
 
-import akka.http.scaladsl.model.{HttpMethods, Uri}
 import org.bson.types.ObjectId
 import play.api.libs.json.Json
-import uk.gov.hmrc.eventhub.config.Subscriber
 import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem}
 
-import scala.concurrent.duration._
 import java.time.{Instant, LocalDateTime}
 import java.util.UUID
 

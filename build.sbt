@@ -37,16 +37,6 @@ lazy val microservice = Project(appName, file("."))
   .settings(integrationTestSettings(): _*)
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(ScoverageSettings())
-  .settings(
-    inConfig(IntegrationTest)(
-    scalafmtConfigSettings ++
-      Seq(compileInputs in compile := Def.taskDyn {
-        val task = test in (resolvedScoped.value.scope in scalafmt.key)
-        val previousInputs = (compileInputs in compile).value
-        task.map(_ => previousInputs)
-      }.value)
-    )
-  )
 
 //lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
 //compileScalastyle := scalastyle.in(Compile).toTask("").value
