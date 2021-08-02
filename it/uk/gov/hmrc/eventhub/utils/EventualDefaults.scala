@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.config
+package uk.gov.hmrc.eventhub.utils
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import org.scalatest.concurrent.Eventually.eventually
+import org.scalatest.concurrent.Waiters.{interval, timeout}
+import scala.concurrent.duration._
 
-@Singleton
-class AppConfig @Inject() (
-  config: Configuration,
-  servicesConfig: ServicesConfig
-) {
+trait EventualDefaults {
+  def oneSecond[T](fun: => T): T = eventually(timeout(1.second), interval(100.milliseconds))(fun)
 
-  val authBaseUrl: String = servicesConfig.baseUrl("auth")
-
-  val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
-  val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
+  def oneMinute[T](fun: => T): T = eventually(timeout(1.minute), interval(100.milliseconds))(fun)
 }

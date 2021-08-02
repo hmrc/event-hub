@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.config
+package uk.gov.hmrc.eventhub.subscription.model
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import com.github.tomakehurst.wiremock.WireMockServer
+import uk.gov.hmrc.eventhub.config.Subscriber
 
-@Singleton
-class AppConfig @Inject() (
-  config: Configuration,
-  servicesConfig: ServicesConfig
-) {
-
-  val authBaseUrl: String = servicesConfig.baseUrl("auth")
-
-  val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
-  val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
-}
+case class SubscriberServers(topicName: String, subscriberServers: List[(WireMockServer, Subscriber)])

@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.config
+package uk.gov.hmrc.eventhub.subscription.model
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import akka.http.scaladsl.model.StatusCode
+import uk.gov.hmrc.eventhub.config.Topic
 
-@Singleton
-class AppConfig @Inject() (
-  config: Configuration,
-  servicesConfig: ServicesConfig
-) {
+case class TestTopic(name: String, subscriberStubs: List[SubscriberStub])
 
-  val authBaseUrl: String = servicesConfig.baseUrl("auth")
-
-  val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
-  val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
+object TestTopic {
+  def apply(topic: Topic, statusCode: StatusCode): TestTopic =
+    new TestTopic(
+      topic.name,
+      topic.subscribers.map(SubscriberStub.apply(_, statusCode))
+    )
 }

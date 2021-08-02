@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.config
+package uk.gov.hmrc.eventhub.utils
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import org.scalatest.OptionValues
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.matchers.must.Matchers
 
-@Singleton
-class AppConfig @Inject() (
-  config: Configuration,
-  servicesConfig: ServicesConfig
-) {
-
-  val authBaseUrl: String = servicesConfig.baseUrl("auth")
-
-  val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
-  val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
+trait ISpec extends ScalaFutures with OptionValues with Matchers with IntegrationPatience with EventualDefaults {
+  implicit val testId: TestId = TestId(this.getClass.getSimpleName)
 }

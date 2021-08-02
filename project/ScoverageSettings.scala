@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.config
+import sbt.Keys.parallelExecution
+import sbt._
+import scoverage.ScoverageKeys
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-
-@Singleton
-class AppConfig @Inject() (
-  config: Configuration,
-  servicesConfig: ServicesConfig
-) {
-
-  val authBaseUrl: String = servicesConfig.baseUrl("auth")
-
-  val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
-  val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
+object ScoverageSettings {
+  def apply(): Seq[Def.Setting[_ >: String with Double with Boolean]] =
+    Seq( // Semicolon-separated list of regexes matching classes to exclude
+      ScoverageKeys.coverageExcludedPackages := "<empty>;.*Reverse.*;.*(config|testonly).*;.*(BuildInfo|Routes).*",
+      ScoverageKeys.coverageMinimum := 95.00,
+      ScoverageKeys.coverageFailOnMinimum := true,
+      ScoverageKeys.coverageHighlighting := true,
+      parallelExecution in ConfigKey.configurationToKey(Test) := false
+    )
 }

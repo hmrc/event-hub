@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.config
+package uk.gov.hmrc.eventhub.repository
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import org.mongodb.scala.result.InsertOneResult
+import org.mongodb.scala.{ClientSession, SingleObservable}
+import uk.gov.hmrc.eventhub.model.Event
+import uk.gov.hmrc.mongo.workitem.{WorkItem, WorkItemRepository}
 
-@Singleton
-class AppConfig @Inject() (
-  config: Configuration,
-  servicesConfig: ServicesConfig
-) {
+import javax.inject.Inject
 
-  val authBaseUrl: String = servicesConfig.baseUrl("auth")
+class SubscriberQueuesRepository @Inject() () {
 
-  val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
-  val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
+  def addWorkItem(
+    clientSession: ClientSession,
+    repository: WorkItemRepository[Event],
+    eventWorkItem: WorkItem[Event]
+  ): SingleObservable[InsertOneResult] =
+    repository.collection.insertOne(clientSession, eventWorkItem)
+
 }

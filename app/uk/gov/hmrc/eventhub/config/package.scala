@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.config
+package uk.gov.hmrc.eventhub
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import cats.kernel.Semigroup
+import pureconfig.error.ConfigReaderFailures
 
-@Singleton
-class AppConfig @Inject() (
-  config: Configuration,
-  servicesConfig: ServicesConfig
-) {
-
-  val authBaseUrl: String = servicesConfig.baseUrl("auth")
-
-  val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
-  val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
+package object config {
+  implicit object semigroupConfigReaderFailures extends Semigroup[ConfigReaderFailures] {
+    override def combine(x: ConfigReaderFailures, y: ConfigReaderFailures): ConfigReaderFailures = x.++(y)
+  }
 }

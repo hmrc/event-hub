@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.config
+package uk.gov.hmrc.eventhub.utils
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.eventhub.model.PublishError
 
-@Singleton
-class AppConfig @Inject() (
-  config: Configuration,
-  servicesConfig: ServicesConfig
-) {
+import scala.concurrent.{ExecutionContext, Future}
 
-  val authBaseUrl: String = servicesConfig.baseUrl("auth")
-
-  val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
-  val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
+object HelperFunctions {
+  def liftFuture[A](e: Either[PublishError, Future[A]])(implicit
+    ec: ExecutionContext
+  ): Future[Either[PublishError, A]] =
+    e.fold((l: PublishError) => Future(Left(l)), (r: Future[A]) => r.map(value => Right(value)))
 }

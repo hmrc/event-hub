@@ -1,0 +1,11 @@
+config = {
+  	"_id" : "devrs",
+  	"members" : [
+  		{
+  			"_id" : 0,
+  			"host" : "mongo1:27017"
+  		}
+  	]
+  }
+
+rs.initiate(config)

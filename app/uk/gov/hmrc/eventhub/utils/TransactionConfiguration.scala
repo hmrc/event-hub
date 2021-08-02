@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.controllers
+package uk.gov.hmrc.eventhub.utils
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import play.api.http.Status
-import play.api.test.Helpers._
-import play.api.test.{ FakeRequest, Helpers }
+import org.mongodb.scala.{ClientSessionOptions, ReadConcern, TransactionOptions, WriteConcern}
 
-class MicroserviceHelloWorldControllerSpec extends AnyWordSpec with Matchers {
+object TransactionConfiguration {
+  val sessionOptions: ClientSessionOptions =
+    ClientSessionOptions.builder().causallyConsistent(true).build()
 
-  private val fakeRequest = FakeRequest("GET", "/")
-  private val controller = new MicroserviceHelloWorldController(Helpers.stubControllerComponents())
-
-  "GET /" should {
-    "return 200" in {
-      val result = controller.hello()(fakeRequest)
-      status(result) shouldBe Status.OK
-    }
-  }
+  val transactionOptions: TransactionOptions =
+    TransactionOptions.builder().readConcern(ReadConcern.SNAPSHOT).writeConcern(WriteConcern.MAJORITY).build()
 }

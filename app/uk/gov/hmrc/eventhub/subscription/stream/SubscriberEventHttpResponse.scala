@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.models
+package uk.gov.hmrc.eventhub.subscription.stream
 
-import java.util.UUID
+import akka.http.scaladsl.model.HttpResponse
+import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.eventhub.model.Event
 
-case class Event(messageId: UUID)
+import scala.util.Try
+
+case class SubscriberEventHttpResponse(response: Try[HttpResponse], event: Event, subscriber: Subscriber)
