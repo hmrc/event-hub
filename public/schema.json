@@ -5,7 +5,7 @@
   "paths" : {
     "/event-hub/publish/{topic}" : {
       "post" : {
-        "operationId" : "publishEvent",
+        "operationId" : "publish",
         "tags" : [ "app" ],
         "summary" : "Post Event",
         "responses" : {

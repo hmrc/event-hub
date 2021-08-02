@@ -16,29 +16,13 @@
 
 package uk.gov.hmrc.eventhub.model
 
-import org.bson.types.ObjectId
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.mongo.play.json.formats.{MongoFormats, MongoJavatimeFormats}
 
-import java.time.{Instant, LocalDateTime}
+import java.time.LocalDateTime
 import java.util.UUID
 
 final case class Event(eventId: UUID, subject: String, groupId: String, timeStamp: LocalDateTime, event: JsValue)
 
 object Event {
-  implicit val fmt: OFormat[Event] = Json.format[Event]
-}
-
-case class MongoEvent(_id: ObjectId, createdAt: Instant, event: Event)
-
-object MongoEvent {
-  implicit val oif: Format[ObjectId] = MongoFormats.objectIdFormat
-  implicit val instantF: Format[Instant] = MongoJavatimeFormats.instantFormat
-  implicit val fmt: OFormat[MongoEvent] = ((JsPath \ "_id").format[ObjectId]
-    ~ (JsPath \ "createdAt").format[Instant]
-    ~ (JsPath \ "event").format[Event]
-    )(MongoEvent.apply, unlift(MongoEvent.unapply))
-
-  def newMongoEvent(instant: Instant, e: Event): MongoEvent = MongoEvent(ObjectId.get(), instant, e)
+  implicit val eventFormat: OFormat[Event] = Json.format[Event]
 }

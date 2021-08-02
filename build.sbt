@@ -36,18 +36,21 @@ lazy val microservice = Project(appName, file("."))
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
   .settings(resolvers += Resolver.jcenterRepo)
-  inConfig(IntegrationTest)(
-  scalafmtCoreSettings ++
-    Seq(compileInputs in compile := Def.taskDyn {
-      val task = test in (resolvedScoped.value.scope in scalafmt.key)
-      val previousInputs = (compileInputs in compile).value
-      task.map(_ => previousInputs)
-    }.value)
-)
+  .settings(ScoverageSettings())
+  .settings(
+    inConfig(IntegrationTest)(
+    scalafmtCoreSettings ++
+      Seq(compileInputs in compile := Def.taskDyn {
+        val task = test in (resolvedScoped.value.scope in scalafmt.key)
+        val previousInputs = (compileInputs in compile).value
+        task.map(_ => previousInputs)
+      }.value)
+    )
+  )
 
-lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
-compileScalastyle := scalastyle.in(Compile).toTask("").value
-(compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
+//lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
+//compileScalastyle := scalastyle.in(Compile).toTask("").value
+//(compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
 
 PlayKeys.playDefaultPort := 9050
 

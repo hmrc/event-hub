@@ -18,9 +18,10 @@ package uk.gov.hmrc.eventhub.model
 
 sealed abstract class PublishStatus
 
-case object DuplicateEvent extends PublishStatus
-case object NoSubscribers extends PublishStatus
-case object NoTopics extends PublishStatus
-case object SaveError extends PublishStatus
-case object Published extends PublishStatus
-
+object PublishStatus {
+  case object DuplicateEvent extends PublishStatus
+  case object NoSubscribers extends PublishStatus
+  case object NoTopics extends PublishStatus
+  case object SaveError extends PublishStatus
+  case object Published extends PublishStatus
+}
