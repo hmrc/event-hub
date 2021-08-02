@@ -24,8 +24,8 @@ import java.io.File
 class PublishEventISpec extends ISpec {
   override def externalServices: Seq[String] = Seq.empty[String]
 
-  lazy val topicFromConfig = app.configuration.underlying.getObject("topics").keySet().toArray.head
-  lazy val eventRepository = app.injector.instanceOf[EventRepository]
+  lazy val topicFromConfig: AnyRef = app.configuration.underlying.getObject("topics").keySet().toArray.head
+  lazy val eventRepository: EventRepository = app.injector.instanceOf[EventRepository]
 
   "A POST request to publish/:topic" ignore {
 
