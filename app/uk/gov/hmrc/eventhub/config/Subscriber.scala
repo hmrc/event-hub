@@ -102,87 +102,87 @@ object Subscriber {
           }
     }
 
-  def readUri(config: Config, name: String): Result[Uri] =
+  def readUri(config: Config, parentPath: String): Result[Uri] =
     config
-      .resultValue(path = "uri", parentPath = name)
+      .resultValue(path = "uri", parentPath = parentPath)
       .flatMap(uriReader.from)
 
-  def readHttpMethod(config: Config, name: String): Result[HttpMethod] =
+  def readHttpMethod(config: Config, parentPath: String): Result[HttpMethod] =
     config.readOrDefault(
       path = "http-method",
-      parentPath = name,
+      parentPath = parentPath,
       configReader = httpMethodReader,
       default = SubscriptionDefaults.DefaultHttpMethod
     )
 
   def readElements(
     config: Config,
-    name: String,
+    parentPath: String,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, Int] =
     config.readOrDefault(
       path = "elements",
-      parentPath = name,
+      parentPath = parentPath,
       configReader = intConfigReader,
       default = subscriptionDefaults.elements
     )
 
   def readElementsPer(
     config: Config,
-    name: String,
+    parentPath: String,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, FiniteDuration] =
     config.readOrDefault(
       path = "per",
-      parentPath = name,
+      parentPath = parentPath,
       configReader = finiteDurationConfigReader,
       default = subscriptionDefaults.per
     )
 
   def readMaxConnections(
     config: Config,
-    name: String,
+    parentPath: String,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, Int] =
     config.readOrDefault(
       path = "max-connections",
-      parentPath = name,
+      parentPath = parentPath,
       configReader = intConfigReader,
       default = subscriptionDefaults.maxConnections
     )
 
   def readMinBackOff(
     config: Config,
-    name: String,
+    parentPath: String,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, FiniteDuration] =
     config.readOrDefault(
       path = "min-back-off",
-      parentPath = name,
+      parentPath = parentPath,
       configReader = finiteDurationConfigReader,
       default = subscriptionDefaults.minBackOff
     )
 
   def readMaxBackOff(
     config: Config,
-    name: String,
+    parentPath: String,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, FiniteDuration] =
     config.readOrDefault(
       path = "max-back-off",
-      parentPath = name,
+      parentPath = parentPath,
       configReader = finiteDurationConfigReader,
       default = subscriptionDefaults.maxBackOff
     )
 
   def readMaxRetries(
     config: Config,
-    name: String,
+    parentPath: String,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, Int] =
     config.readOrDefault(
       path = "max-retries",
-      parentPath = name,
+      parentPath = parentPath,
       configReader = intConfigReader,
       default = subscriptionDefaults.maxRetries
     )

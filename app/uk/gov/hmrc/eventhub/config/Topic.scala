@@ -17,10 +17,9 @@
 package uk.gov.hmrc.eventhub.config
 
 import cats.syntax.parallel._
-import cats.syntax.either._
 import com.typesafe.config.{Config, ConfigValue}
 import play.api.ConfigLoader
-import pureconfig.error.{ConfigReaderFailures, ConvertFailure}
+import pureconfig.error.ConfigReaderFailures
 
 import scala.collection.JavaConverters._
 
@@ -43,9 +42,9 @@ object Topic {
     configValue: (String, ConfigValue),
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, Topic] = configValue match {
-    case (name, subscriberList) =>
+    case (topicName, subscriberList) =>
       Subscriber
-        .subscribersFromConfig(name, subscriberList, subscriptionDefaults)
-        .map(Topic(name, _))
+        .subscribersFromConfig(topicName, subscriberList, subscriptionDefaults)
+        .map(Topic(topicName, _))
   }
 }

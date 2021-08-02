@@ -37,6 +37,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(integrationTestSettings(): _*)
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(ScoverageSettings())
+  .settings(inConfig(IntegrationTest)(org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings))
 
 //lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
 //compileScalastyle := scalastyle.in(Compile).toTask("").value
