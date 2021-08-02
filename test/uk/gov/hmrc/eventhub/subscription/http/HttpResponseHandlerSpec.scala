@@ -23,7 +23,8 @@ import org.mockito.MockitoSugar.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
-import uk.gov.hmrc.eventhub.model.TestModels
+import uk.gov.hmrc.eventhub.model.TestModels._
+import uk.gov.hmrc.eventhub.config.TestModels._
 import uk.gov.hmrc.eventhub.repository.SubscriberEventRepository
 import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{EventSendStatus, Failed, Sent}
 import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpResponse
@@ -51,7 +52,7 @@ class HttpResponseHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMo
     handle(failureResponse) mustBe EventSendStatus(event, subscriber, Failed)
   }
 
-  trait Scope extends TestModels {
+  trait Scope {
     val subscriberEventRepository: SubscriberEventRepository = mock[SubscriberEventRepository]
     private val handler = new HttpResponseHandler(subscriberEventRepository)
 

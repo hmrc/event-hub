@@ -23,8 +23,9 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.Materializer
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import uk.gov.hmrc.eventhub.model.{Event, TestModels}
-import uk.gov.hmrc.eventhub.model.TestModels.event
+import uk.gov.hmrc.eventhub.model.Event
+import uk.gov.hmrc.eventhub.model.TestModels._
+import uk.gov.hmrc.eventhub.config.TestModels._
 
 import scala.util.{Failure, Success, Try}
 
@@ -54,7 +55,7 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers {
     private val system: ActorSystem = ActorSystem()
     private val materializer: Materializer = Materializer(system)
 
-    val httpRequest: HttpRequest = HttpRequest(method = POST, uri = TestModels.subscriber.uri)
+    val httpRequest: HttpRequest = HttpRequest(method = POST, uri = subscriber.uri)
     val successfulHttpResponse: HttpResponse = HttpResponse(status = OK)
     val clientErrorHttpResponse: HttpResponse = HttpResponse(status = BadRequest)
     val internalServerErrorHttpResponse: HttpResponse = HttpResponse(status = InternalServerError)
