@@ -24,11 +24,12 @@ import org.scalatest.concurrent.ScalaFutures._
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
-import play.api.libs.ws.{ WSClient, WSResponse }
-import play.api.test.{ DefaultTestServerFactory, RunningServer }
-import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
+import play.api.libs.ws.{WSClient, WSResponse}
+import play.api.test.{DefaultTestServerFactory, RunningServer}
+import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.subscription.SubscriberConfigOps
-import uk.gov.hmrc.eventhub.subscription.model.{ SubscriberServers, SubscriberStub, TestTopic }
+import uk.gov.hmrc.eventhub.subscription.model.{SubscriberServers, SubscriberStub, TestTopic}
 import uk.gov.hmrc.integration.UrlHelper.-/
 import uk.gov.hmrc.mongo.MongoComponent
 
@@ -40,37 +41,32 @@ object Setup {
 
   def scope(testTopics: Set[TestTopic])(test: Setup => Any)(implicit testId: TestId) {
     val setup = new Setup(testTopics, testId)
-    try {
-      test(setup)
-    } finally setup.shutdown()
+    try test(setup)
+    finally setup.shutdown()
   }
 }
 
 class Setup private (testTopics: Set[TestTopic], testId: TestId) {
   private val subscriberServers: Set[SubscriberServers] = testTopics.map { topic =>
-    val subscriberServers = topic.subscriberStubs.map {
-      case SubscriberStub(subscriber, stubMapping) =>
-        val server = new WireMockServer(
-          wireMockConfig()
-            .dynamicHttpsPort()
-            .dynamicPort()
-            .notifier(new Slf4jNotifier(true))
-        )
+    val subscriberServers = topic.subscriberStubs.map { case SubscriberStub(subscriber, stubMapping) =>
+      val server = new WireMockServer(
+        wireMockConfig().dynamicHttpsPort().dynamicPort().notifier(new Slf4jNotifier(true))
+      )
 
-        server.start()
-        server.addStubMapping(stubMapping)
-        server -> subscriber.copy(
-          uri = subscriber.uri
-            .withPort(if (subscriber.uri.scheme == "https") server.httpsPort() else server.port())
-        )
+      server.start()
+      server.addStubMapping(stubMapping)
+      server -> subscriber.copy(
+        uri = subscriber.uri.withPort(if (subscriber.uri.scheme == "https") server.httpsPort() else server.port())
+      )
     }
     SubscriberServers(topic.name, subscriberServers)
   }
 
-  private val topicsConfig = subscriberServers.map { topic =>
-    topic.topicName -> topic.subscriberServers.map {
-      case (_, subscriber) => subscriber.asConfigMap
-    }
+  private val topicsConfig = subscriberServers.flatMap { topic =>
+    topic
+      .subscriberServers
+      .flatMap { case (_, subscriber) => subscriber.asConfigMap(topic.topicName) }
+      .toMap
   }.toMap
 
   private val application: Application = new GuiceApplicationBuilder()
@@ -82,14 +78,15 @@ class Setup private (testTopics: Set[TestTopic], testId: TestId) {
 
   private val runningServer: RunningServer = DefaultTestServerFactory.start(application)
 
-  private val port: Int = runningServer.endpoints.httpEndpoint
+  private val port: Int = runningServer
+    .endpoints
+    .httpEndpoint
     .fold(throw new IllegalStateException("No HTTP port available for test server"))(_.port)
 
   private val client: WSClient = application.injector.instanceOf[WSClient]
   private val mongoComponent: MongoComponent = application.injector.instanceOf[MongoComponent]
 
-  val subscribers: Set[Subscriber] = subscriberServers
-    .flatMap(_.subscriberServers.map(_._2))
+  val subscribers: Set[Subscriber] = subscriberServers.flatMap(_.subscriberServers.map(_._2))
 
   val materializer: Materializer = application.injector.instanceOf[Materializer]
 
@@ -100,24 +97,15 @@ class Setup private (testTopics: Set[TestTopic], testId: TestId) {
       .post(Json.toJson(event))
 
   def subscriberServer(subscriptionName: String): Option[WireMockServer] =
-    subscriberServers
-      .flatMap(_.subscriberServers.find(_._2.name == subscriptionName).map(_._1))
-      .headOption
+    subscriberServers.flatMap(_.subscriberServers.find(_._2.name == subscriptionName).map(_._1)).headOption
 
   private def shutdown(): Unit = {
-    subscriberServers
-      .foreach(_.subscriberServers.foreach(_._1.stop()))
+    subscriberServers.foreach(_.subscriberServers.foreach(_._1.stop()))
 
-    mongoComponent.database
-      .drop()
-      .toFuture()
-      .futureValue
+    mongoComponent.database.drop().toFuture().futureValue
 
-    runningServer.stopServer
-      .close()
+    runningServer.stopServer.close()
 
-    application
-      .stop()
-      .futureValue
+    application.stop().futureValue
   }
 }

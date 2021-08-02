@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.eventhub.subscription.model
 
-import akka.http.scaladsl.model.{ HttpMethods, StatusCode }
-import com.github.tomakehurst.wiremock.client.WireMock.{ aResponse, post, put, urlEqualTo }
+import akka.http.scaladsl.model.{HttpMethods, StatusCode}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, put, urlEqualTo}
 import com.github.tomakehurst.wiremock.matching.UrlPattern
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import uk.gov.hmrc.eventhub.model.Subscriber
+import uk.gov.hmrc.eventhub.config.Subscriber
 
 case class SubscriberStub(
   subscriber: Subscriber,

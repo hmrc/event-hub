@@ -22,7 +22,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.model.Event
-import uk.gov.hmrc.eventhub.model.TestModels.{ event, workItem }
+import uk.gov.hmrc.eventhub.model.TestModels.{event, workItem}
 import uk.gov.hmrc.mongo.workitem.WorkItem
 
 import scala.concurrent.Future
@@ -34,17 +34,13 @@ class WorkItemSubscriberEventRepositorySpec extends AnyFlatSpec with Matchers wi
   it should "return an event when the underlying work item repo returns a new work item" in new Scope {
     someFutureWorkItem willBe returned by subscriberQueueRepository.getEvent
 
-    workItemSubscriberEventRepository
-      .next()
-      .futureValue shouldBe Some(event)
+    workItemSubscriberEventRepository.next().futureValue shouldBe Some(event)
   }
 
   it should "return None when the underlying work item repo returns None" in new Scope {
     futureNone willBe returned by subscriberQueueRepository.getEvent
 
-    workItemSubscriberEventRepository
-      .next()
-      .futureValue shouldBe None
+    workItemSubscriberEventRepository.next().futureValue shouldBe None
   }
 
   trait Scope {

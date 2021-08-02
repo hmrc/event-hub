@@ -17,23 +17,22 @@
 package uk.gov.hmrc.eventhub.subscription
 
 import akka.NotUsed
-import akka.stream.scaladsl.{ Keep, Sink }
-import akka.stream.{ KillSwitches, Materializer, SharedKillSwitch }
+import akka.stream.scaladsl.{Keep, Sink}
+import akka.stream.{KillSwitches, Materializer, SharedKillSwitch}
 import play.api.Logging
 import play.api.inject.ApplicationLifecycle
-import uk.gov.hmrc.eventhub.model.Topic
+import uk.gov.hmrc.eventhub.config.Topic
 import uk.gov.hmrc.eventhub.subscription.stream._
 
-import javax.inject.{ Inject, Singleton }
-import scala.concurrent.{ ExecutionContext, Future }
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SubscriberPushSubscriptions @Inject()(
+class SubscriberPushSubscriptions @Inject() (
   topics: Set[Topic],
   subscriptionStreamBuilder: SubscriptionStreamBuilder,
   lifecycle: ApplicationLifecycle
-)(
-  implicit
+)(implicit
   materializer: Materializer,
   executionContext: ExecutionContext
 ) extends Logging {
@@ -47,14 +46,16 @@ class SubscriberPushSubscriptions @Inject()(
   logger.info(s"starting subscribers for: $topics")
 
   private val _: Set[NotUsed] =
-    topics.flatMap { topic =>
-      topic.subscribers
-        .map { subscriber =>
-          val stream = subscriptionStreamBuilder.build(subscriber, topic.name)
-          stream
-            .viaMat(subscribersKillSwitch.flow)(Keep.left)
-            .to(Sink.ignore)
-            .run()
-        }
-    }
+    topics
+      .flatMap { topic =>
+        topic
+          .subscribers
+          .map { subscriber =>
+            val stream = subscriptionStreamBuilder.build(subscriber, topic.name)
+            stream
+              .viaMat(subscribersKillSwitch.flow)(Keep.left)
+              .to(Sink.ignore)
+              .run()
+          }
+      }
 }

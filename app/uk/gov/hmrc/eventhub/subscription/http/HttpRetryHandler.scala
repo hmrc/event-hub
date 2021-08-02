@@ -16,14 +16,16 @@
 
 package uk.gov.hmrc.eventhub.subscription.http
 
-import akka.http.scaladsl.model.{ HttpRequest, HttpResponse, StatusCodes }
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.stream.Materializer
 import uk.gov.hmrc.eventhub.model.Event
 
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 trait HttpRetryHandler {
-  def shouldRetry()(implicit materializer: Materializer): ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] = {
+  def shouldRetry()(implicit
+    materializer: Materializer
+  ): ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] = {
     case (inputs @ (_, _), (Success(resp), _)) =>
       resp.entity.discardBytes()
       resp.status match {
@@ -32,8 +34,9 @@ trait HttpRetryHandler {
       }
     case (inputs @ (_, _), (Failure(ex), _)) =>
       ex match {
-        case e: RuntimeException if e.getMessage.contains("The http server closed the connection unexpectedly") => Some(inputs)
-        case _                                                                                                  => None
+        case e: RuntimeException if e.getMessage.contains("The http server closed the connection unexpectedly") =>
+          Some(inputs)
+        case _ => None
       }
   }
 }

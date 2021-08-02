@@ -18,7 +18,9 @@ package uk.gov.hmrc.eventhub
 
 import akka.http.scaladsl.model.HttpMethods
 import play.api.libs.json.Json
-import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
+import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.eventhub.model.Event
+
 import scala.concurrent.duration._
 import java.time.LocalDateTime
 import java.util.UUID
@@ -35,10 +37,41 @@ class EventHubModuleSpec extends ISpec {
       mongoSetup.topics mustBe Map(
         "notConfigured" -> List(),
         "preferences" -> List(
-          Subscriber("bounces", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, maxConnections, 10.millis, 100.millis, 0)),
+          Subscriber(
+            "bounces",
+            "http://localhost:9000/subscriber/email",
+            HttpMethods.POST,
+            1,
+            1.second,
+            maxConnections,
+            10.millis,
+            100.millis,
+            0
+          )
+        ),
         "email" -> List(
-          Subscriber("subscriberName1", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, maxConnections, 10.millis, 100.millis, 0),
-          Subscriber("subscriberName2", "http://localhost:9000/subscriber/email", HttpMethods.POST, 1, 1.second, maxConnections, 10.millis, 100.millis, 0)
+          Subscriber(
+            "subscriberName1",
+            "http://localhost:9000/subscriber/email",
+            HttpMethods.POST,
+            1,
+            1.second,
+            maxConnections,
+            10.millis,
+            100.millis,
+            0
+          ),
+          Subscriber(
+            "subscriberName2",
+            "http://localhost:9000/subscriber/email",
+            HttpMethods.POST,
+            1,
+            1.second,
+            maxConnections,
+            10.millis,
+            100.millis,
+            0
+          )
         )
       )
     }

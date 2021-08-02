@@ -20,7 +20,7 @@ import org.bson.types.ObjectId
 import play.api.libs.functional.syntax.unlift
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.mongo.play.json.formats.{ MongoFormats, MongoJavatimeFormats }
+import uk.gov.hmrc.mongo.play.json.formats.{MongoFormats, MongoJavatimeFormats}
 
 import java.time.Instant
 

@@ -18,13 +18,14 @@ package uk.gov.hmrc.eventhub.repository
 
 import org.mongodb.scala.model.Filters.equal
 import play.api.Configuration
-import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
+import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.PermanentlyFailed
-import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem, WorkItemFields, WorkItemRepository }
+import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem, WorkItemFields, WorkItemRepository}
 
-import java.time.{ Duration, Instant }
-import scala.concurrent.{ ExecutionContext, Future }
+import java.time.{Duration, Instant}
+import scala.concurrent.{ExecutionContext, Future}
 
 class SubscriberQueueRepository(
   topic: String,
@@ -59,7 +60,5 @@ class SubscriberQueueRepository(
     complete(e.id, PermanentlyFailed)
 
   def findAsWorkItem(event: Event): Future[Option[WorkItem[Event]]] =
-    collection
-      .find(equal("item.eventId", event.eventId.toString))
-      .headOption()
+    collection.find(equal("item.eventId", event.eventId.toString)).headOption()
 }

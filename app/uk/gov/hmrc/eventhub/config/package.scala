@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.model
+package uk.gov.hmrc.eventhub
 
-case class Topic(name: String, subscribers: List[Subscriber])
+import cats.kernel.Semigroup
+import pureconfig.error.ConfigReaderFailures
+
+package object config {
+  implicit object semigroupConfigReaderFailures extends Semigroup[ConfigReaderFailures] {
+    override def combine(x: ConfigReaderFailures, y: ConfigReaderFailures): ConfigReaderFailures = x.++(y)
+  }
+}
