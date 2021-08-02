@@ -17,10 +17,11 @@
 package uk.gov.hmrc.eventhub
 
 import akka.http.scaladsl.model.StatusCode
-import com.github.tomakehurst.wiremock.client.WireMock.{ equalTo, equalToJson }
+import com.github.tomakehurst.wiremock.client.WireMock.{equalTo, equalToJson}
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import play.api.libs.json.Json
-import uk.gov.hmrc.eventhub.model.{ Event, Subscriber, Topic }
+import uk.gov.hmrc.eventhub.config.{Subscriber, Topic}
+import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.subscription.model.TestTopic
 
 package object subscription {
@@ -33,17 +34,16 @@ package object subscription {
   }
 
   implicit class SubscriberConfigOps(val subscriber: Subscriber) extends AnyVal {
-    def asConfigMap: Map[String, Any] =
+    def asConfigMap(topicName: String): Map[String, Any] =
       Map(
-        "name"            -> subscriber.name,
-        "uri"             -> subscriber.uri.toString(),
-        "http-method"     -> subscriber.httpMethod.value,
-        "elements"        -> subscriber.elements,
-        "per"             -> subscriber.per.toString(),
-        "max-connections" -> subscriber.maxConnections,
-        "min-back-off"    -> subscriber.minBackOff.toString(),
-        "max-back-off"    -> subscriber.maxBackOff.toString(),
-        "max-retries"     -> subscriber.maxRetries
+        s"$topicName.${subscriber.name}.uri"             -> subscriber.uri.toString(),
+        s"$topicName.${subscriber.name}.http-method"     -> subscriber.httpMethod.value,
+        s"$topicName.${subscriber.name}.elements"        -> subscriber.elements,
+        s"$topicName.${subscriber.name}.per"             -> subscriber.per.toString(),
+        s"$topicName.${subscriber.name}.max-connections" -> subscriber.maxConnections,
+        s"$topicName.${subscriber.name}.min-back-off"    -> subscriber.minBackOff.toString(),
+        s"$topicName.${subscriber.name}.max-back-off"    -> subscriber.maxBackOff.toString(),
+        s"$topicName.${subscriber.name}.max-retries"     -> subscriber.maxRetries
       )
   }
 

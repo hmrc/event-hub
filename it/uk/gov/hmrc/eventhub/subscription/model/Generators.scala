@@ -17,11 +17,11 @@
 package uk.gov.hmrc.eventhub.subscription.model
 
 import org.scalacheck.Gen
-import play.api.libs.json.{ JsObject, JsString, JsValue }
+import play.api.libs.json.{JsObject, JsString, JsValue}
 import uk.gov.hmrc.eventhub.model.Event
 
 import java.time.format.DateTimeFormatter
-import java.time.{ Instant, LocalDate, LocalDateTime, ZoneOffset }
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 
 object Generators {
   val fencingSubjectsGen: Gen[String] = Gen.oneOf(
@@ -81,15 +81,14 @@ object Generators {
       detected  <- localDateTimeGen
       reason    <- Gen.oneOf("Not delivering to previously bounced address", "Virgin bounce")
       enrolment <- Gen.const("HMRC-MTD-VAT~VRN~GB123456789")
-    } yield
-      JsObject(
-        Seq(
-          "event"     -> JsString(event),
-          "email"     -> JsString(email),
-          "detected"  -> JsString(detected.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)),
-          "reason"    -> JsString(reason),
-          "enrolment" -> JsString(enrolment)
-        )
+    } yield JsObject(
+      Seq(
+        "event"     -> JsString(event),
+        "email"     -> JsString(email),
+        "detected"  -> JsString(detected.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)),
+        "reason"    -> JsString(reason),
+        "enrolment" -> JsString(enrolment)
       )
+    )
   }
 }

@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.eventhub.subscription
 
-import akka.http.scaladsl.model.StatusCodes.{ InternalServerError, OK }
-import akka.stream.scaladsl.{ Sink, Source }
+import akka.http.scaladsl.model.StatusCodes.{InternalServerError, OK}
+import akka.stream.scaladsl.{Sink, Source}
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -35,26 +35,27 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
 
   behavior of "SubscriberPushSubscriptions"
 
-  ignore should "push an event to a registered subscriber" in scope(channelPreferencesBouncedEmails returning OK) { setup =>
-    val response = setup
-      .postToTopic(BoundedEmailsTopic, event)
-      .futureValue
+  ignore should "push an event to a registered subscriber" in scope(channelPreferencesBouncedEmails returning OK) {
+    setup =>
+      val response = setup
+        .postToTopic(EmailTopic, event)
+        .futureValue
 
-    response.status mustBe CREATED
+      response.status mustBe CREATED
 
-    val channelPreferencesServer = setup
-      .subscriberServer(ChannelPreferencesBounced)
-      .value
+      val channelPreferencesServer = setup
+        .subscriberServer(ChannelPreferencesBounced)
+        .value
 
-    oneSecond {
-      channelPreferencesServer
-        .verify(postRequestedFor(urlEqualTo(ChannelPreferencesBouncedPath)).withEventJson(event))
-    }
+      oneSecond {
+        channelPreferencesServer
+          .verify(postRequestedFor(urlEqualTo(ChannelPreferencesBouncedPath)).withEventJson(event))
+      }
   }
 
   ignore should "push an event to registered subscribers" in scope(bouncedEmails returning OK) { setup =>
     val response = setup
-      .postToTopic(BoundedEmailsTopic, event)
+      .postToTopic(EmailTopic, event)
       .futureValue
 
     response.status mustBe CREATED
@@ -80,12 +81,13 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
     forAll { eventList: List[Event] =>
       val sentEvents =
         Source(eventList)
-          .mapAsyncUnordered(1)(event => setup.postToTopic(BoundedEmailsTopic, event).map(_ -> event))
+          .mapAsyncUnordered(1)(event => setup.postToTopic(EmailTopic, event).map(_ -> event))
           .collect { case (result, event) if result.status == CREATED => event }
           .runWith(Sink.seq)(setup.materializer)
           .futureValue
 
-      setup.subscribers
+      setup
+        .subscribers
         .foreach { subscriber =>
           val server = setup
             .subscriberServer(subscriber.name)
@@ -103,15 +105,18 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
     }
   }
 
-  ignore should "apply retry with exponential back-off" in scope(channelPreferencesBouncedEmails returning InternalServerError) { setup =>
+  ignore should "apply retry with exponential back-off" in scope(
+    channelPreferencesBouncedEmails returning InternalServerError
+  ) { setup =>
     forAll { event: Event =>
       val response = setup
-        .postToTopic(BoundedEmailsTopic, event)
+        .postToTopic(EmailTopic, event)
         .futureValue
 
       response.status mustBe CREATED
 
-      setup.subscribers
+      setup
+        .subscribers
         .foreach { subscriber =>
           val server = setup
             .subscriberServer(subscriber.name)

@@ -16,22 +16,31 @@
 
 package uk.gov.hmrc.eventhub.config
 
+import akka.http.scaladsl.model.HttpMethod
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 import pureconfig.ConfigSource
+import akka.http.scaladsl.model.HttpMethods.POST
 import pureconfig.generic.auto._
 
 import scala.concurrent.duration.FiniteDuration
 
-case class SubscriberStreamConfig(
-  eventPollingInterval: FiniteDuration
+case class SubscriptionDefaults(
+  elements: Int,
+  per: FiniteDuration,
+  maxConnections: Int,
+  minBackOff: FiniteDuration,
+  maxBackOff: FiniteDuration,
+  maxRetries: Int
 )
 
-object SubscriberStreamConfig {
-  implicit val configReader: ConfigLoader[SubscriberStreamConfig] = (rootConfig: Config, path: String) =>
-    ConfigSource.fromConfig(rootConfig.getConfig(path)).load[SubscriberStreamConfig] match {
+object SubscriptionDefaults {
+  val DefaultHttpMethod: HttpMethod = POST
+
+  implicit val configLoader: ConfigLoader[SubscriptionDefaults] = (rootConfig: Config, path: String) =>
+    ConfigSource.fromConfig(rootConfig.getConfig(path)).load[SubscriptionDefaults] match {
       case Left(value) =>
-        throw new IllegalArgumentException(s"could not load subscriber stream config: ${value.prettyPrint()}")
+        throw new IllegalArgumentException(s"could not load subscription defaults: ${value.prettyPrint()}")
       case Right(value) => value
     }
 }

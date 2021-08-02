@@ -20,9 +20,10 @@ import akka.NotUsed
 import akka.http.scaladsl.HttpExt
 import akka.http.scaladsl.model._
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ Flow, RetryFlow }
+import akka.stream.scaladsl.{Flow, RetryFlow}
 import play.api.Logging
-import uk.gov.hmrc.eventhub.model.{ Event, Subscriber }
+import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.subscription.http.HttpRetryHandler
 import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpFlow.RandomFactor
 
@@ -36,17 +37,12 @@ class SubscriberEventHttpFlow(
 )(implicit materializer: Materializer, executionContext: ExecutionContext)
     extends Logging {
 
-  private val httpFlow = {
-    Flow[(HttpRequest, Event)]
-      .mapAsyncUnordered(subscriber.maxConnections) {
-        case (request, event) =>
-          httpExt
-            .singleRequest(request)
-            .transform { result =>
-              Try(result -> event)
-            }
-      }
-  }
+  private val httpFlow =
+    Flow[(HttpRequest, Event)].mapAsyncUnordered(subscriber.maxConnections) { case (request, event) =>
+      httpExt
+        .singleRequest(request)
+        .transform(result => Try(result -> event))
+    }
 
   def flow: Flow[(HttpRequest, Event), SubscriberEventHttpResponse, NotUsed] = {
     val retryHttpFlow: Flow[(HttpRequest, Event), (Try[HttpResponse], Event), NotUsed] =
@@ -58,9 +54,7 @@ class SubscriberEventHttpFlow(
         flow = httpFlow
       )(httpRetryHandler.shouldRetry())
 
-    Flow[(HttpRequest, Event)]
-      .via(retryHttpFlow)
-      .map(response)
+    Flow[(HttpRequest, Event)].via(retryHttpFlow).map(response)
   }
 
   private def response(tuple: (Try[HttpResponse], Event)): SubscriberEventHttpResponse = tuple match {

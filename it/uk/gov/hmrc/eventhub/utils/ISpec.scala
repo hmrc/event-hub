@@ -17,7 +17,7 @@
 package uk.gov.hmrc.eventhub.utils
 
 import org.scalatest.OptionValues
-import org.scalatest.concurrent.{ IntegrationPatience, ScalaFutures }
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.must.Matchers
 
 trait ISpec extends ScalaFutures with OptionValues with Matchers with IntegrationPatience with EventualDefaults {

@@ -16,13 +16,11 @@
 
 package uk.gov.hmrc.eventhub.model
 
-import akka.http.scaladsl.model.{ HttpMethods, Uri }
 import org.bson.types.ObjectId
 import play.api.libs.json.Json
-import uk.gov.hmrc.mongo.workitem.{ ProcessingStatus, WorkItem }
+import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem}
 
-import scala.concurrent.duration._
-import java.time.{ Instant, LocalDateTime }
+import java.time.{Instant, LocalDateTime}
 import java.util.UUID
 
 trait TestModels {
@@ -56,25 +54,6 @@ trait TestModels {
     ProcessingStatus.ToDo,
     0,
     event
-  )
-
-  val MaxConnections = 4
-
-  val subscriber: Subscriber = Subscriber(
-    name = "foo subscriber",
-    uri = Uri("http://localhost:8080/foo"),
-    httpMethod = HttpMethods.POST,
-    elements = 0,
-    per = 1.second,
-    maxConnections = MaxConnections,
-    minBackOff = 1.second,
-    maxBackOff = 2.seconds,
-    maxRetries = 2
-  )
-
-  val idempotentSubscriber: Subscriber = subscriber.copy(
-    httpMethod = HttpMethods.PUT,
-    uri = Uri("http://localhost:8081/foo")
   )
 }
 

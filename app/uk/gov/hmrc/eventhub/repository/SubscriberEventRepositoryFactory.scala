@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.repository
 
-import uk.gov.hmrc.eventhub.model.Subscriber
+import uk.gov.hmrc.eventhub.config.Subscriber
 
 trait SubscriberEventRepositoryFactory {
   def apply(subscriber: Subscriber, topic: String): SubscriberEventRepository

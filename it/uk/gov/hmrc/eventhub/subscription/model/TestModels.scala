@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.eventhub.subscription.model
 
-import akka.http.scaladsl.model.{ HttpMethods, Uri }
+import akka.http.scaladsl.model.{HttpMethods, Uri}
 import play.api.libs.json.Json
-import uk.gov.hmrc.eventhub.model.{ Event, Subscriber, Topic }
-import scala.concurrent.duration._
+import uk.gov.hmrc.eventhub.config.{Subscriber, Topic}
+import uk.gov.hmrc.eventhub.model.Event
 
+import scala.concurrent.duration._
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -42,15 +43,15 @@ object TestModels {
 
     val event: Event = Event(
       eventId = UUID.randomUUID(),
-      subject = "foo bar",
-      groupId = "in the bar",
+      subject = "bounced",
+      groupId = "foo bar baz",
       timeStamp = LocalDateTime.now(),
       event = eventJson
     )
   }
 
   object Subscriptions {
-    val BoundedEmailsTopic = "bounced-emails"
+    val EmailTopic = "email"
     val ChannelPreferencesBounced = "channel-preferences-bounced"
     val ChannelPreferencesBouncedPath = "/channel-preferences/process/bounce"
 
@@ -67,7 +68,7 @@ object TestModels {
       maxConnections = MaxConnections,
       minBackOff = 10.millis,
       maxBackOff = 1.second,
-      maxRetries = MaxRetries,
+      maxRetries = MaxRetries
     )
 
     val AnotherPartyBounced = "another-party-bounced"
@@ -82,11 +83,11 @@ object TestModels {
       maxConnections = MaxConnections,
       minBackOff = 100.millis,
       maxBackOff = 5.minutes,
-      maxRetries = MaxRetries,
+      maxRetries = MaxRetries
     )
 
     val channelPreferencesBouncedEmails: Topic = Topic(
-      BoundedEmailsTopic,
+      EmailTopic,
       List(
         channelPreferences
       )
@@ -94,7 +95,7 @@ object TestModels {
 
     val bouncedEmails: Set[Topic] = Set(
       Topic(
-        BoundedEmailsTopic,
+        EmailTopic,
         List(
           channelPreferences,
           anotherParty

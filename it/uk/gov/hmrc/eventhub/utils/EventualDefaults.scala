@@ -17,11 +17,11 @@
 package uk.gov.hmrc.eventhub.utils
 
 import org.scalatest.concurrent.Eventually.eventually
-import org.scalatest.concurrent.Waiters.{ interval, timeout }
+import org.scalatest.concurrent.Waiters.{interval, timeout}
 import scala.concurrent.duration._
 
 trait EventualDefaults {
-  def oneSecond[T](fun: => T): T = eventually(timeout(1.second), interval(100.milliseconds)) { fun }
+  def oneSecond[T](fun: => T): T = eventually(timeout(1.second), interval(100.milliseconds))(fun)
 
-  def oneMinute[T](fun: => T): T = eventually(timeout(1.minute), interval(100.milliseconds)) { fun }
+  def oneMinute[T](fun: => T): T = eventually(timeout(1.minute), interval(100.milliseconds))(fun)
 }

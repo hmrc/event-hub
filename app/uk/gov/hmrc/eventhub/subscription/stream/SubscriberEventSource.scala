@@ -26,18 +26,14 @@ import uk.gov.hmrc.eventhub.repository.SubscriberEventRepository
 
 import java.util.concurrent.Callable
 import scala.concurrent.duration._
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * Polls for work items, emits when there is an available work item and downstream demand
+/** Polls for work items, emits when there is an available work item and downstream demand
   */
 class SubscriberEventSource(
   subscriberEventRepository: SubscriberEventRepository,
-  pollingDelay: FiniteDuration
-)(
-  implicit
-  scheduler: Scheduler,
-  executionContext: ExecutionContext)
+  pollingInterval: FiniteDuration
+)(implicit scheduler: Scheduler, executionContext: ExecutionContext)
     extends Logging {
 
   private def onPull: Unit => Future[Option[(Unit, Event)]] = { _ =>
@@ -48,13 +44,13 @@ class SubscriberEventSource(
 
   private def pullLogic(readResult: Option[Event]): Future[Option[(Unit, Event)]] = readResult match {
     case None =>
-      after(pollingDelay, scheduler, executionContext, onPullCallable)
+      after(pollingInterval, scheduler, executionContext, onPullCallable)
     case Some(event) =>
       logger.debug(s"\nfound event:\n $event")
       Future.successful(Some(() -> event))
   }
 
-  private def onPullCallable: Callable[Future[Option[(Unit, Event)]]] =
+  private val onPullCallable: Callable[Future[Option[(Unit, Event)]]] =
     new Callable[Future[Option[(Unit, Event)]]] {
       override def call: Future[Option[(Unit, Event)]] = onPull(())
     }

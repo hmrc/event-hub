@@ -16,19 +16,12 @@
 
 package uk.gov.hmrc.eventhub.utils
 
-import org.mongodb.scala.{ ClientSessionOptions, ReadConcern, TransactionOptions, WriteConcern }
+import org.mongodb.scala.{ClientSessionOptions, ReadConcern, TransactionOptions, WriteConcern}
 
 object TransactionConfiguration {
-  val sessionOptions =
-    ClientSessionOptions
-      .builder()
-      .causallyConsistent(true)
-      .build()
+  val sessionOptions: ClientSessionOptions =
+    ClientSessionOptions.builder().causallyConsistent(true).build()
 
-  val transactionOptions =
-    TransactionOptions
-      .builder()
-      .readConcern(ReadConcern.SNAPSHOT)
-      .writeConcern(WriteConcern.MAJORITY)
-      .build()
+  val transactionOptions: TransactionOptions =
+    TransactionOptions.builder().readConcern(ReadConcern.SNAPSHOT).writeConcern(WriteConcern.MAJORITY).build()
 }

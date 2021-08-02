@@ -24,10 +24,10 @@ import org.mockito.MockitoSugar.mock
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.http.{ ContentTypes, Status }
+import play.api.http.{ContentTypes, Status}
 import play.api.libs.json.Json
-import play.api.test.Helpers.{ CONTENT_TYPE, contentAsString, defaultAwaitTimeout, status }
-import play.api.test.{ FakeHeaders, FakeRequest, Helpers }
+import play.api.test.Helpers.{CONTENT_TYPE, contentAsString, defaultAwaitTimeout, status}
+import play.api.test.{FakeHeaders, FakeRequest, Helpers}
 import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.service.PublisherService
 
@@ -44,7 +44,12 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
         new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
 
       private val fakeRequest =
-        FakeRequest("POST", routes.PublishController.publish("email").url, FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)), Json.parse(validPayload))
+        FakeRequest(
+          "POST",
+          routes.PublishController.publish("email").url,
+          FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)),
+          Json.parse(validPayload)
+        )
 
       val result = controller.publish("email")(fakeRequest)
       status(result) shouldBe Status.CREATED
@@ -58,7 +63,12 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
         new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
 
       private val fakeRequest =
-        FakeRequest("POST", routes.PublishController.publish("email").url, FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)), Json.parse(validPayload))
+        FakeRequest(
+          "POST",
+          routes.PublishController.publish("email").url,
+          FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)),
+          Json.parse(validPayload)
+        )
 
       val result = controller.publish("email")(fakeRequest)
       status(result) shouldBe Status.CREATED
@@ -73,7 +83,12 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
         new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
 
       private val fakeRequest =
-        FakeRequest("POST", routes.PublishController.publish("email").url, FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)), Json.parse(validPayload))
+        FakeRequest(
+          "POST",
+          routes.PublishController.publish("email").url,
+          FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)),
+          Json.parse(validPayload)
+        )
 
       val result = controller.publish("email")(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
@@ -88,7 +103,12 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
         new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
 
       private val fakeRequest =
-        FakeRequest("POST", routes.PublishController.publish("email").url, FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)), Json.parse(validPayload))
+        FakeRequest(
+          "POST",
+          routes.PublishController.publish("email").url,
+          FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)),
+          Json.parse(validPayload)
+        )
 
       val result = controller.publish("email")(fakeRequest)
       status(result) shouldBe Status.CREATED
@@ -103,7 +123,12 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
         new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
 
       private val fakeRequest =
-        FakeRequest("POST", routes.PublishController.publish("email").url, FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)), Json.parse(validPayload))
+        FakeRequest(
+          "POST",
+          routes.PublishController.publish("email").url,
+          FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)),
+          Json.parse(validPayload)
+        )
 
       val result = controller.publish("email")(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
@@ -114,7 +139,12 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
       val controller: PublishController =
         new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
       val fakeRequest =
-        FakeRequest("POST", routes.PublishController.publish("email").url, FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)), Json.parse(inValidPayload))
+        FakeRequest(
+          "POST",
+          routes.PublishController.publish("email").url,
+          FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)),
+          Json.parse(inValidPayload)
+        )
 
       val result = controller.publish("email")(fakeRequest)
       status(result) mustBe Status.BAD_REQUEST
