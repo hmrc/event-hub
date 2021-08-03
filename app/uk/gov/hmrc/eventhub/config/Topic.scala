@@ -36,14 +36,15 @@ object Topic {
         .from(rootConfig.getValue(path))
         .map(_.asScala.toList)
         .flatMap(_.parTraverse(topicsFromConfig(_, subscriptionDefaults)))
-        .valueOr { error => throw new IllegalArgumentException(error.prettyPrint()) }
+        .valueOr(error => throw new IllegalArgumentException(error.prettyPrint()))
         .toSet
 
   private def topicsFromConfig(
     configValue: (String, ConfigValue),
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, Topic] = configValue match {
-    case (topicName, subscriberList) if subscriberList.valueType() == ConfigValueType.STRING => Topic.empty(topicName).asRight
+    case (topicName, subscriberList) if subscriberList.valueType() == ConfigValueType.STRING =>
+      Topic.empty(topicName).asRight
     case (topicName, subscriberList) =>
       Subscriber
         .subscribersFromConfig(topicName, subscriberList, subscriptionDefaults)
