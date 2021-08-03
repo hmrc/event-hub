@@ -129,6 +129,18 @@ class TopicSpec extends AnyFlatSpec with Matchers {
       .load(config, "topics") shouldBe complexTopics
   }
 
+  it should "load a topic with no subscribers" in {
+    val config: Config = ConfigFactory.parseString(
+      s"""
+        |topics.email=""
+        |""".stripMargin
+    )
+
+    Topic
+      .configLoader(subscriptionDefaults)
+      .load(config, "topics") shouldBe Set(Topic("email", Nil))
+  }
+
   it should "fail to load when a subscribers uri property is not defined" in {
     val config: Config = ConfigFactory.parseString(s"""
          |topics.email.${subscriber.name}.http-method="POST"
@@ -150,13 +162,15 @@ class TopicSpec extends AnyFlatSpec with Matchers {
          |topics.email.${subscriberTwo.name}.uri="${subscriberTwo.uri}"
          |topics.letter.${subscriberThree.name}.uri="${subscriberThree.uri}"
          |topics.telephone.${subscriberFour.name}.uri="${subscriberFour.uri}"
+         |topics.empty=""
          |""".stripMargin
 
     val complexTopics: Set[Topic] =
       Set(
         Topic("email", List(subscriber, subscriberTwo)),
         Topic("letter", List(subscriberThree)),
-        Topic("telephone", List(subscriberFour))
+        Topic("telephone", List(subscriberFour)),
+        Topic.empty("empty")
       )
   }
 }

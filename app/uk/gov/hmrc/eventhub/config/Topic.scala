@@ -17,8 +17,10 @@
 package uk.gov.hmrc.eventhub.config
 
 import cats.syntax.parallel._
-import com.typesafe.config.{Config, ConfigValue}
+import cats.syntax.either._
+import com.typesafe.config.{Config, ConfigValue, ConfigValueType}
 import play.api.ConfigLoader
+import pureconfig.ConfigReader.configObjectConfigReader
 import pureconfig.error.ConfigReaderFailures
 
 import scala.collection.JavaConverters._
@@ -26,22 +28,22 @@ import scala.collection.JavaConverters._
 case class Topic(name: String, subscribers: List[Subscriber])
 
 object Topic {
+  def empty(name: String): Topic = Topic(name, Nil)
+
   def configLoader(subscriptionDefaults: SubscriptionDefaults): ConfigLoader[Set[Topic]] =
     (rootConfig: Config, path: String) =>
-      rootConfig
-        .getObject(path)
-        .asScala
-        .toList
-        .parTraverse(topicsFromConfig(_, subscriptionDefaults)) match {
-        case Right(topics) => topics.toSet
-        case Left(configReaderFailures) =>
-          throw new IllegalArgumentException(configReaderFailures.prettyPrint())
-      }
+      configObjectConfigReader
+        .from(rootConfig.getValue(path))
+        .map(_.asScala.toList)
+        .flatMap(_.parTraverse(topicsFromConfig(_, subscriptionDefaults)))
+        .valueOr { error => throw new IllegalArgumentException(error.prettyPrint()) }
+        .toSet
 
   private def topicsFromConfig(
     configValue: (String, ConfigValue),
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, Topic] = configValue match {
+    case (topicName, subscriberList) if subscriberList.valueType() == ConfigValueType.STRING => Topic.empty(topicName).asRight
     case (topicName, subscriberList) =>
       Subscriber
         .subscribersFromConfig(topicName, subscriberList, subscriptionDefaults)
