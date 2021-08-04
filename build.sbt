@@ -20,7 +20,7 @@ lazy val microservice = Project(appName, file("."))
     SwaggerPlugin
   )
   .settings(
-    majorVersion                     := 0,
+    majorVersion                     := 2,
     scalaVersion                     := "2.12.13",
     libraryDependencies              ++= Dependencies.libraries,
     // ***************
