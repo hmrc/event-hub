@@ -22,6 +22,7 @@ import akka.http.scaladsl.HttpExt
 import akka.stream.Attributes
 import akka.stream.Attributes.LogLevels
 import akka.stream.scaladsl.Source
+import uk.gov.hmrc.eventhub.cluster.ServiceInstances
 import uk.gov.hmrc.eventhub.config.{Subscriber, SubscriberStreamConfig}
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.repository.SubscriberEventRepositoryFactory
@@ -35,6 +36,7 @@ import scala.concurrent.ExecutionContext
 class SubscriptionStreamBuilder @Inject() (
   subscriberEventRepositoryFactory: SubscriberEventRepositoryFactory,
   subscriberStreamConfig: SubscriberStreamConfig,
+  serviceInstances: ServiceInstances,
   httpExt: HttpExt
 )(implicit actorSystem: ActorSystem, executionContext: ExecutionContext) {
 
@@ -50,6 +52,7 @@ class SubscriptionStreamBuilder @Inject() (
 
     source
       .map(requestBuilder)
+      .throttle(subscriber.elements, subscriber.per, _ => subscriber.elements / serviceInstances.instanceCount.max(1))
       .via(httpFlow)
       .mapAsync(parallelism = subscriber.maxConnections)(responseHandler)
       .log(s"$topic-${subscriber.name} subscription")
