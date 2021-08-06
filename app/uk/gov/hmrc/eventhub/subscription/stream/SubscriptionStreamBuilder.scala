@@ -52,7 +52,7 @@ class SubscriptionStreamBuilder @Inject() (
 
     source
       .map(requestBuilder)
-      .throttle(subscriber.elements, subscriber.per, _ => subscriber.elements / serviceInstances.instanceCount.max(1))
+      .throttle(subscriber.elements, subscriber.per, _ => serviceInstances.instanceCount.max(1))
       .via(httpFlow)
       .mapAsync(parallelism = subscriber.maxConnections)(responseHandler)
       .log(s"$topic-${subscriber.name} subscription")
