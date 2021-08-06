@@ -29,7 +29,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.config.Subscriber
 import uk.gov.hmrc.eventhub.config.TestModels._
-import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.model.TestModels._
 import uk.gov.hmrc.eventhub.subscription.http.{HttpClient, HttpEventRequestBuilder, HttpRetryHandler}
 import org.mockito.ArgumentMatchersSugar.*
@@ -45,7 +44,7 @@ class SubscriberEventHttpFlowSpec
 
   it should "handle a successful response" in new Scope {
     when(httpClient.singleRequest(httpRequest)).thenAnswer(Future.successful(httpResponse))
-    when(retryMock(*, *)).thenAnswer(None)
+    when(httpRetryHandler.shouldRetry(*, *)).thenAnswer(None)
 
     Source
       .single(httpRequest -> event)
@@ -53,12 +52,12 @@ class SubscriberEventHttpFlowSpec
       .runWith(Sink.head)
       .futureValue shouldBe SubscriberEventHttpResponse(Try(httpResponse), event, subscriber)
 
-    retryMock.apply(*, *) wasCalled once
+    httpRetryHandler.shouldRetry(*, *) wasCalled once
   }
 
   it should "handle retry calling the function returned from `httpRetryHandler.shouldRetry` * `subscriber.maxRetries`" in new Scope {
     when(httpClient.singleRequest(httpRequest)).thenAnswer(Future.successful(httpResponse))
-    when(retryMock(*, *))
+    when(httpRetryHandler.shouldRetry(*, *))
       .thenAnswer(Some(httpRequest, event))
       .andThenAnswer(Some(httpRequest, event))
 
@@ -69,13 +68,13 @@ class SubscriberEventHttpFlowSpec
       .futureValue shouldBe SubscriberEventHttpResponse(Try(httpResponse), event, subscriber)
 
     threeSeconds {
-      retryMock.apply(*, *) wasCalled Times(subscriber.maxRetries)
+      httpRetryHandler.shouldRetry(*, *) wasCalled Times(subscriber.maxRetries)
     }
   }
 
   it should "handle a failure response" in new Scope {
     when(httpClient.singleRequest(httpRequest)).thenAnswer(Future.failed(new IllegalStateException("boom")))
-    when(retryMock(*, *)).thenAnswer(None)
+    when(httpRetryHandler.shouldRetry(*, *)).thenAnswer(None)
 
     Source
       .single(httpRequest -> event)
@@ -87,19 +86,14 @@ class SubscriberEventHttpFlowSpec
       .get
       .getMessage shouldBe "boom"
 
-    retryMock.apply(*, *) wasCalled once
+    httpRetryHandler.shouldRetry(*, *) wasCalled once
   }
 
   trait Scope {
     private val system: ActorSystem = ActorSystem("SubscriberEventHttpFlowSpec")
     implicit val materializer: Materializer = Materializer(system)
 
-    private val httpRetryHandler: HttpRetryHandler = mock[HttpRetryHandler]
-    val retryMock: ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] =
-      mock[((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)]]
-
-    when(httpRetryHandler.shouldRetry).thenAnswer(retryMock)
-
+    val httpRetryHandler: HttpRetryHandler = mock[HttpRetryHandler]
     val httpClient: HttpClient = mock[HttpClient]
 
     val httpRequest: HttpRequest = HttpEventRequestBuilder.build(subscriber, event)

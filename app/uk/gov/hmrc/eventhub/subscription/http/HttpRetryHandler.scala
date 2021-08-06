@@ -24,23 +24,27 @@ import javax.inject.{Inject, Singleton}
 import scala.util.{Failure, Success, Try}
 
 trait HttpRetryHandler {
-  def shouldRetry: ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)]
+  def shouldRetry(input: (HttpRequest, Event), output: (Try[HttpResponse], Event)): Option[(HttpRequest, Event)]
 }
 
 @Singleton
 class HttpRetryHandlerImpl @Inject() (implicit materializer: Materializer) extends HttpRetryHandler {
-  override def shouldRetry: ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] = {
-    case (inputs @ (_, _), (Success(resp), _)) =>
-      resp.entity.discardBytes()
-      resp.status match {
-        case StatusCodes.Success(_) | StatusCodes.ClientError(_) => None
-        case _                                                   => Some(inputs)
-      }
-    case (inputs @ (_, _), (Failure(ex), _)) =>
-      ex match {
-        case e: RuntimeException if e.getMessage.contains("The http server closed the connection unexpectedly") =>
-          Some(inputs)
-        case _ => None
-      }
-  }
+  override def shouldRetry(
+    input: (HttpRequest, Event),
+    output: (Try[HttpResponse], Event)
+  ): Option[(HttpRequest, Event)] =
+    output match {
+      case (Success(resp), _) =>
+        resp.entity.discardBytes()
+        resp.status match {
+          case StatusCodes.ServerError(_) | StatusCodes.TooManyRequests => Some(input)
+          case _                                                        => None
+        }
+      case (Failure(ex), _) =>
+        ex match {
+          case e: RuntimeException if e.getMessage.contains("The http server closed the connection unexpectedly") =>
+            Some(input)
+          case _ => None
+        }
+    }
 }
