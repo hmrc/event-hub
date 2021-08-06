@@ -60,7 +60,9 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers {
     val clientErrorHttpResponse: HttpResponse = HttpResponse(status = BadRequest)
     val internalServerErrorHttpResponse: HttpResponse = HttpResponse(status = InternalServerError)
 
+    val httpRetryHandler = new HttpRetryHandlerImpl()(materializer)
+
     def shouldRetry: ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] =
-      HttpRetryHandler.shouldRetry()(materializer)
+      httpRetryHandler.shouldRetry
   }
 }

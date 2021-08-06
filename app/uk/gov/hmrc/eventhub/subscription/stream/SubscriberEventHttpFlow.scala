@@ -17,14 +17,13 @@
 package uk.gov.hmrc.eventhub.subscription.stream
 
 import akka.NotUsed
-import akka.http.scaladsl.HttpExt
 import akka.http.scaladsl.model._
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, RetryFlow}
 import play.api.Logging
 import uk.gov.hmrc.eventhub.config.Subscriber
 import uk.gov.hmrc.eventhub.model.Event
-import uk.gov.hmrc.eventhub.subscription.http.HttpRetryHandler
+import uk.gov.hmrc.eventhub.subscription.http.{HttpClient, HttpRetryHandler}
 import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpFlow.RandomFactor
 
 import scala.concurrent.ExecutionContext
@@ -33,13 +32,13 @@ import scala.util.Try
 class SubscriberEventHttpFlow(
   subscriber: Subscriber,
   httpRetryHandler: HttpRetryHandler,
-  httpExt: HttpExt
+  httpClient: HttpClient
 )(implicit materializer: Materializer, executionContext: ExecutionContext)
     extends Logging {
 
   private val httpFlow =
     Flow[(HttpRequest, Event)].mapAsyncUnordered(subscriber.maxConnections) { case (request, event) =>
-      httpExt
+      httpClient
         .singleRequest(request)
         .transform(result => Try(result -> event))
     }
@@ -52,7 +51,7 @@ class SubscriberEventHttpFlow(
         randomFactor = RandomFactor,
         maxRetries = subscriber.maxRetries,
         flow = httpFlow
-      )(httpRetryHandler.shouldRetry())
+      )(httpRetryHandler.shouldRetry)
 
     Flow[(HttpRequest, Event)].via(retryHttpFlow).map(response)
   }

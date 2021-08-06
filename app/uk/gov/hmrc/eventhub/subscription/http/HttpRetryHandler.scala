@@ -20,12 +20,16 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.stream.Materializer
 import uk.gov.hmrc.eventhub.model.Event
 
+import javax.inject.{Inject, Singleton}
 import scala.util.{Failure, Success, Try}
 
 trait HttpRetryHandler {
-  def shouldRetry()(implicit
-    materializer: Materializer
-  ): ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] = {
+  def shouldRetry: ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)]
+}
+
+@Singleton
+class HttpRetryHandlerImpl @Inject() (implicit materializer: Materializer) extends HttpRetryHandler {
+  override def shouldRetry: ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] = {
     case (inputs @ (_, _), (Success(resp), _)) =>
       resp.entity.discardBytes()
       resp.status match {
@@ -40,5 +44,3 @@ trait HttpRetryHandler {
       }
   }
 }
-
-object HttpRetryHandler extends HttpRetryHandler
