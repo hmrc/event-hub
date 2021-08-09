@@ -16,10 +16,7 @@
 
 package uk.gov.hmrc.eventhub.model
 
-sealed class PublishError(val message: String)
+import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.mongo.workitem.WorkItemRepository
 
-final case class DuplicateEvent(override val message: String) extends PublishError(message)
-final case class NoEventTopic(override val message: String) extends PublishError(message)
-final case class NoSubscribersForTopic(override val message: String) extends PublishError(message)
-final case class NoMatchingPath(override val message: String) extends PublishError(message)
-final case class UnknownError(override val message: String) extends PublishError(message)
+case class SubscriberRepository(topic: String, subscriber: Subscriber, workItemRepository: WorkItemRepository[Event])
