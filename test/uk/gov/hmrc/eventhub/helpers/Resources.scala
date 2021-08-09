@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.model
+package uk.gov.hmrc.eventhub.helpers
 
-sealed class PublishError(val message: String)
+import play.api.libs.json.{JsValue, Json}
 
-final case class DuplicateEvent(override val message: String) extends PublishError(message)
-final case class NoEventTopic(override val message: String) extends PublishError(message)
-final case class NoSubscribersForTopic(override val message: String) extends PublishError(message)
-final case class NoMandatoryPath(override val message: String) extends PublishError(message)
-final case class UnknownError(override val message: String) extends PublishError(message)
+import scala.io.Source
+
+object Resources {
+  def readString(fileName: String): String = {
+    val resource = Source.fromURL(getClass.getResource("/" + fileName))
+    val str = resource.mkString
+    resource.close()
+    str
+  }
+
+  def readJson(fileName: String): JsValue = Json.parse(readString(fileName))
+}
