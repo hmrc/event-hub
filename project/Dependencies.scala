@@ -30,6 +30,7 @@ object Dependencies {
     val Swagger = "org.webjars"                 % "swagger-ui"                         % "3.50.0"
     val Enumeration = "com.beachape"            %% "enumeratum-play"                   % "1.5.17"
     val MongoScalaDriver = "org.mongodb.scala"  %% "mongo-scala-driver"                % "4.3.1"
+    val jayway = "com.jayway.jsonpath"          % "json-path"                          % "2.6.0"
     val BootstrapTest = "uk.gov.hmrc"           %% "bootstrap-test-play-28"            % "5.4.0"
     val HmrcMongoTest = "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-28"           % "0.52.0"
     val Scalatest = "org.scalatest"             %% "scalatest"                         % "3.1.0"
@@ -55,6 +56,7 @@ object Dependencies {
     Swagger,
     Enumeration,
     MongoScalaDriver,
+    jayway,
     BootstrapTest          % Test,
     HmrcMongoTest          % Test,
     Scalatest              % Test,

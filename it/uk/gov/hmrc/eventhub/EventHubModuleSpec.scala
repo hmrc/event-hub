@@ -46,7 +46,8 @@ class EventHubModuleSpec extends ISpec {
             maxConnections,
             10.millis,
             100.millis,
-            0
+            0,
+            None
           )
         ),
         "email" -> List(
@@ -59,7 +60,8 @@ class EventHubModuleSpec extends ISpec {
             maxConnections,
             10.millis,
             100.millis,
-            0
+            0,
+            None
           ),
           Subscriber(
             "subscriberName2",
@@ -70,7 +72,8 @@ class EventHubModuleSpec extends ISpec {
             maxConnections,
             10.millis,
             100.millis,
-            0
+            0,
+            None
           )
         )
       )
