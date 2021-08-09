@@ -17,6 +17,7 @@
 package uk.gov.hmrc.eventhub.config
 
 import akka.http.scaladsl.model.HttpMethods.PUT
+import akka.http.scaladsl.model.Uri
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -116,9 +117,33 @@ class TopicSpec extends AnyFlatSpec with Matchers {
          |topics.email.${subscriber.name}.max-retries=0
          |""".stripMargin)
 
-    Topic
-      .configLoader(subscriptionDefaults)
-      .load(config, "topics") shouldBe Set(Topic("email", List(subscriber.copy(maxRetries = 0))))
+    val topic = Topic.configLoader(subscriptionDefaults).load(config, "topics").head
+
+    topic.name shouldBe "email"
+    val topicSubscriber = topic.subscribers.head
+    topicSubscriber.name shouldBe "foo-subscriber"
+    topicSubscriber.uri shouldBe Uri("http://localhost:8080/foo")
+    topicSubscriber.maxRetries shouldBe 0
+    topicSubscriber.maxBackOff shouldBe 2.seconds
+    topicSubscriber.minBackOff shouldBe 1.seconds
+  }
+
+  it should "load a topic with a subscriber that has path defined" in {
+    val config: Config = ConfigFactory.parseString(s"""
+                                                      |topics.email.${subscriber.name}.uri="${subscriber.uri}"
+                                                      |topics.email.${subscriber.name}.path="testPath"
+                                                      |""".stripMargin)
+
+    config.getValue("topics.email.foo-subscriber.path").toString should include("testPath")
+  }
+
+  it should "load a topic with a subscriber that has path None if its not defined" in {
+    val config: Config = ConfigFactory.parseString(s"""
+                                                      |topics.email.${subscriber.name}.uri="${subscriber.uri}"
+                                                      |topics.email.${subscriber.name}.path="${subscriber.pathFilter}"
+                                                      |""".stripMargin)
+
+    config.getValue("topics.email.foo-subscriber.path").leftSide.toString should include("None")
   }
 
   it should "load a complex set of topics" in new Scope {

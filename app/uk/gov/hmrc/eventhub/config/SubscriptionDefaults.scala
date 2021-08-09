@@ -21,8 +21,10 @@ import com.typesafe.config.Config
 import play.api.ConfigLoader
 import pureconfig.ConfigSource
 import akka.http.scaladsl.model.HttpMethods.POST
+import com.jayway.jsonpath.JsonPath
 import pureconfig.generic.auto._
 
+import javax.xml.xpath.XPath
 import scala.concurrent.duration.FiniteDuration
 
 case class SubscriptionDefaults(
@@ -31,7 +33,8 @@ case class SubscriptionDefaults(
   maxConnections: Int,
   minBackOff: FiniteDuration,
   maxBackOff: FiniteDuration,
-  maxRetries: Int
+  maxRetries: Int,
+  pathFilter: Option[String]
 )
 
 object SubscriptionDefaults {

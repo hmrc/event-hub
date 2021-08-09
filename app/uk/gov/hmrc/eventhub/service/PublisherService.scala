@@ -16,10 +16,14 @@
 
 package uk.gov.hmrc.eventhub.service
 
+import com.jayway.jsonpath.JsonPath
+import net.minidev.json.JSONArray
 import org.mongodb.scala.bson.ObjectId
 import org.mongodb.scala.result.InsertOneResult
 import org.mongodb.scala.{ClientSession, MongoException, Observable, SingleObservable, ToSingleObservableVoid}
 import play.api.i18n.Lang.logger
+import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.eventhub.config.Subscriber
 import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.modules.MongoSetup
 import uk.gov.hmrc.eventhub.repository.{EventRepository, SubscriberQueuesRepository}
@@ -52,6 +56,15 @@ class PublisherService @Inject() (
       throw new Exception(s"Unknown Transaction error $e")
   }
 
+  private[service] def hasMandatoryPath(event: Event, subscribers: List[Subscriber]): Boolean = {
+    val subscriberWithPath = subscribers.find(_.pathFilter.nonEmpty).flatMap(_.pathFilter)
+    val noMatchingPath = subscriberWithPath match {
+      case Some(path) => path.read[net.minidev.json.JSONArray](Json.toJson(event).toString()).isEmpty
+      case _          => false
+    }
+    !noMatchingPath
+  }
+
   def publishIfUnique(topic: String, event: Event): Future[Either[PublishError, Unit]] =
     eventRepository.find(event.eventId.toString, mongoSetup.eventRepository).map(_.isEmpty) flatMap {
       case true => liftFuture(publishIfValid(topic, event))
@@ -62,7 +75,9 @@ class PublisherService @Inject() (
     mongoSetup.topics.find(_.name == topic) match {
       case None                                     => Left(NoEventTopic("No such topic"))
       case Some(topic) if topic.subscribers.isEmpty => Left(NoSubscribersForTopic("No subscribers for topic"))
-      case Some(_)                                  => Right(publish(event, subscriberRepos(topic)))
+      case Some(topic) if !hasMandatoryPath(event, topic.subscribers) =>
+        Left(NoMandatoryPath("Payload is missing mandatory path defined in config"))
+      case Some(_) => Right(publish(event, subscriberRepos(topic)))
     }
 
   private[service] def subscriberRepos(topic: String): Set[WorkItemRepository[Event]] =

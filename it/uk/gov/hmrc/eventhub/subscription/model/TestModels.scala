@@ -68,7 +68,8 @@ object TestModels {
       maxConnections = MaxConnections,
       minBackOff = 10.millis,
       maxBackOff = 1.second,
-      maxRetries = MaxRetries
+      maxRetries = MaxRetries,
+      None
     )
 
     val AnotherPartyBounced = "another-party-bounced"
@@ -83,7 +84,8 @@ object TestModels {
       maxConnections = MaxConnections,
       minBackOff = 100.millis,
       maxBackOff = 5.minutes,
-      maxRetries = MaxRetries
+      maxRetries = MaxRetries,
+      None
     )
 
     val channelPreferencesBouncedEmails: Topic = Topic(
