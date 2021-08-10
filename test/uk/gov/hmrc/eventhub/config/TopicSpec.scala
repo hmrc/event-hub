@@ -144,11 +144,18 @@ class TopicSpec extends AnyFlatSpec with Matchers {
   it should "fail to load when a subscribers uri property is not defined" in {
     val config: Config = ConfigFactory.parseString(s"""
          |topics.email.${subscriber.name}.http-method="POST"
+         |topics.email.${subscriber.name}.elements="foo"
+         |topics.email.${subscriber.name}.per="bar"
          |""".stripMargin)
 
     the[IllegalArgumentException] thrownBy Topic
       .configLoader(subscriptionDefaults)
-      .load(config, "topics") should have message s"at 'email.${subscriber.name}.uri':\n  - Unknown key."
+      .load(config, "topics") should have message s"""at 'email.foo-subscriber.elements':
+        |  - (String: 3) Expected type NUMBER. Found STRING instead.
+        |at 'email.foo-subscriber.per':
+        |  - (String: 4) Cannot convert 'bar' to Duration: format error bar. (try a number followed by any of ns, us, ms, s, m, h, d).
+        |at 'email.foo-subscriber.uri':
+        |  - Unknown key.""".stripMargin
   }
 
   trait Scope {
