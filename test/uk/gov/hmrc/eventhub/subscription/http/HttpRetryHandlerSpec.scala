@@ -19,7 +19,7 @@ package uk.gov.hmrc.eventhub.subscription.http
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpMethods.POST
 import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError, OK}
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse, RequestTimeoutException}
 import akka.stream.Materializer
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -51,6 +51,24 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers {
     )
   }
 
+  it should "return Some(inputs) when a RequestTimeoutException is returned" in new Scope {
+    shouldRetry(
+      httpRequest                                                -> event,
+      Failure(RequestTimeoutException(httpRequest, "boom boom")) -> event
+    ) shouldBe Some(
+      httpRequest -> event
+    )
+  }
+
+  it should "return Some(inputs) when a RuntimeException a message containing `The http server closed the connection unexpectedly` is returned" in new Scope {
+    shouldRetry(
+      httpRequest                                                                                     -> event,
+      Failure(new RuntimeException("The http server closed the connection unexpectedly - boom boom")) -> event
+    ) shouldBe Some(
+      httpRequest -> event
+    )
+  }
+
   trait Scope {
     private val system: ActorSystem = ActorSystem()
     private val materializer: Materializer = Materializer(system)
@@ -60,7 +78,9 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers {
     val clientErrorHttpResponse: HttpResponse = HttpResponse(status = BadRequest)
     val internalServerErrorHttpResponse: HttpResponse = HttpResponse(status = InternalServerError)
 
+    val httpRetryHandler = new HttpRetryHandlerImpl()(materializer)
+
     def shouldRetry: ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] =
-      HttpRetryHandler.shouldRetry()(materializer)
+      httpRetryHandler.shouldRetry
   }
 }

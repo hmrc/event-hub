@@ -16,23 +16,30 @@
 
 package uk.gov.hmrc.eventhub.modules
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Scheduler}
 import akka.http.scaladsl.{Http, HttpExt}
 import akka.pattern.FutureTimeoutSupport
 import com.google.inject.{AbstractModule, Provides}
 import play.api.Configuration
 import play.api.libs.concurrent.AkkaGuiceSupport
-import uk.gov.hmrc.eventhub.config.{SubscriberStreamConfig, SubscriptionDefaults, Topic}
+import uk.gov.hmrc.eventhub.config.{ServiceInstancesConfig, SubscriberStreamConfig, SubscriptionDefaults, Topic}
 import uk.gov.hmrc.eventhub.repository.{SubscriberEventRepositoryFactory, WorkItemSubscriberEventRepositoryFactory}
 import uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptions
+import uk.gov.hmrc.eventhub.subscription.http.{AkkaHttpClient, HttpClient, HttpRetryHandler, HttpRetryHandlerImpl}
 
 import javax.inject.Singleton
 
 class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTimeoutSupport {
   override def configure(): Unit = {
-    bind(classOf[SubscriberEventRepositoryFactory]).to(classOf[WorkItemSubscriberEventRepositoryFactory])
+    bind(classOf[SubscriberEventRepositoryFactory])
+      .to(classOf[WorkItemSubscriberEventRepositoryFactory])
+      .asEagerSingleton()
 
     bind(classOf[SubscriberPushSubscriptions]).asEagerSingleton()
+
+    bind(classOf[HttpRetryHandler])
+      .to(classOf[HttpRetryHandlerImpl])
+      .asEagerSingleton()
 
     bind(classOf[MongoCollections]).to(classOf[MongoSetup])
 
@@ -43,6 +50,21 @@ class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTim
   @Singleton
   def createHttpExt(system: ActorSystem): HttpExt =
     Http()(system)
+
+  @Provides
+  @Singleton
+  def createHttpClient(httpExt: HttpExt): HttpClient =
+    new AkkaHttpClient(httpExt)
+
+  @Provides
+  @Singleton
+  def scheduler(system: ActorSystem): Scheduler =
+    system.scheduler
+
+  @Provides
+  @Singleton
+  def serviceInstancesConfig(configuration: Configuration): ServiceInstancesConfig =
+    configuration.get[ServiceInstancesConfig](path = "service-instances-config")
 
   @Provides
   @Singleton

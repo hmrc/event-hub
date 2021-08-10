@@ -18,15 +18,15 @@ package uk.gov.hmrc.eventhub.subscription.stream
 
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.http.scaladsl.HttpExt
 import akka.stream.Attributes
 import akka.stream.Attributes.LogLevels
 import akka.stream.scaladsl.Source
+import uk.gov.hmrc.eventhub.cluster.ServiceInstances
 import uk.gov.hmrc.eventhub.config.{Subscriber, SubscriberStreamConfig}
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.repository.SubscriberEventRepositoryFactory
 import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.EventSendStatus
-import uk.gov.hmrc.eventhub.subscription.http.{HttpEventRequestBuilder, HttpResponseHandler, HttpRetryHandler}
+import uk.gov.hmrc.eventhub.subscription.http.{HttpClient, HttpEventRequestBuilder, HttpResponseHandler, HttpRetryHandler}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
@@ -35,7 +35,9 @@ import scala.concurrent.ExecutionContext
 class SubscriptionStreamBuilder @Inject() (
   subscriberEventRepositoryFactory: SubscriberEventRepositoryFactory,
   subscriberStreamConfig: SubscriberStreamConfig,
-  httpExt: HttpExt
+  serviceInstances: ServiceInstances,
+  httpClient: HttpClient,
+  httpRetryHandler: HttpRetryHandler
 )(implicit actorSystem: ActorSystem, executionContext: ExecutionContext) {
 
   def build(subscriber: Subscriber, topic: String): Source[EventSendStatus, NotUsed] = {
@@ -45,11 +47,12 @@ class SubscriptionStreamBuilder @Inject() (
       executionContext
     ).source
     val requestBuilder = (event: Event) => HttpEventRequestBuilder.build(subscriber, event) -> event
-    val httpFlow = new SubscriberEventHttpFlow(subscriber, HttpRetryHandler, httpExt).flow
+    val httpFlow = new SubscriberEventHttpFlow(subscriber, httpRetryHandler, httpClient).flow
     val responseHandler = new HttpResponseHandler(repository).handle(_)
 
     source
       .map(requestBuilder)
+      .throttle(subscriber.elements, subscriber.per, _ => serviceInstances.instanceCount.max(1))
       .via(httpFlow)
       .mapAsync(parallelism = subscriber.maxConnections)(responseHandler)
       .log(s"$topic-${subscriber.name} subscription")

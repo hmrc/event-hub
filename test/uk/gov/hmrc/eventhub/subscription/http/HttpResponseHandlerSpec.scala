@@ -47,6 +47,16 @@ class HttpResponseHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMo
     handle(clientErrorResponse) mustBe EventSendStatus(event, subscriber, Failed)
   }
 
+  it should "mark an event as failed when the response is successful and the status code is a redirection" in new Scope {
+    when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
+    handle(redirectionResponse) mustBe EventSendStatus(event, subscriber, Failed)
+  }
+
+  it should "mark an event as failed when the response is successful and the status code is 500 error" in new Scope {
+    when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
+    handle(internalServerErrorResponse) mustBe EventSendStatus(event, subscriber, Failed)
+  }
+
   it should "mark an event as failed when the response is a failure" in new Scope {
     when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
     handle(failureResponse) mustBe EventSendStatus(event, subscriber, Failed)
@@ -67,6 +77,18 @@ class HttpResponseHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMo
 
     val clientErrorResponse: SubscriberEventHttpResponse = SubscriberEventHttpResponse(
       response = Success(HttpResponse(status = StatusCodes.BadRequest)),
+      event = event,
+      subscriber = subscriber
+    )
+
+    val redirectionResponse: SubscriberEventHttpResponse = SubscriberEventHttpResponse(
+      response = Success(HttpResponse(status = StatusCodes.MovedPermanently)),
+      event = event,
+      subscriber = subscriber
+    )
+
+    val internalServerErrorResponse: SubscriberEventHttpResponse = SubscriberEventHttpResponse(
+      response = Success(HttpResponse(status = StatusCodes.InternalServerError)),
       event = event,
       subscriber = subscriber
     )
