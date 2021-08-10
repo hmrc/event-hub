@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.subscription.http
 
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse, RequestTimeoutException, StatusCodes}
 import akka.stream.Materializer
 import uk.gov.hmrc.eventhub.model.Event
 
@@ -42,6 +42,7 @@ class HttpRetryHandlerImpl @Inject() (implicit materializer: Materializer) exten
         }
       case (Failure(ex), _) =>
         ex match {
+          case _: RequestTimeoutException => Some(input)
           case e: RuntimeException if e.getMessage.contains("The http server closed the connection unexpectedly") =>
             Some(input)
           case _ => None

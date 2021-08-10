@@ -20,6 +20,12 @@ import cats.kernel.Semigroup
 import pureconfig.error.ConfigReaderFailures
 
 package object config {
+
+  /** Required for combining config reader failures when traversing and parsing topic configs on application startup.
+    * Anywhere where cats uses an applicative to combine effects (product, mapN, tupleN, traverse etc) knowledge of how
+    * to combine (semigroup or monoid) the potential result type is required to be in implicit scope, for an either a
+    * one of these is required for the left hand side also.
+    */
   implicit object semigroupConfigReaderFailures extends Semigroup[ConfigReaderFailures] {
     override def combine(x: ConfigReaderFailures, y: ConfigReaderFailures): ConfigReaderFailures = x.++(y)
   }

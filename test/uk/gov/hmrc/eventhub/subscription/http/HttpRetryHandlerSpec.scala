@@ -19,7 +19,7 @@ package uk.gov.hmrc.eventhub.subscription.http
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpMethods.POST
 import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError, OK}
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse, RequestTimeoutException}
 import akka.stream.Materializer
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -48,6 +48,24 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers {
   it should "return Some(inputs) when a http response is provided with a status in the 500 range" in new Scope {
     shouldRetry(httpRequest -> event, Success(internalServerErrorHttpResponse) -> event) shouldBe Some(
       httpRequest           -> event
+    )
+  }
+
+  it should "return Some(inputs) when a RequestTimeoutException is returned" in new Scope {
+    shouldRetry(
+      httpRequest                                                -> event,
+      Failure(RequestTimeoutException(httpRequest, "boom boom")) -> event
+    ) shouldBe Some(
+      httpRequest -> event
+    )
+  }
+
+  it should "return Some(inputs) when a RuntimeException with message  is returned" in new Scope {
+    shouldRetry(
+      httpRequest                                                                                     -> event,
+      Failure(new RuntimeException("The http server closed the connection unexpectedly - boom boom")) -> event
+    ) shouldBe Some(
+      httpRequest -> event
     )
   }
 
