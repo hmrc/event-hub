@@ -20,7 +20,7 @@ import cats.syntax.parallel._
 import cats.syntax.either._
 import com.typesafe.config.{Config, ConfigValue, ConfigValueType}
 import play.api.ConfigLoader
-import pureconfig.ConfigReader.configObjectConfigReader
+import pureconfig.ConfigReader.{configObjectConfigReader, configConfigReader}
 import pureconfig.error.ConfigReaderFailures
 
 import scala.collection.JavaConverters._

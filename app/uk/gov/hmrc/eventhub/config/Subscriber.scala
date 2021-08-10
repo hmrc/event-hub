@@ -49,12 +49,28 @@ object Subscriber {
         .leftMap(_ => ConfigReaderFailures(new ConvertFailure(UnknownKey(qualifiedPath), None, qualifiedPath)))
     }
 
-    def readOrDefault[T](path: String, parentPath: String, configReader: ConfigReader[T], default: T): Result[T] =
+    def readOrDefault[T](path: String, parentPath: String, configReader: ConfigReader[T], default: T): Result[T] = {
+      val qualifiedPath = s"$parentPath.$path"
       if (config.hasPath(path)) {
-        config.resultValue(path, parentPath).flatMap(configReader.from)
+        config
+          .resultValue(path, parentPath)
+          .flatMap(configReader.from)
+          .leftMap(qualifyConvertFailure(_, qualifiedPath))
       } else {
         default.asRight
       }
+    }
+
+    private def qualifyConvertFailure(
+      configReaderFailures: ConfigReaderFailures,
+      qualifiedPath: String
+    ): ConfigReaderFailures = configReaderFailures match {
+      case c: ConfigReaderFailures =>
+        c.head match {
+          case fail: ConvertFailure => ConfigReaderFailures(new ConvertFailure(fail.reason, fail.origin, qualifiedPath))
+          case _                    => c
+        }
+    }
   }
 
   def subscribersFromConfig(

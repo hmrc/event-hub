@@ -43,6 +43,7 @@ class SubscriberEventHttpFlow(
         .transform(result => Try(result -> event))
     }
 
+
   def flow: Flow[(HttpRequest, Event), SubscriberEventHttpResponse, NotUsed] = {
     val retryHttpFlow: Flow[(HttpRequest, Event), (Try[HttpResponse], Event), NotUsed] =
       RetryFlow.withBackoff(
