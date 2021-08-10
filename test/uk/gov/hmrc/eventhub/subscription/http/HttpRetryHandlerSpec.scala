@@ -60,7 +60,7 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "return Some(inputs) when a RuntimeException with message  is returned" in new Scope {
+  it should "return Some(inputs) when a RuntimeException a message containing `The http server closed the connection unexpectedly` is returned" in new Scope {
     shouldRetry(
       httpRequest                                                                                     -> event,
       Failure(new RuntimeException("The http server closed the connection unexpectedly - boom boom")) -> event
