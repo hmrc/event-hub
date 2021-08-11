@@ -25,14 +25,16 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatest.time.SpanSugar.convertIntToGrainOfTime
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
+import uk.gov.hmrc.eventhub.config.TestModels.Elements
 import uk.gov.hmrc.eventhub.config.{Subscriber, Topic}
 import uk.gov.hmrc.eventhub.helpers.Resources
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.modules.MongoSetup
 import uk.gov.hmrc.eventhub.repository.{EventRepository, SubscriberQueuesRepository}
-import uk.gov.hmrc.eventhub.subscription.model.TestModels.Subscriptions.{ChannelPreferencesBounced, ChannelPreferencesBouncedPath, Elements, MaxRetries}
+import uk.gov.hmrc.eventhub.subscription.model.TestModels.Subscriptions
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.workitem.WorkItemRepository
+
 import java.time.LocalDateTime
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -117,26 +119,26 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers {
 
     val subscribers = List(
       Subscriber(
-        name = ChannelPreferencesBounced,
-        uri = Uri(s"http://localhost$ChannelPreferencesBouncedPath"),
+        name = Subscriptions.ChannelPreferencesBounced,
+        uri = Uri(s"http://localhost$Subscriptions.ChannelPreferencesBouncedPath"),
         httpMethod = HttpMethods.POST,
         elements = Elements,
         per = 3.seconds,
         minBackOff = 10.millis,
         maxBackOff = 1.second,
-        maxRetries = MaxRetries,
+        maxRetries = Subscriptions.MaxRetries,
         pathFilter = None,
         maxConnections = 1
       ),
       Subscriber(
-        name = ChannelPreferencesBounced,
-        uri = Uri(s"http://localhost$ChannelPreferencesBouncedPath"),
+        name = Subscriptions.ChannelPreferencesBounced,
+        uri = Uri(s"http://localhost$Subscriptions.ChannelPreferencesBouncedPath"),
         httpMethod = HttpMethods.POST,
         elements = Elements,
         per = 3.seconds,
         minBackOff = 10.millis,
         maxBackOff = 1.second,
-        maxRetries = MaxRetries,
+        maxRetries = Subscriptions.MaxRetries,
         pathFilter = Some(JsonPath.compile("$.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]")),
         maxConnections = 1
       )
