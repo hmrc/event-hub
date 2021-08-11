@@ -150,7 +150,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
       contentAsString(result) must include("Invalid Event payload:")
     }
 
-    "return Created with message if path doesn't match payload" in new TestSetup {
+    "return Created with message if filterPath doesn't match payload" in new TestSetup {
       when(publisherServiceMock.publishIfUnique(any[String], any[Event]))
         .thenReturn(
           Future.successful(Left(NoMatchingConfigurationPath("Payload is missing mandatory path defined in config")))

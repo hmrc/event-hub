@@ -117,15 +117,9 @@ class TopicSpec extends AnyFlatSpec with Matchers {
          |topics.email.${subscriber.name}.max-retries=0
          |""".stripMargin)
 
-    val topic = Topic.configLoader(subscriptionDefaults).load(config, "topics").head
-
-    topic.name shouldBe "email"
-    val topicSubscriber = topic.subscribers.head
-    topicSubscriber.name shouldBe "foo-subscriber"
-    topicSubscriber.uri shouldBe Uri("http://localhost:8080/foo")
-    topicSubscriber.maxRetries shouldBe 0
-    topicSubscriber.maxBackOff shouldBe 2.seconds
-    topicSubscriber.minBackOff shouldBe 1.seconds
+    Topic
+      .configLoader(subscriptionDefaults)
+      .load(config, "topics") shouldBe Set(Topic("email", List(subscriber.copy(maxRetries = 0))))
   }
 
   it should "load a topic with a subscriber that has path defined" in {
