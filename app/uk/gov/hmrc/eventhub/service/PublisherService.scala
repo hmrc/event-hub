@@ -76,7 +76,7 @@ class PublisherService @Inject() (
       case None                                     => Left(NoEventTopic("No such topic"))
       case Some(topic) if topic.subscribers.isEmpty => Left(NoSubscribersForTopic("No subscribers for topic"))
       case Some(topic) if !matchingPath(event, topic.subscribers) =>
-        Left(NoMandatoryPath("Payload is missing mandatory path defined in config"))
+        Left(NoMatchingConfigurationPath("The payload does not match any path defined in config"))
       case Some(_) => Right(publish(event, subscriberRepos(topic)))
     }
 
