@@ -29,8 +29,7 @@ object TestModels {
     maxConnections = MaxConnections,
     minBackOff = 1.second,
     maxBackOff = 2.seconds,
-    maxRetries = 2,
-    pathFilter = None
+    maxRetries = 2
   )
 
   val subscriber: Subscriber = Subscriber(

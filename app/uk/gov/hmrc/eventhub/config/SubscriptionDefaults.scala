@@ -30,8 +30,7 @@ case class SubscriptionDefaults(
   maxConnections: Int,
   minBackOff: FiniteDuration,
   maxBackOff: FiniteDuration,
-  maxRetries: Int,
-  pathFilter: Option[String]
+  maxRetries: Int
 )
 
 object SubscriptionDefaults {
