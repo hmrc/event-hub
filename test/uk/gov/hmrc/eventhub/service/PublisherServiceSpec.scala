@@ -70,19 +70,19 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers {
     "return true if payload has matching path" in new TestCase {
       val publisherService =
         new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
-      publisherService.hasMandatoryPath(event, subscribers) mustBe true
+      publisherService.matchingPath(event, subscribers) mustBe true
     }
 
     "return false if event payload has no valid path" in new TestCase {
       val publisherService =
         new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
-      publisherService.hasMandatoryPath(eventWithOutValidPath, subscribers) mustBe false
+      publisherService.matchingPath(eventWithOutValidPath, subscribers) mustBe false
     }
 
     "return false if payload has no path" in new TestCase {
       val publisherService =
         new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
-      publisherService.hasMandatoryPath(eventWithOutPath, subscribers) mustBe false
+      publisherService.matchingPath(eventWithOutPath, subscribers) mustBe false
     }
   }
 //  class PublisherServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {

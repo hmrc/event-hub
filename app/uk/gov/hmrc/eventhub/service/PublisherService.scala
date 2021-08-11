@@ -56,7 +56,7 @@ class PublisherService @Inject() (
       throw new Exception(s"Unknown Transaction error $e")
   }
 
-  private[service] def hasMandatoryPath(event: Event, subscribers: List[Subscriber]): Boolean = {
+  private[service] def matchingPath(event: Event, subscribers: List[Subscriber]): Boolean = {
     val subscriberWithPath = subscribers.find(_.pathFilter.nonEmpty).flatMap(_.pathFilter)
     val noMatchingPath = subscriberWithPath match {
       case Some(path) => path.read[net.minidev.json.JSONArray](Json.toJson(event).toString()).isEmpty
@@ -75,7 +75,7 @@ class PublisherService @Inject() (
     mongoSetup.topics.find(_.name == topic) match {
       case None                                     => Left(NoEventTopic("No such topic"))
       case Some(topic) if topic.subscribers.isEmpty => Left(NoSubscribersForTopic("No subscribers for topic"))
-      case Some(topic) if !hasMandatoryPath(event, topic.subscribers) =>
+      case Some(topic) if !matchingPath(event, topic.subscribers) =>
         Left(NoMandatoryPath("Payload is missing mandatory path defined in config"))
       case Some(_) => Right(publish(event, subscriberRepos(topic)))
     }

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.eventhub.config
 
 import akka.http.scaladsl.model.{HttpMethod, Uri}
-import cats.implicits.{catsSyntaxOptionId, none}
+import cats.syntax.option._
 import cats.syntax.either._
 import cats.syntax.parallel._
 import com.jayway.jsonpath.JsonPath
