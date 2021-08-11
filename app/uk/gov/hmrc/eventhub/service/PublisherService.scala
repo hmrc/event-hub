@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.eventhub.service
 
+import net.minidev.json.JSONArray
 import org.mongodb.scala.bson.ObjectId
 import org.mongodb.scala.result.InsertOneResult
 import org.mongodb.scala.{ClientSession, MongoException, Observable, SingleObservable, ToSingleObservableVoid}
@@ -29,6 +30,7 @@ import uk.gov.hmrc.eventhub.utils.HelperFunctions.liftFuture
 import uk.gov.hmrc.eventhub.utils.TransactionConfiguration.{sessionOptions, transactionOptions}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem, WorkItemRepository}
+
 import java.time.Instant
 import javax.inject.{Inject, Singleton}
 import scala.collection.immutable
@@ -59,7 +61,7 @@ class PublisherService @Inject() (
       case subscriber: Subscriber
           if subscriber
             .pathFilter
-            .exists(p => !p.read[net.minidev.json.JSONArray](Json.toJson(event).toString()).isEmpty) =>
+            .forall(p => !p.read[JSONArray](Json.toJson(event).toString()).isEmpty) =>
         subscriber
     }
 

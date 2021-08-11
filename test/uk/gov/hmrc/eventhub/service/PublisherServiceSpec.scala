@@ -124,7 +124,7 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers {
 
       val publisherService =
         new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
-      publisherService.matchingSubscribers(event, subscribers) mustBe Seq(subscriber2)
+      publisherService.matchingSubscribers(event, subscribers) mustBe Seq(subscriber1, subscriber2)
     }
   }
 
