@@ -25,12 +25,12 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatest.time.SpanSugar.convertIntToGrainOfTime
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
+import uk.gov.hmrc.eventhub.config.TestModels.Elements
 import uk.gov.hmrc.eventhub.config.{Subscriber, Topic}
 import uk.gov.hmrc.eventhub.helpers.Resources
 import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.modules.MongoSetup
 import uk.gov.hmrc.eventhub.repository.{EventRepository, SubscriberQueuesRepository}
-import uk.gov.hmrc.eventhub.subscription.model.TestModels.Subscriptions.{ChannelPreferencesBounced, ChannelPreferencesBouncedPath, Elements, MaxRetries}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.workitem.WorkItemRepository
 
@@ -42,26 +42,26 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers {
   "hasMandatoryPath" must {
     val subscribers = List(
       Subscriber(
-        name = ChannelPreferencesBounced,
-        uri = Uri(s"http://localhost$ChannelPreferencesBouncedPath"),
+        name = "name",
+        uri = Uri(s"http://localhost/path"),
         httpMethod = HttpMethods.POST,
         elements = Elements,
         per = 3.seconds,
         minBackOff = 10.millis,
         maxBackOff = 1.second,
-        maxRetries = MaxRetries,
+        maxRetries = 2,
         pathFilter = None,
         maxConnections = 1
       ),
       Subscriber(
-        name = ChannelPreferencesBounced,
-        uri = Uri(s"http://localhost$ChannelPreferencesBouncedPath"),
+        name = "name",
+        uri = Uri(s"http://localhost/path"),
         httpMethod = HttpMethods.POST,
         elements = Elements,
         per = 3.seconds,
         minBackOff = 10.millis,
         maxBackOff = 1.second,
-        maxRetries = MaxRetries,
+        maxRetries = 2,
         pathFilter = Some(JsonPath.compile("$.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]")),
         maxConnections = 1
       )
