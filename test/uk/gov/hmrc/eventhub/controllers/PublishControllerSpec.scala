@@ -150,27 +150,6 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
       contentAsString(result) must include("Invalid Event payload:")
     }
 
-    "return Created with message if filterPath doesn't match payload" in new TestSetup {
-      when(publisherServiceMock.publishIfUnique(any[String], any[Event]))
-        .thenReturn(
-          Future.successful(Left(NoMatchingPath("Payload is missing mandatory path defined in config")))
-        )
-
-      val controller: PublishController =
-        new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
-
-      private val fakeRequest =
-        FakeRequest(
-          "POST",
-          routes.PublishController.publish("email").url,
-          FakeHeaders(Seq(CONTENT_TYPE -> ContentTypes.JSON)),
-          Json.parse(validPayload)
-        )
-
-      val result = controller.publish("email")(fakeRequest)
-      status(result) shouldBe Status.CREATED
-      contentAsString(result) must include("Payload is missing mandatory path defined in config")
-    }
   }
 
   class TestSetup {
