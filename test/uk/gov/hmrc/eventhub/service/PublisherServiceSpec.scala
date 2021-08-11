@@ -18,7 +18,6 @@ package uk.gov.hmrc.eventhub.service
 
 import akka.http.scaladsl.model.{HttpMethods, Uri}
 import com.jayway.jsonpath.JsonPath
-import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar.mock
 import org.mongodb.scala.MongoClient
@@ -26,7 +25,6 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatest.time.SpanSugar.convertIntToGrainOfTime
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
-import play.api.test.Helpers.await
 import uk.gov.hmrc.eventhub.config.TestModels.{Elements, subscriber}
 import uk.gov.hmrc.eventhub.config.{Subscriber, Topic}
 import uk.gov.hmrc.eventhub.helpers.Resources
@@ -34,13 +32,10 @@ import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.modules.MongoSetup
 import uk.gov.hmrc.eventhub.repository.{EventRepository, SubscriberQueuesRepository}
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.workitem.{WorkItemFields, WorkItemRepository}
-import play.api.test.Helpers.defaultAwaitTimeout
 import java.time.{Duration, Instant, LocalDateTime}
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 class PublisherServiceSpec extends AnyWordSpec with Matchers {
 
@@ -129,34 +124,34 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers {
     }
   }
 
-  "publishIfUnique" must {
-    "return DuplicateEvent if Event Already exists" in new TestCase {
-      when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq(event)))
-      val publisherService =
-        new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
-      await(publisherService.publishIfUnique("email", event)) mustBe Left(
-        DuplicateEvent("Duplicate Event: Event with eventId already exists")
-      )
-    }
-    "return NoEventTopic if topic doesn't exist" in new TestCase {
-      when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq()))
-      when(mongoSetup.topics).thenReturn(Set(Topic("not exist", List())))
-      val publisherService =
-        new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
-      await(publisherService.publishIfUnique("email", event)) mustBe Left(NoEventTopic("No such topic"))
-    }
-    "return NoSubscribersForTopic if subscribers are empty" in new TestCase {
-      when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq()))
-
-      when(mongoSetup.topics).thenReturn(Set(Topic("email", List())))
-      val publisherService =
-        new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
-      await(publisherService.publishIfUnique("email", event)) mustBe Left(
-        NoSubscribersForTopic("No subscribers for topic")
-      )
-    }
-
-  }
+//  "publishIfUnique" must {
+//    "return DuplicateEvent if Event Already exists" in new TestCase {
+//      when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq(event)))
+//      val publisherService =
+//        new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
+//      await(publisherService.publishIfUnique("email", event)) mustBe Left(
+//        DuplicateEvent("Duplicate Event: Event with eventId already exists")
+//      )
+//    }
+//    "return NoEventTopic if topic doesn't exist" in new TestCase {
+//      when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq()))
+//      when(mongoSetup.topics).thenReturn(Set(Topic("not exist", List())))
+//      val publisherService =
+//        new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
+//      await(publisherService.publishIfUnique("email", event)) mustBe Left(NoEventTopic("No such topic"))
+//    }
+//    "return NoSubscribersForTopic if subscribers are empty" in new TestCase {
+//      when(eventRepository.find(any[String], any[PlayMongoRepository[Event]])).thenReturn(Future.successful(Seq()))
+//
+//      when(mongoSetup.topics).thenReturn(Set(Topic("email", List())))
+//      val publisherService =
+//        new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
+//      await(publisherService.publishIfUnique("email", event)) mustBe Left(
+//        NoSubscribersForTopic("No subscribers for topic")
+//      )
+//    }
+//
+//  }
 
 //  class PublisherServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 //  ////TODO: This test is better if its mocked
