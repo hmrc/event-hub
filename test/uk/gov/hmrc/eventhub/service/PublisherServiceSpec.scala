@@ -117,15 +117,37 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers {
         "subscriber3",
         Some(JsonPath.compile("$.event[?(@.en =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]"))
       )
-      val subscriberInvalidPath2 =
-        subscriberSetUp("subscriber3", Some(JsonPath.compile("$.event[?(@.en =~ /HMRC\\-ORG\\~EORINumber~.*/i)]")))
 
-      val subscribers = List(subscriber1, subscriber2, subscriberInvalidPath, subscriberInvalidPath2)
+      val subscribers = List(subscriber1, subscriber2, subscriberInvalidPath)
 
       val publisherService =
         new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
       publisherService.matchingSubscribers(event, subscribers) mustBe Seq(subscriber1, subscriber2)
     }
+
+    "return subscriber if subscriber dint have any path" in new TestCase {
+      val subscriber1 = subscriberSetUp("subscriber1")
+
+      val subscribers = List(subscriber1)
+
+      val publisherService =
+        new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
+      publisherService.matchingSubscribers(eventWithNoPath, subscribers) mustBe Seq(subscriber1)
+    }
+
+    "return empty if subscriber path dint match pathFilter" in new TestCase {
+      val subscriber1 = subscriberSetUp(
+        "subscriber1",
+        Some(JsonPath.compile("$.event[?(@.en =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]"))
+      )
+
+      val subscribers = List(subscriber1)
+
+      val publisherService =
+        new PublisherService(mongoComponent, eventRepository, subscriberQueuesRepository, mongoSetup)
+      publisherService.matchingSubscribers(event, subscribers) mustBe Seq.empty
+    }
+
   }
 
   "publishIfUnique" must {
@@ -186,6 +208,7 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers {
     val eventId = UUID.randomUUID().toString
 
     val event = Resources.readJson("valid-event.json").as[Event]
+    val eventWithNoPath = Resources.readJson("valid-event-nopath.json").as[Event]
 
     val eventWithOutValidPath = Event(
       UUID.fromString(eventId),

@@ -30,7 +30,6 @@ import uk.gov.hmrc.eventhub.utils.HelperFunctions.liftFuture
 import uk.gov.hmrc.eventhub.utils.TransactionConfiguration.{sessionOptions, transactionOptions}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem, WorkItemRepository}
-
 import java.time.Instant
 import javax.inject.{Inject, Singleton}
 import scala.collection.immutable
