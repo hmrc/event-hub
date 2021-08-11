@@ -38,11 +38,11 @@ class PublishController @Inject() (cc: ControllerComponents, publisher: Publishe
             case Right(_) => Created
             case Left(error) =>
               error match {
-                case e: NoMatchingConfigurationPath       => Created(e.message)
-                case e: DuplicateEvent        => Created(e.message)
-                case e: NoEventTopic          => NotFound(e.message)
-                case e: NoSubscribersForTopic => Created(e.message)
-                case e                        => InternalServerError(e.message)
+                case e: NoMatchingConfigurationPath => Created(e.message)
+                case e: DuplicateEvent              => Created(e.message)
+                case e: NoEventTopic                => NotFound(e.message)
+                case e: NoSubscribersForTopic       => Created(e.message)
+                case e                              => InternalServerError(e.message)
               }
           }
       )

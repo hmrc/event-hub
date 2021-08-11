@@ -152,7 +152,9 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
 
     "return Created with message if path doesn't match payload" in new TestSetup {
       when(publisherServiceMock.publishIfUnique(any[String], any[Event]))
-        .thenReturn(Future.successful(Left(NoMatchingConfigurationPath("Payload is missing mandatory path defined in config"))))
+        .thenReturn(
+          Future.successful(Left(NoMatchingConfigurationPath("Payload is missing mandatory path defined in config")))
+        )
 
       val controller: PublishController =
         new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
