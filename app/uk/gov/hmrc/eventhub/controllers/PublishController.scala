@@ -18,7 +18,7 @@ package uk.gov.hmrc.eventhub.controllers
 
 import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
-import uk.gov.hmrc.eventhub.model.{DuplicateEvent, Event, NoEventTopic, NoMatchingConfigurationPath, NoSubscribersForTopic}
+import uk.gov.hmrc.eventhub.model.{DuplicateEvent, Event, NoEventTopic, NoMatchingPath, NoSubscribersForTopic}
 import uk.gov.hmrc.eventhub.service.PublisherService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import javax.inject.Inject
@@ -38,7 +38,7 @@ class PublishController @Inject() (cc: ControllerComponents, publisher: Publishe
             case Right(_) => Created
             case Left(error) =>
               error match {
-                case e: NoMatchingConfigurationPath => Created(e.message)
+                case e: NoMatchingPath => Created(e.message)
                 case e: DuplicateEvent              => Created(e.message)
                 case e: NoEventTopic                => NotFound(e.message)
                 case e: NoSubscribersForTopic       => Created(e.message)

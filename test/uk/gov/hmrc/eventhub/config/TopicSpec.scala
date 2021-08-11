@@ -17,11 +17,11 @@
 package uk.gov.hmrc.eventhub.config
 
 import akka.http.scaladsl.model.HttpMethods.PUT
-import akka.http.scaladsl.model.Uri
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.config.TestModels.{subscriber, subscriptionDefaults}
+
 import scala.concurrent.duration._
 
 class TopicSpec extends AnyFlatSpec with Matchers {
