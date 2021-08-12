@@ -125,7 +125,7 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers {
       publisherService.matchingSubscribers(event, subscribers) mustBe Seq(subscriber1, subscriber2)
     }
 
-    "return subscriber if subscriber dint have any path" in new TestCase {
+    "return subscriber if subscriber didn't have any path" in new TestCase {
       val subscriber1 = subscriberSetUp("subscriber1")
 
       val subscribers = List(subscriber1)
@@ -179,21 +179,6 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers {
 
   }
 
-//  class PublisherServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
-//  ////TODO: This test is better if its mocked
-//  //    "return success if publish is returned" in new TestCase {
-//  //      val appEventRepository = app.injector.instanceOf[EventRepository]
-//  //      val appMongoComponent = app.injector.instanceOf[MongoComponent]
-//  //      val appSubscriberQueuesRepository = app.injector.instanceOf[SubscriberQueuesRepository]
-//  //      val appMongoSetup = app.injector.instanceOf[MongoSetup]
-//  //
-//  //      val publisherService =
-//  //        new PublisherService(appMongoComponent, appEventRepository, appSubscriberQueuesRepository, appMongoSetup)
-//  //
-//  //      val subscriberRepos = publisherService.subscriberRepos("email")
-//  //
-//  //      await(publisherService.publish(event, subscriberRepos).map(_ => ())) mustBe ()
-//  //    }
 
   class TestCase {
     val mongoComponent: MongoComponent = mock[MongoComponent]
