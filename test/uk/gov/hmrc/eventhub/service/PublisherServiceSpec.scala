@@ -179,7 +179,6 @@ class PublisherServiceSpec extends AnyWordSpec with Matchers {
 
   }
 
-
   class TestCase {
     val mongoComponent: MongoComponent = mock[MongoComponent]
     val eventRepository: EventRepository = mock[EventRepository]
