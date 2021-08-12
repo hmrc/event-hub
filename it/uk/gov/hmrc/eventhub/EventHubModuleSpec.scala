@@ -46,7 +46,8 @@ class EventHubModuleSpec extends ISpec {
             maxConnections,
             10.millis,
             100.millis,
-            0
+            0,
+            None
           )
         ),
         "email" -> List(
@@ -59,7 +60,8 @@ class EventHubModuleSpec extends ISpec {
             maxConnections,
             10.millis,
             100.millis,
-            0
+            0,
+            None
           ),
           Subscriber(
             "subscriberName2",
@@ -70,7 +72,8 @@ class EventHubModuleSpec extends ISpec {
             maxConnections,
             10.millis,
             100.millis,
-            0
+            0,
+            None
           )
         )
       )
@@ -83,7 +86,7 @@ class EventHubModuleSpec extends ISpec {
   }
   "subscriberRepositories" ignore {
     "create subscriber repositories" in {
-      mongoSetup.subscriberRepositories.map(_._2.collectionName) mustBe
+      mongoSetup.subscriberRepositories.map(_.workItemRepository.collectionName) mustBe
         Set("preferences_bounces_queue", "email_subscriberName1_queue", "email_subscriberName2_queue")
     }
   }
