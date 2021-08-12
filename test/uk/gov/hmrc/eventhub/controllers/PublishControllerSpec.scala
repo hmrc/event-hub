@@ -30,7 +30,6 @@ import play.api.test.Helpers.{CONTENT_TYPE, contentAsString, defaultAwaitTimeout
 import play.api.test.{FakeHeaders, FakeRequest, Helpers}
 import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.service.PublisherService
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -148,8 +147,9 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
 
       val result = controller.publish("email")(fakeRequest)
       status(result) mustBe Status.BAD_REQUEST
-      contentAsString(result).toString must include("Invalid Event payload:")
+      contentAsString(result) must include("Invalid Event payload:")
     }
+
   }
 
   class TestSetup {
