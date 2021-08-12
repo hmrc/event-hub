@@ -17,10 +17,8 @@
 package uk.gov.hmrc.eventhub.config
 
 import akka.http.scaladsl.model.{HttpMethod, Uri}
-import cats.syntax.option._
 import cats.syntax.either._
 import cats.syntax.parallel._
-import com.jayway.jsonpath.JsonPath
 import com.typesafe.config.{Config, ConfigObject, ConfigValue}
 import pureconfig.ConfigReader
 import pureconfig.ConfigReader._
@@ -39,8 +37,7 @@ case class Subscriber(
   maxConnections: Int,
   minBackOff: FiniteDuration,
   maxBackOff: FiniteDuration,
-  maxRetries: Int,
-  pathFilter: Option[JsonPath]
+  maxRetries: Int
 )
 
 object Subscriber {
@@ -116,8 +113,7 @@ object Subscriber {
               readMaxConnections(config, parentPath, subscriptionDefaults),
               readMinBackOff(config, parentPath, subscriptionDefaults),
               readMaxBackOff(config, parentPath, subscriptionDefaults),
-              readMaxRetries(config, parentPath, subscriptionDefaults),
-              pathFilter(config, parentPath)
+              readMaxRetries(config, parentPath, subscriptionDefaults)
             ).parMapN(Subscriber.apply)
           }
     }
@@ -205,13 +201,5 @@ object Subscriber {
       parentPath = parentPath,
       configReader = intConfigReader,
       default = subscriptionDefaults.maxRetries
-    )
-
-  def pathFilter(config: Config, parentPath: String): Either[ConfigReaderFailures, Option[JsonPath]] =
-    config.readOrDefault(
-      path = "filterPath",
-      parentPath = parentPath,
-      configReader = jsonPathReader.map(_.some),
-      default = none[JsonPath]
     )
 }

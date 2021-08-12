@@ -41,8 +41,7 @@ object TestModels {
     maxConnections = MaxConnections,
     minBackOff = subscriptionDefaults.minBackOff,
     maxBackOff = subscriptionDefaults.maxBackOff,
-    maxRetries = subscriptionDefaults.maxRetries,
-    pathFilter = None
+    maxRetries = subscriptionDefaults.maxRetries
   )
 
   val idempotentSubscriber: Subscriber = subscriber.copy(

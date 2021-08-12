@@ -18,13 +18,11 @@ package uk.gov.hmrc.eventhub.config
 
 import akka.http.scaladsl.model.HttpMethods.{POST, PUT}
 import akka.http.scaladsl.model.{HttpMethod, HttpMethods, Uri}
-import com.jayway.jsonpath.JsonPath
 import pureconfig.{ConfigCursor, ConfigReader}
 
 object ConfigReaders {
   implicit val uriReader: ConfigReader[Uri] = (cur: ConfigCursor) => cur.asString.map(s => Uri(s))
   implicit val httpMethodReader: ConfigReader[HttpMethod] = (cur: ConfigCursor) => cur.asString.map(postOrPut)
-  implicit val jsonPathReader: ConfigReader[JsonPath] = (cur: ConfigCursor) => cur.asString.map(JsonPath.compile(_))
 
   private def postOrPut(configValue: String): HttpMethod =
     HttpMethods

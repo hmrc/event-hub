@@ -16,13 +16,10 @@
 
 package uk.gov.hmrc.eventhub.service
 
-import net.minidev.json.JSONArray
 import org.mongodb.scala.bson.ObjectId
 import org.mongodb.scala.result.InsertOneResult
 import org.mongodb.scala.{ClientSession, MongoException, Observable, SingleObservable, ToSingleObservableVoid}
 import play.api.i18n.Lang.logger
-import play.api.libs.json.Json
-import uk.gov.hmrc.eventhub.config.Subscriber
 import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.modules.MongoSetup
 import uk.gov.hmrc.eventhub.repository.{EventRepository, SubscriberQueuesRepository}
@@ -30,9 +27,9 @@ import uk.gov.hmrc.eventhub.utils.HelperFunctions.liftFuture
 import uk.gov.hmrc.eventhub.utils.TransactionConfiguration.{sessionOptions, transactionOptions}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem, WorkItemRepository}
+
 import java.time.Instant
 import javax.inject.{Inject, Singleton}
-import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -55,15 +52,6 @@ class PublisherService @Inject() (
       throw new Exception(s"Unknown Transaction error $e")
   }
 
-  private[service] def matchingSubscribers(event: Event, subscribers: List[Subscriber]): immutable.Seq[Subscriber] =
-    subscribers.collect {
-      case subscriber: Subscriber
-          if subscriber
-            .pathFilter
-            .forall(p => !p.read[JSONArray](Json.toJson(event).toString()).isEmpty) =>
-        subscriber
-    }
-
   def publishIfUnique(topic: String, event: Event): Future[Either[PublishError, Unit]] =
     eventRepository.find(event.eventId.toString, mongoSetup.eventRepository).map(_.isEmpty) flatMap {
       case true => liftFuture(publishIfValid(topic, event))
@@ -74,19 +62,11 @@ class PublisherService @Inject() (
     mongoSetup.topics.find(_.name == topic) match {
       case None                                     => Left(NoEventTopic("No such topic"))
       case Some(topic) if topic.subscribers.isEmpty => Left(NoSubscribersForTopic("No subscribers for topic"))
-      case Some(topicObj) =>
-        Right(
-          publish(
-            event,
-            subscriberReposFiltered(topic, matchingSubscribers(event, topicObj.subscribers)).map(_.workItemRepository)
-          )
-        )
+      case Some(_)                                  => Right(publish(event, subscriberRepos(topic)))
     }
 
-  private[service] def subscriberReposFiltered(topic: String, subscribers: Seq[Subscriber]) = {
-    val topicRepos = mongoSetup.subscriberRepositories.filter(_.topic == topic)
-    topicRepos.filter(x => subscribers.map(_.name).contains(x.subscriber.name))
-  }
+  private[service] def subscriberRepos(topic: String): Set[WorkItemRepository[Event]] =
+    mongoSetup.subscriberRepositories.filter(_._1 == topic).map(_._2)
 
   private[service] def publish(event: Event, subscriberRepos: Set[WorkItemRepository[Event]]): Future[Unit] =
     mongoComponent

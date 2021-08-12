@@ -19,8 +19,8 @@ package uk.gov.hmrc.eventhub.modules
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import play.api.Configuration
-import uk.gov.hmrc.eventhub.config.{Subscriber, Topic}
-import uk.gov.hmrc.eventhub.model.{Event, SubscriberRepository}
+import uk.gov.hmrc.eventhub.config.Topic
+import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.workitem.{WorkItemFields, WorkItemRepository}
@@ -37,27 +37,24 @@ class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration,
 
   def collectionName(topic: String, subscriptionName: String): String = s"${topic}_${subscriptionName}_queue"
 
-  def subscriberRepositories: Set[SubscriberRepository] =
+  def subscriberRepositories: Set[(String, WorkItemRepository[Event])] =
     for {
       topic      <- topics
       subscriber <- topic.subscribers
       name = collectionName(topic.name, subscriber.name)
     } yield (
-      SubscriberRepository(
-        topic.name,
-        subscriber,
-        new WorkItemRepository[Event](
-          name,
-          mongo,
-          Event.eventFormat,
-          WorkItemFields.default,
-          false
-        ) {
-          override def inProgressRetryAfter: Duration =
-            Duration.ofSeconds(configuration.underlying.getInt("publish.workItem.retryAfterHours"))
-          override def now(): Instant = Instant.now()
-        }
-      )
+      topic.name,
+      new WorkItemRepository[Event](
+        name,
+        mongo,
+        Event.eventFormat,
+        WorkItemFields.default,
+        false
+      ) {
+        override def inProgressRetryAfter: Duration =
+          Duration.ofSeconds(configuration.underlying.getInt("publish.workItem.retryAfterHours"))
+        override def now(): Instant = Instant.now()
+      }
     )
 
   def eventRepository: PlayMongoRepository[Event] = {

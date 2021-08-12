@@ -21,7 +21,6 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.config.TestModels.{subscriber, subscriptionDefaults}
-
 import scala.concurrent.duration._
 
 class TopicSpec extends AnyFlatSpec with Matchers {
@@ -120,24 +119,6 @@ class TopicSpec extends AnyFlatSpec with Matchers {
     Topic
       .configLoader(subscriptionDefaults)
       .load(config, "topics") shouldBe Set(Topic("email", List(subscriber.copy(maxRetries = 0))))
-  }
-
-  it should "load a topic with a subscriber that has path defined" in {
-    val config: Config = ConfigFactory.parseString(s"""
-                                                      |topics.email.${subscriber.name}.uri="${subscriber.uri}"
-                                                      |topics.email.${subscriber.name}.path="testPath"
-                                                      |""".stripMargin)
-
-    config.getValue("topics.email.foo-subscriber.path").toString should include("testPath")
-  }
-
-  it should "load a topic with a subscriber that has path None if its not defined" in {
-    val config: Config = ConfigFactory.parseString(s"""
-                                                      |topics.email.${subscriber.name}.uri="${subscriber.uri}"
-                                                      |topics.email.${subscriber.name}.path="${subscriber.pathFilter}"
-                                                      |""".stripMargin)
-
-    config.getValue("topics.email.foo-subscriber.path").leftSide.toString should include("None")
   }
 
   it should "load a complex set of topics" in new Scope {

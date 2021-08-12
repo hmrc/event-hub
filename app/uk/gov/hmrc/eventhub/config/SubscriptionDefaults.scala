@@ -17,11 +17,12 @@
 package uk.gov.hmrc.eventhub.config
 
 import akka.http.scaladsl.model.HttpMethod
-import akka.http.scaladsl.model.HttpMethods.POST
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 import pureconfig.ConfigSource
+import akka.http.scaladsl.model.HttpMethods.POST
 import pureconfig.generic.auto._
+
 import scala.concurrent.duration.FiniteDuration
 
 case class SubscriptionDefaults(
