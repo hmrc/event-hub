@@ -44,11 +44,7 @@ package object subscription {
         s"$topicName.${subscriber.name}.min-back-off"    -> subscriber.minBackOff.toString(),
         s"$topicName.${subscriber.name}.max-back-off"    -> subscriber.maxBackOff.toString(),
         s"$topicName.${subscriber.name}.max-retries"     -> subscriber.maxRetries
-      ) ++
-        subscriber
-          .pathFilter
-          .map(filter => Map(s"$topicName.${subscriber.pathFilter}.filterPath" -> filter.getPath))
-          .getOrElse(Map.empty)
+      )
   }
 
   implicit class RequestPatternBuilderOps(val requestPatternBuilder: RequestPatternBuilder) extends AnyVal {
