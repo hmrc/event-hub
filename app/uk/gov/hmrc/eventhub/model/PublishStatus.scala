@@ -16,12 +16,18 @@
 
 package uk.gov.hmrc.eventhub.model
 
-sealed abstract class PublishStatus
+import play.api.libs.json.{Json, OWrites}
 
-object PublishStatus {
-  case object DuplicateEvent extends PublishStatus
-  case object NoSubscribers extends PublishStatus
-  case object NoTopics extends PublishStatus
-  case object SaveError extends PublishStatus
-  case object Published extends PublishStatus
+sealed trait PublishStatus
+
+sealed class PublishError(val message: String) extends PublishStatus
+final case class DuplicateEvent(override val message: String) extends PublishError(message)
+final case class NoEventTopic(override val message: String) extends PublishError(message)
+final case class NoSubscribersForTopic(override val message: String) extends PublishError(message)
+final case class NoMatchingPath(override val message: String) extends PublishError(message)
+final case class UnknownError(override val message: String) extends PublishError(message)
+
+sealed case class PublishResponse(publishedSubscribers: Set[String]) extends PublishStatus
+object PublishResponse {
+  implicit val publishResponseWrites: OWrites[PublishResponse] = Json.writes[PublishResponse]
 }

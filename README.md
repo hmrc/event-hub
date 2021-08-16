@@ -32,3 +32,29 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
     }
 }'
 ```
+### Adding configuration for topics
+
+* topics will have comma separated list of topic's
+* each topic can have comma separated list of subscriber configuration objects
+* from below email is name of a topic
+* bounced-emails object from below is example of subscriber configuration, we have to define this for each subscriber
+* topic and subscriber name (bounced-email from below) are important because a mongo collection will be named using this
+* collection name will be in format topic_subscriberName_queue, from below example collection name will be email_bounced-emails_queue
+* if payload that's passed from publish endpoint dint match filterPath, this subscriber will be ignored and will not be added to queue
+* we can use this page https://jsonpath.com/ to validate payload against filterPath
+
+```topics {
+  email {
+    bounced-emails {
+      uri = "http://localhost:9052/channel-preferences/process/bounce"
+      http-method = "POST"
+      elements = 100
+      per = 3.seconds
+      max-connections = 4
+      min-back-off = 5.millis
+      max-back-off = 10.millis
+      max-retries = 5
+      filterPath = "$.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]"
+    }
+  }
+}```

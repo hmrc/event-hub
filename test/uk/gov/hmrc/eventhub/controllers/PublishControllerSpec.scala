@@ -37,7 +37,8 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
 
   "createEvent" must {
     "return Created if payload id valid and publish response is success" in new TestSetup {
-      when(publisherServiceMock.publishIfUnique(any[String], any[Event])).thenReturn(Future.successful(Right()))
+      when(publisherServiceMock.publishIfUnique(any[String], any[Event]))
+        .thenReturn(Future.successful(Right(Set("subscriber1"))))
 
       val controller: PublishController =
         new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
@@ -52,6 +53,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
 
       val result = controller.publish("email")(fakeRequest)
       status(result) shouldBe Status.CREATED
+      contentAsString(result) shouldBe """{"publishedSubscribers":["subscriber1"]}"""
     }
 
     "return Created if publish response is Duplicate" in new TestSetup {
