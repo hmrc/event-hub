@@ -18,9 +18,10 @@ package uk.gov.hmrc.eventhub.controllers
 
 import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
-import uk.gov.hmrc.eventhub.model.{DuplicateEvent, Event, NoEventTopic, NoMatchingPath, NoSubscribersForTopic}
+import uk.gov.hmrc.eventhub.model.{DuplicateEvent, Event, NoEventTopic, NoMatchingPath, NoSubscribersForTopic, PublishResponse}
 import uk.gov.hmrc.eventhub.service.PublisherService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,7 +36,7 @@ class PublishController @Inject() (cc: ControllerComponents, publisher: Publishe
         errors => Future.successful(BadRequest(Json.obj("Invalid Event payload: " -> JsError.toJson(errors)))),
         event =>
           publisher.publishIfUnique(topic, event).map {
-            case Right(_) => Created
+            case Right(subscribers) => Created(Json.toJson(PublishResponse(subscribers)))
             case Left(error) =>
               error match {
                 case e: DuplicateEvent        => Created(e.message)

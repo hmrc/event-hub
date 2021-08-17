@@ -37,6 +37,7 @@ class PublishEventISpec extends ISpec {
         .post(new File("./it/resources/valid-event.json"))
         .futureValue
       response.status mustBe 201
+      response.body mustBe """{"publishedSubscribers":["email-rejected"]}"""
     }
 
     "return 201 with DuplicateEvent message if event is already processed" in {

@@ -34,6 +34,7 @@ import java.time.Instant
 import javax.inject.{Inject, Singleton}
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
+import cats.syntax.either._
 
 @Singleton
 class PublisherService @Inject() (
@@ -64,23 +65,22 @@ class PublisherService @Inject() (
         subscriber
     }
 
-  def publishIfUnique(topic: String, event: Event): Future[Either[PublishError, Unit]] =
+  def publishIfUnique(topic: String, event: Event): Future[Either[PublishError, Set[String]]] =
     eventRepository.find(event.eventId.toString, mongoSetup.eventRepository).map(_.isEmpty) flatMap {
       case true => liftFuture(publishIfValid(topic, event))
-      case _    => Future.successful(Left(DuplicateEvent("Duplicate Event: Event with eventId already exists")))
+      case _    => Future.successful(DuplicateEvent("Duplicate Event: Event with eventId already exists").asLeft)
     }
 
-  private def publishIfValid(topic: String, event: Event): Either[PublishError, Future[Unit]] =
+  private def publishIfValid(topic: String, event: Event): Either[PublishError, Future[Set[String]]] =
     mongoSetup.topics.find(_.name == topic) match {
-      case None                                     => Left(NoEventTopic("No such topic"))
-      case Some(topic) if topic.subscribers.isEmpty => Left(NoSubscribersForTopic("No subscribers for topic"))
+      case None                                     => NoEventTopic("No such topic").asLeft
+      case Some(topic) if topic.subscribers.isEmpty => NoSubscribersForTopic("No subscribers for topic").asLeft
       case Some(topicObj) =>
-        Right(
-          publish(
-            event,
-            subscriberReposFiltered(topic, matchingSubscribers(event, topicObj.subscribers)).map(_.workItemRepository)
-          )
-        )
+        val subscriberRepos = subscriberReposFiltered(topic, matchingSubscribers(event, topicObj.subscribers))
+        publish(
+          event,
+          subscriberRepos.map(_.workItemRepository)
+        ).map(_ => subscriberRepos.map(_.subscriber.name)).asRight
     }
 
   private[service] def subscriberReposFiltered(topic: String, subscribers: Seq[Subscriber]) = {
