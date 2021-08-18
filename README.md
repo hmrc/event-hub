@@ -28,24 +28,34 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
         "detected": "2021-04-07T09:46:29+00:00",
         "code": 605,
         "reason": "Not delivering to previously bounced address",
-        "enrolment": "HMRC-MTD-VAT~VRN~GB123456789"
+        "enrolment": "HMRC-CUS-ORG~EORINumber~GB123456789",
     }
 }'
 ```
-### Adding configuration for topics
-
-* topics will have comma separated list of topic's
-* each topic can have comma separated list of subscriber configuration objects
+### Adding local configuration for topics
+* this configuration goes inside topics in config
 * from below email is name of a topic
-* bounced-emails object from below is example of subscriber configuration, we have to define this for each subscriber
-* topic and subscriber name (bounced-email from below) are important because a mongo collection will be named using this
-* collection name will be in format topic_subscriberName_queue, from below example collection name will be email_bounced-emails_queue
-* if payload that's passed from publish endpoint dint match filterPath, this subscriber will be ignored and will not be added to queue
-* we can use this page https://jsonpath.com/ to validate payload against filterPath
+* channel-preferences and customs-data-store  object from below is example of subscriber configuration, we have to define this for each subscriber
+* topic and subscriber name (channel-preferences from below) are important because a mongo collection will be named using this
+* collection name will be in format topic_subscriberName_queue, from below example collection name will be email_channel-preferences_queue
+* if payload that's passed from publish endpoint doesn't match filterPath for a subscriber, this event will be ignored for that subscriber's queue
+* we can use this page https://jsonpath.com/ or http://jsonpath.herokuapp.com/ to validate payload for filterPath
+* make sure we don't define duplicate topics and subscribers this can yield incorrect results 
 
 ```topics {
   email {
-    bounced-emails {
+    channel-preferences {
+      uri = "http://localhost:9052/channel-preferences/process/bounce"
+      http-method = "POST"
+      elements = 100
+      per = 3.seconds
+      max-connections = 4
+      min-back-off = 5.millis
+      max-back-off = 10.millis
+      max-retries = 5
+      filterPath = "$.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]"
+    },
+    customs-data-store {
       uri = "http://localhost:9052/channel-preferences/process/bounce"
       http-method = "POST"
       elements = 100
@@ -57,4 +67,32 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
       filterPath = "$.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]"
     }
   }
-}```
+}
+```
+
+### Example for adding configuration for topics in `app-config-$env` files
+#### below example shows configuration for topic `email` that has 2 subscribers `channel-preferences` and `customs-data-store`
+
+```
+    topics.email.channel-preferences.uri: https://channel-preferences.protected.mdtp:443/channel-preferences/process/bounce
+    topics.email.channel-preferences.http-method: POST
+    topics.email.channel-preferences.elements: 100
+    topics.email.channel-preferences.per: 3.seconds
+    topics.email.channel-preferences.max-connections: 4
+    topics.email.channel-preferences.min-back-off: 5.millis
+    topics.email.channel-preferences.mix-back-off: 10.millis
+    topics.email.channel-preferences.max-retries: 10.millis
+    topics.email.channel-preferences.filterPath: $.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]
+
+    topics.email.customs-data-store.uri: https://channel-preferences.protected.mdtp:443/channel-preferences/process/bounce
+    topics.email.customs-data-store.http-method: POST
+    topics.email.customs-data-store.elements: 100
+    topics.email.customs-data-store.per: 3.seconds
+    topics.email.customs-data-store.max-connections: 4
+    topics.email.customs-data-store.min-back-off: 5.millis
+    topics.email.customs-data-store.mix-back-off: 10.millis
+    topics.email.customs-data-store.max-retries: 10.millis
+    topics.email.customs-data-store.filterPath: $.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]
+
+
+```

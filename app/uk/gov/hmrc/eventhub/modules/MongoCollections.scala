@@ -24,10 +24,8 @@ import uk.gov.hmrc.eventhub.model.{Event, SubscriberRepository}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.workitem.{WorkItemFields, WorkItemRepository}
-
 import java.time.{Duration, Instant}
 import javax.inject.Inject
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext
 
 trait MongoCollections
@@ -35,23 +33,6 @@ trait MongoCollections
 class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration, val topics: Set[Topic])(implicit
   ec: ExecutionContext
 ) extends MongoCollections {
-
-  val duplicateConfigurationKeys = {
-
-    val allLines = scala.io.Source.fromFile("conf/application.conf").getLines().toList
-    val getLinesThatStartWithTopic = allLines.filter(line => line.startsWith("topics"))
-
-    val list = ListBuffer.empty[String]
-    getLinesThatStartWithTopic.foreach { line =>
-      val indexOf = line.indexOf(":")
-      if (indexOf != -1) {
-        list.append(line.substring(0, indexOf).trim)
-      }
-    }
-
-    val valid = list.size == list.distinct.size
-    if (!valid) throw new DuplicateConfigurationKeyException
-  }
 
   def collectionName(topic: String, subscriptionName: String): String = s"${topic}_${subscriptionName}_queue"
 
@@ -88,5 +69,3 @@ class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration,
     repository
   }
 }
-
-class DuplicateConfigurationKeyException extends Exception
