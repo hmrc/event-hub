@@ -43,7 +43,7 @@ class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration,
 
     val list = ListBuffer.empty[String]
     getLinesThatStartWithTopic.foreach { line =>
-      val indexOf = line.indexOf("=")
+      val indexOf = line.indexOf(":")
       if (indexOf != -1) {
         list.append(line.substring(0, indexOf).trim)
       }
