@@ -36,22 +36,22 @@ class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration,
   ec: ExecutionContext
 ) extends MongoCollections {
 
-//  val duplicateConfigurationKeys = {
-//
-//    val allLines = scala.io.Source.fromFile("conf/application.conf").getLines().toList
-//    val getLinesThatStartWithTopic = allLines.filter(line => line.startsWith("topics"))
-//
-//    val list = ListBuffer.empty[String]
-//    getLinesThatStartWithTopic.foreach { line =>
-//      val indexOf = line.indexOf(":")
-//      if (indexOf != -1) {
-//        list.append(line.substring(0, indexOf).trim)
-//      }
-//    }
-//
-//    val valid = list.size == list.distinct.size
-//    if (!valid) throw new DuplicateConfigurationKeyException
-//  }
+  val duplicateConfigurationKeys = {
+
+    val allLines = scala.io.Source.fromFile("conf/application.conf").getLines().toList
+    val getLinesThatStartWithTopic = allLines.filter(line => line.startsWith("topics"))
+
+    val list = ListBuffer.empty[String]
+    getLinesThatStartWithTopic.foreach { line =>
+      val indexOf = line.indexOf(":")
+      if (indexOf != -1) {
+        list.append(line.substring(0, indexOf).trim)
+      }
+    }
+
+    val valid = list.size == list.distinct.size
+    if (!valid) throw new DuplicateConfigurationKeyException
+  }
 
   def collectionName(topic: String, subscriptionName: String): String = s"${topic}_${subscriptionName}_queue"
 
