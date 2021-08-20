@@ -84,7 +84,7 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
     topics.email.channel-preferences.max-retries: 10.millis
     topics.email.channel-preferences.filterPath: $.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]
 
-    topics.email.customs-data-store.uri: https://channel-preferences.protected.mdtp:443/channel-preferences/process/bounce
+    topics.email.customs-data-store.uri: https://customs-data-store.protected.mdtp:443/channel-preferences/process/bounce
     topics.email.customs-data-store.http-method: POST
     topics.email.customs-data-store.elements: 100
     topics.email.customs-data-store.per: 3.seconds
