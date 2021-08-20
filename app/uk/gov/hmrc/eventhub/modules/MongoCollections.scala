@@ -24,7 +24,6 @@ import uk.gov.hmrc.eventhub.model.{Event, SubscriberRepository}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.workitem.{WorkItemFields, WorkItemRepository}
-
 import java.time.{Duration, Instant}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
