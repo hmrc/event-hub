@@ -85,7 +85,7 @@ class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTim
 
   @Provides
   @Singleton
-  def publisherConfigConfig(configuration: Configuration): PublisherConfig =
+  def publisherConfig(configuration: Configuration): PublisherConfig =
     configuration.get[PublisherConfig](path = "publisher-config")
 
   @Provides
