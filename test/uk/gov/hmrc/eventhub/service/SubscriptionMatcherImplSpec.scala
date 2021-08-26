@@ -34,8 +34,8 @@ class SubscriptionMatcherImplSpec extends AnyFlatSpec with Matchers with Idiomat
 
   it should "return subscribers that belong to the passed in topic and either have a JsPath filter that matches" +
     " the event or have no JsPath filter" in new Scope {
-    subscriptionMatcherImpl.apply(event, EmailTopic) shouldBe subscriberRepos.asRight
-  }
+      subscriptionMatcherImpl.apply(event, EmailTopic) shouldBe subscriberRepos.asRight
+    }
 
   it should "return NoEventTopic error when the topic does not exist" in new Scope {
     subscriptionMatcherImpl.apply(event, "nope") shouldBe NoEventTopic("No such topic").asLeft
@@ -44,9 +44,12 @@ class SubscriptionMatcherImplSpec extends AnyFlatSpec with Matchers with Idiomat
   it should "return NoSubscribersForTopic error when the topic exists but there are no matching subscribers" in new Scope {
     mongoSetup.topics returns Set(Topic(EmailTopic, List(channelPreferences)))
 
-    subscriptionMatcherImpl.apply(event.copy(
-      event = JsObject.apply(Map("foo" -> JsString("bar")))
-    ), EmailTopic) shouldBe NoSubscribersForTopic("No subscribers for topic").asLeft
+    subscriptionMatcherImpl.apply(
+      event.copy(
+        event = JsObject.apply(Map("foo" -> JsString("bar")))
+      ),
+      EmailTopic
+    ) shouldBe NoSubscribersForTopic("No subscribers for topic").asLeft
   }
 
   trait Scope {

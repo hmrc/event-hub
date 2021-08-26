@@ -63,7 +63,6 @@ class SubscriptionMatcherImpl @Inject() (mongoSetup: MongoSetup) extends Subscri
             .subscriber
             .pathFilter
             .forall(p => !p.read[JSONArray](Json.toJson(event).toString()).isEmpty) =>
-
         subscriberRepository
     }
 }

@@ -30,7 +30,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class TransactionHandlerImpl @Inject() (
   mongoComponent: MongoComponent,
   publisherConfig: PublisherConfig
-)(implicit executionContext: ExecutionContext) extends TransactionHandler {
+)(implicit executionContext: ExecutionContext)
+    extends TransactionHandler {
   override def startTransactionSession(
     clientSessionOptions: ClientSessionOptions,
     transactionOptions: TransactionOptions
@@ -50,7 +51,6 @@ class TransactionHandlerImpl @Inject() (
       .toFuture()
       .map(_ => ())
       .recoverWith(recovery(clientSession, retryAttempt))
-
 
   private def recovery(
     clientSession: ClientSession,

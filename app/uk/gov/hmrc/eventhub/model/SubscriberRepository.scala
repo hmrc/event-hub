@@ -26,7 +26,11 @@ import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem, WorkItemRepositor
 import java.time.Instant
 import scala.concurrent.Future
 
-class SubscriberRepository(val topic: String, val subscriber: Subscriber, workItemRepository: WorkItemRepository[Event]) {
+class SubscriberRepository(
+  val topic: String,
+  val subscriber: Subscriber,
+  workItemRepository: WorkItemRepository[Event]
+) {
   def insertOne(clientSession: ClientSession, event: Event): Future[InsertOneResult] =
     workItemRepository
       .collection
@@ -35,7 +39,11 @@ class SubscriberRepository(val topic: String, val subscriber: Subscriber, workIt
 }
 
 object SubscriberRepository {
-  def apply(topic: String, subscriber: Subscriber, workItemRepository: WorkItemRepository[Event]): SubscriberRepository =
+  def apply(
+    topic: String,
+    subscriber: Subscriber,
+    workItemRepository: WorkItemRepository[Event]
+  ): SubscriberRepository =
     new SubscriberRepository(topic, subscriber, workItemRepository)
 
   def subscriberWorkItem(event: Event): WorkItem[Event] =

@@ -32,7 +32,7 @@ class EventRepository @Inject() (
 ) {
   def addEvent(
     cs: ClientSession,
-    event: Event,
+    event: Event
   ): Future[InsertOneResult] =
     eventRepository
       .collection

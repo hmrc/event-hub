@@ -39,7 +39,7 @@ class EventPublisherImpl @Inject() (
     val result = for {
       clientSession <- transactionHandler.startTransactionSession(sessionOptions, transactionOptions)
       eventInsert = eventRepository.addEvent(clientSession, event)
-      _      <- targets.foldLeft(eventInsert)(sequenceInserts(clientSession, event))
+      _         <- targets.foldLeft(eventInsert)(sequenceInserts(clientSession, event))
       committed <- transactionHandler.commit(clientSession)
     } yield committed
 
@@ -53,10 +53,9 @@ class EventPublisherImpl @Inject() (
   private def sequenceInserts(
     clientSession: ClientSession,
     event: Event
-  ): (Future[InsertOneResult], SubscriberRepository) => Future[InsertOneResult] = {
-    case (acc, repository) =>
-      acc.flatMap { _ =>
-        repository.insertOne(clientSession, event)
-      }
+  ): (Future[InsertOneResult], SubscriberRepository) => Future[InsertOneResult] = { case (acc, repository) =>
+    acc.flatMap { _ =>
+      repository.insertOne(clientSession, event)
+    }
   }
 }

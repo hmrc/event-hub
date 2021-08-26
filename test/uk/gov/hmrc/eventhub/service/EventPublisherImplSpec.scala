@@ -36,8 +36,12 @@ class EventPublisherImplSpec extends AnyFlatSpec with Matchers with IdiomaticMoc
   behavior of "EventPublisherImpl.apply"
 
   it should "return a successful future unit when publishing succeeds" in new Scope {
-    eventRepository.addEvent(clientSession, event) returns Future.successful(InsertOneResult.acknowledged(BsonObjectId()))
-    subscriberRepository.insertOne(clientSession, event) returns Future.successful(InsertOneResult.acknowledged(BsonObjectId()))
+    eventRepository.addEvent(clientSession, event) returns Future.successful(
+      InsertOneResult.acknowledged(BsonObjectId())
+    )
+    subscriberRepository.insertOne(clientSession, event) returns Future.successful(
+      InsertOneResult.acknowledged(BsonObjectId())
+    )
     transactionHandler.commit(clientSession) returns Future.unit
 
     eventPublisherImpl
@@ -50,17 +54,25 @@ class EventPublisherImplSpec extends AnyFlatSpec with Matchers with IdiomaticMoc
 
     eventPublisherImpl
       .apply(event, targets)
-      .failed.futureValue.getMessage shouldBe "boom"
+      .failed
+      .futureValue
+      .getMessage shouldBe "boom"
   }
 
   it should "return a failed future when committing the transaction fails" in new Scope {
-    eventRepository.addEvent(clientSession, event) returns Future.successful(InsertOneResult.acknowledged(BsonObjectId()))
-    subscriberRepository.insertOne(clientSession, event) returns Future.successful(InsertOneResult.acknowledged(BsonObjectId()))
+    eventRepository.addEvent(clientSession, event) returns Future.successful(
+      InsertOneResult.acknowledged(BsonObjectId())
+    )
+    subscriberRepository.insertOne(clientSession, event) returns Future.successful(
+      InsertOneResult.acknowledged(BsonObjectId())
+    )
     transactionHandler.commit(clientSession) returns Future.failed(new IllegalStateException("commit boom"))
 
     eventPublisherImpl
       .apply(event, targets)
-      .failed.futureValue.getMessage shouldBe "commit boom"
+      .failed
+      .futureValue
+      .getMessage shouldBe "commit boom"
   }
 
   trait Scope {
@@ -70,7 +82,7 @@ class EventPublisherImplSpec extends AnyFlatSpec with Matchers with IdiomaticMoc
     val publishEventAuditor: PublishEventAuditor = mock[PublishEventAuditor]
 
     transactionHandler.startTransactionSession(*, *) returns Future.successful(clientSession)
-    publishEventAuditor.failed(*, *) doesNothing()
+    publishEventAuditor.failed(*, *) doesNothing ()
 
     val eventPublisherImpl: EventPublisherImpl = new EventPublisherImpl(
       transactionHandler,

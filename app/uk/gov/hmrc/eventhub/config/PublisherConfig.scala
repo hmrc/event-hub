@@ -21,7 +21,7 @@ import play.api.ConfigLoader
 import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 
-case class PublisherConfig (transactionRetries: Int)
+case class PublisherConfig(transactionRetries: Int)
 
 object PublisherConfig {
   implicit val configLoader: ConfigLoader[PublisherConfig] = (rootConfig: Config, path: String) =>

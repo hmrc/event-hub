@@ -25,11 +25,12 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EventPublisherServiceImpl @Inject()(
+class EventPublisherServiceImpl @Inject() (
   eventRepository: EventRepository,
   subscriptionMatcher: SubscriptionMatcher,
   eventPublisher: EventPublisher
-)(implicit executionContext: ExecutionContext) extends EventPublisherService {
+)(implicit executionContext: ExecutionContext)
+    extends EventPublisherService {
   def publish(event: Event, topic: String): Future[Either[PublishError, Set[Subscriber]]] =
     eventRepository.find(event.eventId).flatMap {
       case Some(_) => Future.successful(DuplicateEvent(s"Duplicate Event: Event with eventId already exists").asLeft)

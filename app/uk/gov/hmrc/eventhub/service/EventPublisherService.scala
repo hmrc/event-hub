@@ -37,7 +37,10 @@ trait EventPublisher {
 }
 
 trait TransactionHandler {
-  def startTransactionSession(clientSessionOptions: ClientSessionOptions, transactionOptions: TransactionOptions): Future[ClientSession]
+  def startTransactionSession(
+    clientSessionOptions: ClientSessionOptions,
+    transactionOptions: TransactionOptions
+  ): Future[ClientSession]
   def commit(clientSession: ClientSession): Future[Unit]
 }
 
@@ -49,14 +52,14 @@ object TransactionHandler {
   sealed abstract class TransactionError(message: String) extends Exception(message)
 
   case class TransientTransactionError(publisherConfig: PublisherConfig, mongoException: MongoException)
-    extends TransactionError(
-      s"failed to commit transaction after ${publisherConfig.transactionRetries} retry attempts, due to: ${mongoException.getMessage}"
-    )
+      extends TransactionError(
+        s"failed to commit transaction after ${publisherConfig.transactionRetries} retry attempts, due to: ${mongoException.getMessage}"
+      )
 
   case class UnknownTransactionError(mongoException: MongoException)
-    extends TransactionError(
-      s"failed to commit transaction due to: ${mongoException.getMessage}"
-    )
+      extends TransactionError(
+        s"failed to commit transaction due to: ${mongoException.getMessage}"
+      )
 }
 
 object PublishEventAuditor {

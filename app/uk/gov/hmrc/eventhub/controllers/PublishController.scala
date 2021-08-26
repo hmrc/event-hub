@@ -25,8 +25,9 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class PublishController @Inject()(cc: ControllerComponents, eventPublisherService: EventPublisherService)(implicit ec: ExecutionContext)
-    extends BackendController(cc) {
+class PublishController @Inject() (cc: ControllerComponents, eventPublisherService: EventPublisherService)(implicit
+  ec: ExecutionContext
+) extends BackendController(cc) {
 
   def publish(topic: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     request
