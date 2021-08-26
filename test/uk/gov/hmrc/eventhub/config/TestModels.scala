@@ -90,4 +90,7 @@ object TestModels {
       anotherSubscriber
     )
   )
+
+  val transactionRetries = 5
+  val publisherConfig: PublisherConfig = PublisherConfig(transactionRetries = transactionRetries)
 }

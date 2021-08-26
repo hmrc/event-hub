@@ -29,7 +29,7 @@ import scala.concurrent.Future
 class SubscriberRepository(
   val topic: String,
   val subscriber: Subscriber,
-  workItemRepository: WorkItemRepository[Event]
+  val workItemRepository: WorkItemRepository[Event]
 ) {
   def insertOne(clientSession: ClientSession, event: Event): Future[InsertOneResult] =
     workItemRepository
