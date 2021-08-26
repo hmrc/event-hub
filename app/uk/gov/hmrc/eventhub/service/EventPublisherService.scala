@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.service
 
-import org.mongodb.scala.{ClientSession, ClientSessionOptions, MongoException, Observable, SingleObservable, TransactionOptions}
+import org.mongodb.scala.{ClientSession, ClientSessionOptions, MongoException, TransactionOptions}
 import play.api.libs.json.Json
 import uk.gov.hmrc.eventhub.config.{PublisherConfig, Subscriber}
 import uk.gov.hmrc.eventhub.model._
