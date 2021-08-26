@@ -17,7 +17,7 @@
 package uk.gov.hmrc.eventhub
 
 import cats.kernel.Semigroup
-import pureconfig.error.{ConfigReaderFailures, ConvertFailure}
+import pureconfig.error.ConfigReaderFailures
 
 package object config {
 

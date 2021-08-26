@@ -16,7 +16,36 @@
 
 package uk.gov.hmrc.eventhub.model
 
+import org.mongodb.scala.ClientSession
+import org.mongodb.scala.bson.ObjectId
+import org.mongodb.scala.result.InsertOneResult
 import uk.gov.hmrc.eventhub.config.Subscriber
-import uk.gov.hmrc.mongo.workitem.WorkItemRepository
+import uk.gov.hmrc.eventhub.model.SubscriberRepository.subscriberWorkItem
+import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem, WorkItemRepository}
 
-case class SubscriberRepository(topic: String, subscriber: Subscriber, workItemRepository: WorkItemRepository[Event])
+import java.time.Instant
+import scala.concurrent.Future
+
+class SubscriberRepository(val topic: String, val subscriber: Subscriber, workItemRepository: WorkItemRepository[Event]) {
+  def insertOne(clientSession: ClientSession, event: Event): Future[InsertOneResult] =
+    workItemRepository
+      .collection
+      .insertOne(clientSession, subscriberWorkItem(event))
+      .toFuture()
+}
+
+object SubscriberRepository {
+  def apply(topic: String, subscriber: Subscriber, workItemRepository: WorkItemRepository[Event]): SubscriberRepository =
+    new SubscriberRepository(topic, subscriber, workItemRepository)
+
+  def subscriberWorkItem(event: Event): WorkItem[Event] =
+    WorkItem(
+      id = new ObjectId(),
+      receivedAt = Instant.now(),
+      updatedAt = Instant.now(),
+      availableAt = Instant.now(),
+      status = ProcessingStatus.ToDo,
+      failureCount = 0,
+      item = event
+    )
+}

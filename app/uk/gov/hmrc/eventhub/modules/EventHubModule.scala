@@ -22,10 +22,14 @@ import akka.pattern.FutureTimeoutSupport
 import com.google.inject.{AbstractModule, Provides}
 import play.api.Configuration
 import play.api.libs.concurrent.AkkaGuiceSupport
-import uk.gov.hmrc.eventhub.config.{ServiceInstancesConfig, SubscriberStreamConfig, SubscriptionDefaults, Topic}
+import uk.gov.hmrc.eventhub.config.{PublisherConfig, ServiceInstancesConfig, SubscriberStreamConfig, SubscriptionDefaults, Topic}
 import uk.gov.hmrc.eventhub.repository.{SubscriberEventRepositoryFactory, WorkItemSubscriberEventRepositoryFactory}
+import uk.gov.hmrc.eventhub.service.PublishEventAuditor
 import uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptions
 import uk.gov.hmrc.eventhub.subscription.http.{AkkaHttpClient, HttpClient, HttpRetryHandler, HttpRetryHandlerImpl}
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.audit.model.Audit
+import uk.gov.hmrc.play.bootstrap.config.AppName
 
 import javax.inject.Singleton
 
@@ -48,6 +52,13 @@ class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTim
 
   @Provides
   @Singleton
+  def audit(configuration: Configuration, auditConnector: AuditConnector): Audit = {
+    val appName = AppName.fromConfiguration(configuration)
+    Audit(appName, auditConnector)
+  }
+
+  @Provides
+  @Singleton
   def createHttpExt(system: ActorSystem): HttpExt =
     Http()(system)
 
@@ -60,6 +71,11 @@ class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTim
   @Singleton
   def scheduler(system: ActorSystem): Scheduler =
     system.scheduler
+
+  @Provides
+  @Singleton
+  def publisherConfigConfig(configuration: Configuration): PublisherConfig =
+    configuration.get[PublisherConfig](path = "publisher-config")
 
   @Provides
   @Singleton

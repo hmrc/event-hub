@@ -32,7 +32,7 @@ trait TestModels {
        |  "detected": "2021-04-07T09:46:29+00:00",
        |  "code": 605,
        |  "reason": "Not delivering to previously bounced address",
-       |  "enrolment": "HMRC-MTD-VAT~VRN~GB123456789"
+       |  "enrolment": "HMRC-CUS-ORG~EORINumber~1234"
        |}
        |""".stripMargin
   )
