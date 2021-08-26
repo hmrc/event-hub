@@ -18,7 +18,7 @@ package uk.gov.hmrc.eventhub.subscription.http
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpMethods.POST
-import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError, OK}
+import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError, OK, TooManyRequests}
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, RequestTimeoutException}
 import akka.stream.Materializer
 import org.scalatest.flatspec.AnyFlatSpec
@@ -37,12 +37,18 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers {
     shouldRetry(httpRequest -> event, Success(successfulHttpResponse) -> event) shouldBe None
   }
 
-  it should "return `None` when a http response is provided with a status code in the 400 range" in new Scope {
+  it should "return `None` when a http response is provided with a status code of 400" in new Scope {
     shouldRetry(httpRequest -> event, Success(clientErrorHttpResponse) -> event) shouldBe None
   }
 
   it should "return `None` when a http response could not be provided due to an exception" in new Scope {
     shouldRetry(httpRequest -> event, Failure(new IllegalStateException("boom boom")) -> event) shouldBe None
+  }
+
+  it should "return Some(inputs) when a http response is provided with a status code of 429" in new Scope {
+    shouldRetry(httpRequest -> event, Success(tooManyRequestsResponse) -> event) shouldBe Some(
+      httpRequest           -> event
+    )
   }
 
   it should "return Some(inputs) when a http response is provided with a status in the 500 range" in new Scope {
@@ -76,6 +82,7 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers {
     val httpRequest: HttpRequest = HttpRequest(method = POST, uri = subscriber.uri)
     val successfulHttpResponse: HttpResponse = HttpResponse(status = OK)
     val clientErrorHttpResponse: HttpResponse = HttpResponse(status = BadRequest)
+    val tooManyRequestsResponse: HttpResponse = HttpResponse(status = TooManyRequests)
     val internalServerErrorHttpResponse: HttpResponse = HttpResponse(status = InternalServerError)
 
     val httpRetryHandler = new HttpRetryHandlerImpl()(materializer)
