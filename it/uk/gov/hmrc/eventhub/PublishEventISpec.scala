@@ -19,7 +19,9 @@ package uk.gov.hmrc.eventhub
 import play.api.http.{ContentTypes, HeaderNames}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.eventhub.repository.EventRepository
+
 import java.io.File
+import java.util.UUID
 
 class PublishEventISpec extends ISpec {
   override def externalServices: Seq[String] = Seq.empty[String]
@@ -56,7 +58,7 @@ class PublishEventISpec extends ISpec {
         .futureValue
       response2.status mustBe 201
 
-      val events = eventRepository.find("1ebbc004-d2ce-11eb-b8bc-0242ac130003", mongoSetup.eventRepository)
+      val events = eventRepository.find(UUID.fromString("1ebbc004-d2ce-11eb-b8bc-0242ac130003"))
       await(events).size mustBe 1
 
     }

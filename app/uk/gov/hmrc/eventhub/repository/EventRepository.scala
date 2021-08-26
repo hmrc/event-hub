@@ -22,19 +22,23 @@ import org.mongodb.scala.{ClientSession, SingleObservable}
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class EventRepository @Inject() () {
-
+class EventRepository @Inject() (
+  eventRepository: PlayMongoRepository[Event]
+) {
   def addEvent(
     cs: ClientSession,
-    eventRepository: PlayMongoRepository[Event],
     event: Event
-  ): SingleObservable[InsertOneResult] =
-    eventRepository.collection.insertOne(cs, event)
+  ): Future[InsertOneResult] =
+    eventRepository
+      .collection
+      .insertOne(cs, event)
+      .toFuture()
 
-  def find(eventId: String, eventRepository: PlayMongoRepository[Event]): Future[Seq[Event]] =
-    eventRepository.collection.find(equal("eventId", eventId)).toFuture()
+  def find(eventId: UUID): Future[Option[Event]] =
+    eventRepository.collection.find(equal("eventId", eventId.toString)).headOption()
 }

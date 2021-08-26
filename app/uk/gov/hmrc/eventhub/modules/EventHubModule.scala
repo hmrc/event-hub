@@ -22,10 +22,14 @@ import akka.pattern.FutureTimeoutSupport
 import com.google.inject.{AbstractModule, Provides}
 import play.api.Configuration
 import play.api.libs.concurrent.AkkaGuiceSupport
-import uk.gov.hmrc.eventhub.config.{ServiceInstancesConfig, SubscriberStreamConfig, SubscriptionDefaults, Topic}
-import uk.gov.hmrc.eventhub.repository.{SubscriberEventRepositoryFactory, WorkItemSubscriberEventRepositoryFactory}
+import uk.gov.hmrc.eventhub.config.{PublisherConfig, ServiceInstancesConfig, SubscriberStreamConfig, SubscriptionDefaults, Topic}
+import uk.gov.hmrc.eventhub.repository.{EventRepository, SubscriberEventRepositoryFactory, WorkItemSubscriberEventRepositoryFactory}
+import uk.gov.hmrc.eventhub.service._
 import uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptions
 import uk.gov.hmrc.eventhub.subscription.http.{AkkaHttpClient, HttpClient, HttpRetryHandler, HttpRetryHandlerImpl}
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.audit.model.Audit
+import uk.gov.hmrc.play.bootstrap.config.AppName
 
 import javax.inject.Singleton
 
@@ -43,7 +47,25 @@ class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTim
 
     bind(classOf[MongoCollections]).to(classOf[MongoSetup])
 
+    bind(classOf[SubscriptionMatcher]).to(classOf[SubscriptionMatcherImpl]).asEagerSingleton()
+    bind(classOf[TransactionHandler]).to(classOf[TransactionHandlerImpl]).asEagerSingleton()
+    bind(classOf[EventPublisher]).to(classOf[EventPublisherImpl]).asEagerSingleton()
+    bind(classOf[PublishEventAuditor]).to(classOf[PublishEventAuditorImpl]).asEagerSingleton()
+    bind(classOf[EventPublisherService]).to(classOf[EventPublisherServiceImpl]).asEagerSingleton()
+
     super.configure()
+  }
+
+  @Provides
+  @Singleton
+  def eventRepository(mongoSetup: MongoSetup): EventRepository =
+    new EventRepository(mongoSetup.eventRepository)
+
+  @Provides
+  @Singleton
+  def audit(configuration: Configuration, auditConnector: AuditConnector): Audit = {
+    val appName = AppName.fromConfiguration(configuration)
+    Audit(appName, auditConnector)
   }
 
   @Provides
@@ -60,6 +82,11 @@ class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTim
   @Singleton
   def scheduler(system: ActorSystem): Scheduler =
     system.scheduler
+
+  @Provides
+  @Singleton
+  def publisherConfig(configuration: Configuration): PublisherConfig =
+    configuration.get[PublisherConfig](path = "publisher-config")
 
   @Provides
   @Singleton

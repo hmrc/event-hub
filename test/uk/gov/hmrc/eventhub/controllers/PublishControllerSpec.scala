@@ -28,8 +28,10 @@ import play.api.http.{ContentTypes, Status}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{CONTENT_TYPE, contentAsString, defaultAwaitTimeout, status}
 import play.api.test.{FakeHeaders, FakeRequest, Helpers}
+import uk.gov.hmrc.eventhub.config.TestModels.channelPreferences
 import uk.gov.hmrc.eventhub.model._
-import uk.gov.hmrc.eventhub.service.PublisherService
+import uk.gov.hmrc.eventhub.service.EventPublisherService
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -37,8 +39,8 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
 
   "createEvent" must {
     "return Created if payload id valid and publish response is success" in new TestSetup {
-      when(publisherServiceMock.publishIfUnique(any[String], any[Event]))
-        .thenReturn(Future.successful(Right(Set("subscriber1"))))
+      when(publisherServiceMock.publish(any[Event], any[String]))
+        .thenReturn(Future.successful(Right(Set(channelPreferences))))
 
       val controller: PublishController =
         new PublishController(Helpers.stubControllerComponents(), publisherServiceMock)
@@ -53,11 +55,11 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
 
       val result = controller.publish("email")(fakeRequest)
       status(result) shouldBe Status.CREATED
-      contentAsString(result) shouldBe """{"publishedSubscribers":["subscriber1"]}"""
+      contentAsString(result) shouldBe s"""{"publishedSubscribers":["${channelPreferences.name}"]}"""
     }
 
     "return Created if publish response is Duplicate" in new TestSetup {
-      when(publisherServiceMock.publishIfUnique(any[String], any[Event]))
+      when(publisherServiceMock.publish(any[Event], any[String]))
         .thenReturn(Future.successful(Left(DuplicateEvent("Event with Id already exists"))))
 
       val controller: PublishController =
@@ -77,7 +79,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
     }
 
     "return NotFound if publish response is NoEventTopic" in new TestSetup {
-      when(publisherServiceMock.publishIfUnique(any[String], any[Event]))
+      when(publisherServiceMock.publish(any[Event], any[String]))
         .thenReturn(Future.successful(Left(NoEventTopic("No topic exits"))))
 
       val controller: PublishController =
@@ -97,7 +99,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
     }
 
     "return Created if publish response is NoSubscriberForTopic" in new TestSetup {
-      when(publisherServiceMock.publishIfUnique(any[String], any[Event]))
+      when(publisherServiceMock.publish(any[Event], any[String]))
         .thenReturn(Future.successful(Left(NoSubscribersForTopic("No subscribers for topic"))))
 
       val controller: PublishController =
@@ -117,7 +119,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
     }
 
     "return InternalServerError if publish response is Not known" in new TestSetup {
-      when(publisherServiceMock.publishIfUnique(any[String], any[Event]))
+      when(publisherServiceMock.publish(any[Event], any[String]))
         .thenReturn(Future.successful(Left(UnknownError("unknown error"))))
 
       val controller: PublishController =
@@ -155,7 +157,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
   }
 
   class TestSetup {
-    val publisherServiceMock = mock[PublisherService]
+    val publisherServiceMock = mock[EventPublisherService]
 
     implicit val mat: Materializer = NoMaterializer
 

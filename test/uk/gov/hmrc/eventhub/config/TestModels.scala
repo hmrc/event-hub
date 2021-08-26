@@ -17,11 +17,14 @@
 package uk.gov.hmrc.eventhub.config
 
 import akka.http.scaladsl.model.{HttpMethods, Uri}
+import com.jayway.jsonpath.JsonPath
+
 import scala.concurrent.duration._
 
 object TestModels {
   val Elements = 60
   val MaxConnections = 4
+  val MaxRetries = 5
 
   val subscriptionDefaults: SubscriptionDefaults = SubscriptionDefaults(
     elements = Elements,
@@ -49,4 +52,45 @@ object TestModels {
     httpMethod = HttpMethods.PUT,
     uri = Uri("http://localhost:8081/foo")
   )
+
+  val EmailTopic = "email"
+  val ChannelPreferencesBounced = "channel-preferences-bounced"
+  val ChannelPreferencesBouncedPath = "/channel-preferences/process/bounce"
+
+  val channelPreferences: Subscriber = Subscriber(
+    name = ChannelPreferencesBounced,
+    uri = Uri(s"http://localhost$ChannelPreferencesBouncedPath"),
+    httpMethod = HttpMethods.POST,
+    elements = Elements,
+    per = 3.seconds,
+    maxConnections = MaxConnections,
+    minBackOff = 10.millis,
+    maxBackOff = 1.second,
+    maxRetries = MaxRetries,
+    Some(JsonPath.compile("$.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]"))
+  )
+
+  val anotherSubscriber: Subscriber = Subscriber(
+    name = "another-subscriber",
+    uri = Uri(s"http://localhost/another-subscriber/email"),
+    httpMethod = HttpMethods.POST,
+    elements = Elements,
+    per = 3.seconds,
+    maxConnections = MaxConnections,
+    minBackOff = 10.millis,
+    maxBackOff = 1.second,
+    maxRetries = MaxRetries,
+    None
+  )
+
+  val emails: Topic = Topic(
+    EmailTopic,
+    List(
+      channelPreferences,
+      anotherSubscriber
+    )
+  )
+
+  val transactionRetries = 5
+  val publisherConfig: PublisherConfig = PublisherConfig(transactionRetries = transactionRetries)
 }
