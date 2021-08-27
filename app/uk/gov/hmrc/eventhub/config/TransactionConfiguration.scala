@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.utils
+package uk.gov.hmrc.eventhub.config
 
 import org.mongodb.scala.{ClientSessionOptions, ReadConcern, TransactionOptions, WriteConcern}
 

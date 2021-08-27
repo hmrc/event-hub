@@ -20,7 +20,7 @@ import org.mongodb.scala.{ClientSession, ClientSessionOptions, MongoException, T
 import play.api.i18n.Lang.logger
 import uk.gov.hmrc.eventhub.config.PublisherConfig
 import uk.gov.hmrc.eventhub.service.TransactionHandler.{TransientTransactionError, UnknownTransactionError}
-import uk.gov.hmrc.eventhub.utils.TransactionConfiguration.sessionOptions
+import uk.gov.hmrc.eventhub.config.TransactionConfiguration.sessionOptions
 import uk.gov.hmrc.mongo.MongoComponent
 
 import javax.inject.{Inject, Singleton}
