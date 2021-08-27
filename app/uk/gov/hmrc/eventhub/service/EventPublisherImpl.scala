@@ -21,6 +21,7 @@ import org.mongodb.scala.{ClientSession, SingleObservable}
 import uk.gov.hmrc.eventhub.model.{Event, SubscriberRepository}
 import uk.gov.hmrc.eventhub.repository.EventRepository
 import uk.gov.hmrc.eventhub.utils.TransactionConfiguration.{sessionOptions, transactionOptions}
+import uk.gov.hmrc.play.audit.model.{Audit, DataEvent}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -29,7 +30,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class EventPublisherImpl @Inject() (
   transactionHandler: TransactionHandler,
   eventRepository: EventRepository,
-  publishEventAuditor: PublishEventAuditor
+  publishEventAuditor: PublishEventAuditor,
+  audit: Audit
 )(implicit executionContext: ExecutionContext)
     extends EventPublisher {
   override def apply(
@@ -39,9 +41,20 @@ class EventPublisherImpl @Inject() (
     val result = for {
       clientSession <- transactionHandler.startTransactionSession(sessionOptions, transactionOptions)
       eventInsert = eventRepository.addEvent(clientSession, event)
+
       _         <- targets.foldLeft(eventInsert)(sequenceInserts(clientSession, event))
       committed <- transactionHandler.commit(clientSession)
     } yield committed
+
+    audit.sendDataEvent(
+      DataEvent(
+        "Event-Hub",
+        "DEBUG",
+        event.eventId.toString,
+        Map.empty,
+        detail = Map("eventPayload" -> event.event.toString())
+      )
+    )
 
     result
       .recover { case exception: Exception =>

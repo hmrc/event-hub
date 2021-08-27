@@ -33,7 +33,7 @@
     "produces" : [ "application/json" ],
     "description" : "report failed emails",
     "title" : "Event Hub API",
-    "version" : "2.9.0-SNAPSHOT",
+    "version" : "2.11.0-SNAPSHOT",
     "consumes" : [ "application/json" ]
   },
   "tags" : [ {
