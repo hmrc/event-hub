@@ -81,7 +81,7 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
     topics.email.channel-preferences.max-connections: 4
     topics.email.channel-preferences.min-back-off: 5.millis
     topics.email.channel-preferences.mix-back-off: 10.millis
-    topics.email.channel-preferences.max-retries: 10.millis
+    topics.email.channel-preferences.max-retries: 5
     topics.email.channel-preferences.filterPath: $.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]
 
     topics.email.customs-data-store.uri: https://customs-data-store.protected.mdtp:443/channel-preferences/process/bounce
@@ -91,7 +91,7 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
     topics.email.customs-data-store.max-connections: 4
     topics.email.customs-data-store.min-back-off: 5.millis
     topics.email.customs-data-store.mix-back-off: 10.millis
-    topics.email.customs-data-store.max-retries: 10.millis
+    topics.email.customs-data-store.max-retries: 5
     topics.email.customs-data-store.filterPath: $.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]
 
 

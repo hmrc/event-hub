@@ -52,12 +52,12 @@ class HttpResponseHandler(
                 logger.warn(s"rate limit error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
                 markAsFailed(event, resultF)
 
-              case StatusCodes.ClientError(_) =>
-                logger.warn(s"client error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
-                remove(event, resultF)
-
               case StatusCodes.ServerError(_) =>
                 logger.warn(s"server error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
+                markAsFailed(event, resultF)
+
+              case StatusCodes.ClientError(_) =>
+                logger.warn(s"client error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
                 remove(event, resultF)
 
               case _ =>

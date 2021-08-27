@@ -42,19 +42,9 @@ class HttpResponseHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMo
     handle(successfulResponse) mustBe EventSendStatus(event, subscriber, Sent)
   }
 
-  it should "remove an event when the response is successful and the status code is a client error" in new Scope {
-    when(subscriberEventRepository.remove(event)) thenReturn Future.successful(true.some)
-    handle(clientErrorResponse) mustBe EventSendStatus(event, subscriber, Removed)
-  }
-
-  it should "remove an event when the response is successful and the status code is a redirection" in new Scope {
-    when(subscriberEventRepository.remove(event)) thenReturn Future.successful(true.some)
-    handle(redirectionResponse) mustBe EventSendStatus(event, subscriber, Removed)
-  }
-
   it should "remove an event when the response is successful and the status code is 500 error" in new Scope {
-    when(subscriberEventRepository.remove(event)) thenReturn Future.successful(true.some)
-    handle(internalServerErrorResponse) mustBe EventSendStatus(event, subscriber, Removed)
+    when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
+    handle(internalServerErrorResponse) mustBe EventSendStatus(event, subscriber, Failed)
   }
 
   it should "mark an event as failed when the response is successful and the status code is 429" in new Scope {
@@ -65,6 +55,16 @@ class HttpResponseHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMo
   it should "mark an event as failed when the response is a failure" in new Scope {
     when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
     handle(failureResponse) mustBe EventSendStatus(event, subscriber, Failed)
+  }
+
+  it should "remove an event when the response is successful and the status code is a client error" in new Scope {
+    when(subscriberEventRepository.remove(event)) thenReturn Future.successful(true.some)
+    handle(clientErrorResponse) mustBe EventSendStatus(event, subscriber, Removed)
+  }
+
+  it should "remove an event when the response is successful and the status code is a redirection" in new Scope {
+    when(subscriberEventRepository.remove(event)) thenReturn Future.successful(true.some)
+    handle(redirectionResponse) mustBe EventSendStatus(event, subscriber, Removed)
   }
 
   trait Scope {
