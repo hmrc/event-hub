@@ -30,8 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class EventPublisherImpl @Inject() (
   transactionHandler: TransactionHandler,
   eventRepository: EventRepository,
-  publishEventAuditor: PublishEventAuditor,
-  audit: Audit
+  publishEventAuditor: PublishEventAuditor
 )(implicit executionContext: ExecutionContext)
     extends EventPublisher {
   override def apply(
@@ -46,15 +45,7 @@ class EventPublisherImpl @Inject() (
       committed <- transactionHandler.commit(clientSession)
     } yield committed
 
-    audit.sendDataEvent(
-      DataEvent(
-        "Event-Hub",
-        "DEBUG",
-        event.eventId.toString,
-        Map.empty,
-        detail = Map("eventPayload" -> event.event.toString())
-      )
-    )
+    publishEventAuditor.failed(event, new Exception("debug event payload"))
 
     result
       .recover { case exception: Exception =>
