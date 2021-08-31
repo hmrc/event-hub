@@ -21,7 +21,7 @@ import play.api.libs.json._
 import java.time.LocalDateTime
 import java.util.UUID
 
-final case class Event(eventId: UUID, subject: String, groupId: String, timeStamp: LocalDateTime, event: JsValue)
+final case class Event(eventId: UUID, subject: String, groupId: String, timestamp: LocalDateTime, event: JsValue)
 
 object Event {
   implicit val eventFormat: OFormat[Event] = Json.format[Event]
