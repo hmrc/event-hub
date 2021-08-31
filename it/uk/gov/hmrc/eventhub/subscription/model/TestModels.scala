@@ -45,7 +45,7 @@ object TestModels {
       eventId = UUID.randomUUID(),
       subject = "bounced",
       groupId = "foo bar baz",
-      timeStamp = LocalDateTime.now(),
+      timestamp = LocalDateTime.now(),
       event = eventJson
     )
   }

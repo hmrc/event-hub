@@ -41,7 +41,7 @@ trait TestModels {
     eventId = UUID.randomUUID(),
     subject = "foo bar",
     groupId = "in the bar",
-    timeStamp = LocalDateTime.now(),
+    timestamp = LocalDateTime.now(),
     event = eventJson
   )
 

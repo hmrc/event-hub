@@ -2,7 +2,7 @@
   "eventId":"1ebbc004-d2ce-11eb-b8bc-0242ac130003",
   "subject":"subject",
   "groupId": "groupid",
-  "timeStamp":"2021-02-11T23:00:00.000Z",
+  "timestamp":"2021-02-11T23:00:00.000Z",
   "event":{
     "enrolmentIdentifier": "EORINumber",
     "enrolmentValue": "GB744638982000",
