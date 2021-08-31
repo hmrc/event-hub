@@ -165,7 +165,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
                          |"eventId":"1ebbc004-d2ce-11eb-b8bc-0242ac130003",
                          |"subject":"subject",
                          |"groupId":"",
-                         |"timeStamp":"2021-02-11T23:00:00.000Z",
+                         |"timestamp":"2021-02-11T23:00:00.000Z",
                          |"event": {
                          |"status":"Failed",
                          |"emailAddress":"test@test.com",
@@ -179,7 +179,7 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
     val inValidPayload = """{
                            |"subject":"subject",
                            |"groupId":"",
-                           |"timeStamp":"2021-02-11T23:00:00.000Z",
+                           |"timestamp":"2021-02-11T23:00:00.000Z",
                            |"event": {
                            |"status":"Failed"
                            |}
