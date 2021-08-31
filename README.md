@@ -21,7 +21,7 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
     "eventId": "623b6f96-d36f-4014-8874-7f3f8287f9e6", 
     "subject": "calling", 
     "groupId": "su users",
-    "timeStamp": "2021-07-01T13:09:29Z",
+    "timestamp": "2021-07-01T13:09:29Z",
     "event" : {
         "event": "failed",
         "emailAddress": "hmrc-customer@some-domain.org",

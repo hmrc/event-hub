@@ -2,7 +2,7 @@
   "eventId":"2ebbc014-a2ce-21ee-a9ad-8332aa231203",
   "subject":"subject",
   "groupId": "groupid",
-  "timeStamp":"2021-02-11T23:00:00.000Z",
+  "timestamp":"2021-02-11T23:00:00.000Z",
   "event":{
     "enrolment":  "HMRC-CUS-ORG~EORINumber~GB000000000000",
     "enrolmentIdentifier": "EORINumber",
