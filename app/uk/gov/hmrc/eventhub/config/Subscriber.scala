@@ -209,7 +209,7 @@ object Subscriber {
 
   def pathFilter(config: Config, parentPath: String): Either[ConfigReaderFailures, Option[JsonPath]] =
     config.readOrDefault(
-      path = "filterPath",
+      path = "filter-path",
       parentPath = parentPath,
       configReader = jsonPathReader.map(_.some),
       default = none[JsonPath]
