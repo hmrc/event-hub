@@ -56,7 +56,7 @@ class SubscriberQueueRepository(
   def failed(e: WorkItem[Event]): Future[Boolean] =
     if (e.failureCount > numberOfRetries) permanentlyFailed(e) else markAs(e.id, ProcessingStatus.Failed)
 
-  private def permanentlyFailed(e: WorkItem[Event]): Future[Boolean] =
+  def permanentlyFailed(e: WorkItem[Event]): Future[Boolean] =
     complete(e.id, PermanentlyFailed)
 
   def findAsWorkItem(event: Event): Future[Option[WorkItem[Event]]] =

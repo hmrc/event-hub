@@ -48,19 +48,30 @@ class HttpResponseHandler(
                 logger.debug(s"pushed event: $event to: ${subscriber.uri}, marking as sent.")
                 subscriberEventRepository.sent(event).map(_ => resultF(Sent))
 
-              case StatusCodes.ClientError(_) =>
-                logger.warn(s"client error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
+              case StatusCodes.TooManyRequests =>
+                logger.warn(s"rate limit error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
                 markAsFailed(event, resultF)
 
-              case _ =>
-                logger.warn(s"upstream error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
+              case StatusCodes.ServerError(_) =>
+                logger.warn(s"server error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
                 markAsFailed(event, resultF)
+
+              case StatusCodes.ClientError(_) =>
+                logger.warn(s"client error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
+                remove(event, resultF)
+
+              case _ =>
+                logger.warn(s"error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
+                remove(event, resultF)
             }
         }
     }
 
   private def markAsFailed(event: Event, resultF: SendStatus => EventSendStatus): Future[EventSendStatus] =
     subscriberEventRepository.failed(event).map(_ => resultF(Failed))
+
+  private def remove(event: Event, resultF: SendStatus => EventSendStatus): Future[EventSendStatus] =
+    subscriberEventRepository.remove(event).map(_ => resultF(Removed))
 }
 
 object HttpResponseHandler {
@@ -68,6 +79,7 @@ object HttpResponseHandler {
 
   case object Sent extends SendStatus
   case object Failed extends SendStatus
+  case object Removed extends SendStatus
 
   case class EventSendStatus(event: Event, subscriber: Subscriber, sendStatus: SendStatus)
 }

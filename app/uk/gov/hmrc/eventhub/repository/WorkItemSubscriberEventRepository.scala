@@ -47,4 +47,13 @@ class WorkItemSubscriberEventRepository(
       logger.debug(s"marking $event as sent: $result")
       result
     }).value
+
+  override def remove(event: Event): Future[Option[Boolean]] =
+    (for {
+      workItem <- OptionT(subscriberQueueRepository.findAsWorkItem(event))
+      result   <- OptionT(subscriberQueueRepository.permanentlyFailed(workItem).map(_.some))
+    } yield {
+      logger.debug(s"removing $event: $result")
+      result
+    }).value
 }

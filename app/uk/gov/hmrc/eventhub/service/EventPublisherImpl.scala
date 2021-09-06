@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.eventhub.service
 
+import org.mongodb.scala.ClientSession
 import org.mongodb.scala.result.InsertOneResult
-import org.mongodb.scala.{ClientSession, SingleObservable}
 import uk.gov.hmrc.eventhub.model.{Event, SubscriberRepository}
 import uk.gov.hmrc.eventhub.repository.EventRepository
-import uk.gov.hmrc.eventhub.utils.TransactionConfiguration.{sessionOptions, transactionOptions}
+import uk.gov.hmrc.eventhub.config.TransactionConfiguration.{sessionOptions, transactionOptions}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
