@@ -23,5 +23,6 @@ import scala.concurrent.Future
 trait SubscriberEventRepository {
   def next(): Future[Option[Event]]
   def failed(event: Event): Future[Option[Boolean]]
+  def remove(event: Event): Future[Option[Boolean]]
   def sent(event: Event): Future[Option[Boolean]]
 }

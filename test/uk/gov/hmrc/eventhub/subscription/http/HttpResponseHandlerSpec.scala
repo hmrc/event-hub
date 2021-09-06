@@ -26,7 +26,7 @@ import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.eventhub.model.TestModels._
 import uk.gov.hmrc.eventhub.config.TestModels._
 import uk.gov.hmrc.eventhub.repository.SubscriberEventRepository
-import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{EventSendStatus, Failed, Sent}
+import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{EventSendStatus, Failed, Removed, Sent}
 import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpResponse
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -42,24 +42,29 @@ class HttpResponseHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMo
     handle(successfulResponse) mustBe EventSendStatus(event, subscriber, Sent)
   }
 
-  it should "mark an event as failed when the response is successful and the status code is a client error" in new Scope {
-    when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
-    handle(clientErrorResponse) mustBe EventSendStatus(event, subscriber, Failed)
-  }
-
-  it should "mark an event as failed when the response is successful and the status code is a redirection" in new Scope {
-    when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
-    handle(redirectionResponse) mustBe EventSendStatus(event, subscriber, Failed)
-  }
-
-  it should "mark an event as failed when the response is successful and the status code is 500 error" in new Scope {
+  it should "remove an event when the response is successful and the status code is 500 error" in new Scope {
     when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
     handle(internalServerErrorResponse) mustBe EventSendStatus(event, subscriber, Failed)
+  }
+
+  it should "mark an event as failed when the response is successful and the status code is 429" in new Scope {
+    when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
+    handle(tooManyRequests) mustBe EventSendStatus(event, subscriber, Failed)
   }
 
   it should "mark an event as failed when the response is a failure" in new Scope {
     when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
     handle(failureResponse) mustBe EventSendStatus(event, subscriber, Failed)
+  }
+
+  it should "remove an event when the response is successful and the status code is a client error" in new Scope {
+    when(subscriberEventRepository.remove(event)) thenReturn Future.successful(true.some)
+    handle(clientErrorResponse) mustBe EventSendStatus(event, subscriber, Removed)
+  }
+
+  it should "remove an event when the response is successful and the status code is a redirection" in new Scope {
+    when(subscriberEventRepository.remove(event)) thenReturn Future.successful(true.some)
+    handle(redirectionResponse) mustBe EventSendStatus(event, subscriber, Removed)
   }
 
   trait Scope {
@@ -89,6 +94,12 @@ class HttpResponseHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMo
 
     val internalServerErrorResponse: SubscriberEventHttpResponse = SubscriberEventHttpResponse(
       response = Success(HttpResponse(status = StatusCodes.InternalServerError)),
+      event = event,
+      subscriber = subscriber
+    )
+
+    val tooManyRequests: SubscriberEventHttpResponse = SubscriberEventHttpResponse(
+      response = Success(HttpResponse(status = StatusCodes.TooManyRequests)),
       event = event,
       subscriber = subscriber
     )
