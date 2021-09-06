@@ -48,7 +48,7 @@ class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTim
     bind(classOf[MongoCollections]).to(classOf[MongoSetup])
 
     bind(classOf[SubscriptionMatcher]).to(classOf[SubscriptionMatcherImpl]).asEagerSingleton()
-    bind(classOf[TransactionHandler]).to(classOf[TransientTransactionThrowingHandler]).asEagerSingleton()
+    bind(classOf[TransactionHandler]).to(classOf[TransactionHandlerImpl]).asEagerSingleton()
     bind(classOf[EventPublisher]).to(classOf[EventPublisherImpl]).asEagerSingleton()
     bind(classOf[PublishEventAuditor]).to(classOf[PublishEventAuditorImpl]).asEagerSingleton()
     bind(classOf[EventPublisherService]).to(classOf[EventPublisherServiceImpl]).asEagerSingleton()
