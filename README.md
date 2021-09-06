@@ -171,8 +171,8 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
 * channel-preferences and customs-data-store  object from below is example of subscriber configuration, we have to define this for each subscriber
 * topic and subscriber name (channel-preferences from below) are important because a mongo collection will be named using this
 * collection name will be in format topic_subscriberName_queue, from below example collection name will be email_channel-preferences_queue
-* if payload that's passed from publish endpoint does not match filterPath for a subscriber, this event will be ignored for that subscriber's queue
-* we can use this page https://jsonpath.com/ or http://jsonpath.herokuapp.com/ to validate payload for filterPath
+* if payload that's passed from publish endpoint does not match filter-path for a subscriber, this event will be ignored for that subscriber's queue
+* we can use this page https://jsonpath.com/ or http://jsonpath.herokuapp.com/ to validate payload for filter-path
 * make sure we don't define duplicate topics and subscribers this can yield incorrect results 
 
 ```topics {
@@ -186,7 +186,7 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
       min-back-off = 5.millis
       max-back-off = 10.millis
       max-retries = 5
-      filterPath = "$.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]"
+      filter-path = "$.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]"
     },
     customs-data-store {
       uri = "http://localhost:9052/channel-preferences/process/bounce"
@@ -197,7 +197,7 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
       min-back-off = 5.millis
       max-back-off = 10.millis
       max-retries = 5
-      filterPath = "$.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]"
+      filter-path = "$.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]"
     }
   }
 }

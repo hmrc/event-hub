@@ -47,7 +47,7 @@ package object subscription {
       ) ++
         subscriber
           .pathFilter
-          .map(filter => Map(s"$topicName.${subscriber.pathFilter}.filterPath" -> filter.getPath))
+          .map(filter => Map(s"$topicName.${subscriber.pathFilter}.filter-path" -> filter.getPath))
           .getOrElse(Map.empty)
   }
 
