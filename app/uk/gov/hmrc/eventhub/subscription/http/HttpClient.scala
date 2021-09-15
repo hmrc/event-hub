@@ -18,16 +18,28 @@ package uk.gov.hmrc.eventhub.subscription.http
 
 import akka.http.scaladsl.HttpExt
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
+import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.eventhub.metric.MetricsReporter
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait HttpClient {
   def singleRequest(httpRequest: HttpRequest): Future[HttpResponse]
 }
 
-@Singleton
-class AkkaHttpClient @Inject() (httpExt: HttpExt) extends HttpClient {
-  override def singleRequest(httpRequest: HttpRequest): Future[HttpResponse] =
-    httpExt.singleRequest(httpRequest)
+class AkkaHttpClient(
+  httpExt: HttpExt,
+  subscriber: Subscriber,
+  metricsReporter: MetricsReporter
+)(implicit executionContext: ExecutionContext)
+    extends HttpClient {
+  override def singleRequest(httpRequest: HttpRequest): Future[HttpResponse] = {
+    val start = System.currentTimeMillis()
+    httpExt
+      .singleRequest(httpRequest)
+      .map { result =>
+        metricsReporter.reportSubscriberRequestLatency(subscriber, System.currentTimeMillis() - start)
+        result
+      }
+  }
 }

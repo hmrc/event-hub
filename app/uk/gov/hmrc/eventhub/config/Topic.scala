@@ -25,10 +25,10 @@ import pureconfig.error.ConfigReaderFailures
 
 import scala.collection.JavaConverters._
 
-case class Topic(name: String, subscribers: List[Subscriber])
+case class Topic(name: TopicName, subscribers: List[Subscriber])
 
 object Topic {
-  def empty(name: String): Topic = Topic(name, Nil)
+  def empty(name: TopicName): Topic = Topic(name, Nil)
 
   def configLoader(subscriptionDefaults: SubscriptionDefaults): ConfigLoader[Set[Topic]] =
     (rootConfig: Config, path: String) =>
@@ -43,9 +43,10 @@ object Topic {
     configValue: (String, ConfigValue),
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, Topic] = configValue match {
-    case (topicName, subscriberList) if subscriberList.valueType() == ConfigValueType.STRING =>
-      Topic.empty(topicName).asRight
-    case (topicName, subscriberList) =>
+    case (name, subscriberList) if subscriberList.valueType() == ConfigValueType.STRING =>
+      Topic.empty(TopicName(name)).asRight
+    case (name, subscriberList) =>
+      val topicName = TopicName(name)
       Subscriber
         .subscribersFromConfig(topicName, subscriberList, subscriptionDefaults)
         .map(Topic(topicName, _))

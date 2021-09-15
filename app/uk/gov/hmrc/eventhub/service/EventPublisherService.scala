@@ -18,18 +18,18 @@ package uk.gov.hmrc.eventhub.service
 
 import org.mongodb.scala.{ClientSession, ClientSessionOptions, MongoException, TransactionOptions}
 import play.api.libs.json.Json
-import uk.gov.hmrc.eventhub.config.{PublisherConfig, Subscriber}
+import uk.gov.hmrc.eventhub.config.{PublisherConfig, Subscriber, TopicName}
 import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.play.audit.model.{DataEvent, EventTypes}
 
 import scala.concurrent.Future
 
 trait EventPublisherService {
-  def publish(event: Event, topic: String): Future[Either[PublishError, Set[Subscriber]]]
+  def publish(event: Event, topicName: TopicName): Future[Either[PublishError, Set[Subscriber]]]
 }
 
 trait SubscriptionMatcher {
-  def apply(event: Event, topic: String): Either[PublishError, Set[SubscriberRepository]]
+  def apply(event: Event, topicName: TopicName): Either[PublishError, Set[SubscriberRepository]]
 }
 
 trait EventPublisher {

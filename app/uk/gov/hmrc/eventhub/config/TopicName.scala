@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.repository
+package uk.gov.hmrc.eventhub.config
 
-import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
-
-trait SubscriberEventRepositoryFactory {
-  def apply(subscriber: Subscriber, topicName: TopicName): SubscriberEventRepository
-}
+case class TopicName(name: String) extends AnyVal

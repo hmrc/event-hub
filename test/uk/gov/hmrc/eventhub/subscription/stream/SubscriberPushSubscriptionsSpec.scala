@@ -24,8 +24,8 @@ import org.mockito.MockitoSugar.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import play.api.inject.ApplicationLifecycle
-import uk.gov.hmrc.eventhub.config.{Subscriber, Topic}
-import org.mockito.ArgumentMatchersSugar.*
+import uk.gov.hmrc.eventhub.config.{Subscriber, Topic, TopicName}
+import org.mockito.ArgumentMatchersSugar.{*, any}
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.config.TestModels._
 
@@ -37,10 +37,10 @@ class SubscriberPushSubscriptionsSpec extends AnyFlatSpec with Matchers with Idi
   behavior of "SubscriberPushSubscriptions"
 
   it should "create and run a subscriber stream for single topic with a single subscriber" in new Scope {
-    when(subscriptionStreamBuilder.build(*, *)).thenReturn(Source.empty)
-    subscriberPushSubscriptions(Set(Topic("test", List(subscriber))))
+    when(subscriptionStreamBuilder.build(*, any[TopicName])).thenReturn(Source.empty)
+    subscriberPushSubscriptions(Set(Topic(TopicName("test"), List(subscriber))))
 
-    subscriptionStreamBuilder.build(*, *) wasCalled once
+    subscriptionStreamBuilder.build(*, any[TopicName]) wasCalled once
   }
 
   it should "create and run subscriber streams for a complex set of topic configurations" in new Scope {
@@ -50,18 +50,18 @@ class SubscriberPushSubscriptionsSpec extends AnyFlatSpec with Matchers with Idi
 
     val complexTopics: Set[Topic] =
       Set(
-        Topic("email", List(subscriber, subscriberTwo)),
-        Topic("letter", List(subscriberThree)),
-        Topic("telephone", List(subscriberFour)),
-        Topic.empty("empty")
+        Topic(TopicName("email"), List(subscriber, subscriberTwo)),
+        Topic(TopicName("letter"), List(subscriberThree)),
+        Topic(TopicName("telephone"), List(subscriberFour)),
+        Topic.empty(TopicName("empty"))
       )
 
-    when(subscriptionStreamBuilder.build(*, *))
+    when(subscriptionStreamBuilder.build(*, any[TopicName]))
       .thenReturn(Source.empty, Source.empty, Source.empty, Source.empty)
 
     subscriberPushSubscriptions(complexTopics)
 
-    subscriptionStreamBuilder.build(*, *) wasCalled fourTimes
+    subscriptionStreamBuilder.build(*, any[TopicName]) wasCalled fourTimes
   }
 
   trait Scope {

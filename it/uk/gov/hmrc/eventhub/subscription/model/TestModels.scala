@@ -18,7 +18,7 @@ package uk.gov.hmrc.eventhub.subscription.model
 
 import akka.http.scaladsl.model.{HttpMethods, Uri}
 import play.api.libs.json.Json
-import uk.gov.hmrc.eventhub.config.{Subscriber, Topic}
+import uk.gov.hmrc.eventhub.config.{Subscriber, Topic, TopicName}
 import uk.gov.hmrc.eventhub.model.Event
 
 import scala.concurrent.duration._
@@ -51,7 +51,7 @@ object TestModels {
   }
 
   object Subscriptions {
-    val EmailTopic = "email"
+    val EmailTopic: TopicName = TopicName("email")
     val ChannelPreferencesBounced = "channel-preferences-bounced"
     val ChannelPreferencesBouncedPath = "/channel-preferences/process/bounce"
 

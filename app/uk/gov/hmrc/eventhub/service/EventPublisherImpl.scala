@@ -43,11 +43,7 @@ class EventPublisherImpl @Inject() (
       committed <- transactionHandler.commit(clientSession)
     } yield committed
 
-    result
-      .recover { case exception: Exception =>
-        publishEventAuditor.failed(event, exception)
-        throw exception
-      }
+    result.recover(audit(event))
   }
 
   private def sequenceInserts(
@@ -57,5 +53,10 @@ class EventPublisherImpl @Inject() (
     acc.flatMap { _ =>
       repository.insertOne(clientSession, event)
     }
+  }
+
+  private def audit(event: Event): PartialFunction[Throwable, Unit] = { case exception: Exception =>
+    publishEventAuditor.failed(event, exception)
+    throw exception
   }
 }

@@ -16,19 +16,24 @@
 
 package uk.gov.hmrc.eventhub.subscription.http
 
+import cats.syntax.option._
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, RequestTimeoutException, StatusCodes}
 import akka.stream.Materializer
+import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.eventhub.metric.MetricsReporter
 import uk.gov.hmrc.eventhub.model.Event
 
-import javax.inject.{Inject, Singleton}
 import scala.util.{Failure, Success, Try}
 
 trait HttpRetryHandler {
   def shouldRetry(input: (HttpRequest, Event), output: (Try[HttpResponse], Event)): Option[(HttpRequest, Event)]
 }
 
-@Singleton
-class HttpRetryHandlerImpl @Inject() (implicit materializer: Materializer) extends HttpRetryHandler {
+class HttpRetryHandlerImpl(
+  subscriber: Subscriber,
+  metricsReporter: MetricsReporter
+)(implicit materializer: Materializer)
+    extends HttpRetryHandler {
   override def shouldRetry(
     input: (HttpRequest, Event),
     output: (Try[HttpResponse], Event)
@@ -37,15 +42,20 @@ class HttpRetryHandlerImpl @Inject() (implicit materializer: Materializer) exten
       case (Success(resp), _) =>
         resp.entity.discardBytes()
         resp.status match {
-          case StatusCodes.ServerError(_) | StatusCodes.TooManyRequests => Some(input)
-          case _                                                        => None
+          case StatusCodes.ServerError(_) | StatusCodes.TooManyRequests =>
+            metricsReporter.incrementSubscriptionRetry(subscriber, resp.status.some)
+            input.some
+          case _ => none
         }
       case (Failure(ex), _) =>
         ex match {
-          case _: RequestTimeoutException => Some(input)
+          case _: RequestTimeoutException =>
+            metricsReporter.incrementSubscriptionRetry(subscriber, none)
+            input.some
           case e: RuntimeException if e.getMessage.contains("The http server closed the connection unexpectedly") =>
-            Some(input)
-          case _ => None
+            metricsReporter.incrementSubscriptionRetry(subscriber, none)
+            input.some
+          case _ => none
         }
     }
 }

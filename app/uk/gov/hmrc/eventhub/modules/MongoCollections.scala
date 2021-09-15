@@ -19,11 +19,12 @@ package uk.gov.hmrc.eventhub.modules
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import play.api.Configuration
-import uk.gov.hmrc.eventhub.config.Topic
+import uk.gov.hmrc.eventhub.config.{Topic, TopicName}
 import uk.gov.hmrc.eventhub.model.{Event, SubscriberRepository}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.workitem.{WorkItemFields, WorkItemRepository}
+
 import java.time.{Duration, Instant}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -34,7 +35,8 @@ class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration,
   ec: ExecutionContext
 ) extends MongoCollections {
 
-  def collectionName(topic: String, subscriptionName: String): String = s"${topic}_${subscriptionName}_queue"
+  def collectionName(topicName: TopicName, subscriptionName: String): String =
+    s"${topicName.name}_${subscriptionName}_queue"
 
   def subscriberRepositories: Set[SubscriberRepository] =
     for {
