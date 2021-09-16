@@ -37,7 +37,8 @@ class SubscriberQueueRepository(
       mongoComponent = mongo,
       collectionName = s"${topic}_${subscriber.name}_queue",
       itemFormat = Event.eventFormat,
-      workItemFields = WorkItemFields.default
+      workItemFields = WorkItemFields.default,
+      replaceIndexes = false
     ) {
 
   override def now(): Instant =

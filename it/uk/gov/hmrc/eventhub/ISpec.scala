@@ -18,20 +18,32 @@ package uk.gov.hmrc.eventhub
 
 import org.mongodb.scala.{MongoClient, MongoDatabase}
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.concurrent.Eventually.eventually
+import org.scalatest.concurrent.IntegrationPatience
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.eventhub.modules.MongoSetup
 import uk.gov.hmrc.integration.ServiceSpec
+import uk.gov.hmrc.mongo.MongoComponent
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.DurationInt
 
-trait ISpec extends PlaySpec with ServiceSpec with BeforeAndAfterEach {
+trait ISpec extends PlaySpec with ServiceSpec with BeforeAndAfterEach with IntegrationPatience {
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   val wsClient: WSClient = app.injector.instanceOf[WSClient]
   val mongoSetup = app.injector.instanceOf[MongoSetup]
+  val mongoComponent = app.injector.instanceOf[MongoComponent]
 
-  override protected def afterEach(): Unit = {
+  override def afterAll(): Unit = {
+    implicit val patienceConfig: PatienceConfig =
+      PatienceConfig(
+        timeout = scaled(Span(60, Seconds)),
+        interval = scaled(Span(150, Millis))
+      )
+    super.afterAll()
     val mongoClient: MongoClient = MongoClient(s"mongodb://mongo:27017/$testName?replicaSet=devrs")
     val mongoDatabase: MongoDatabase = mongoClient.getDatabase(testName)
     mongoDatabase.drop().toFuture().futureValue

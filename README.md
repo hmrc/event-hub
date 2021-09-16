@@ -1,6 +1,7 @@
 #### License
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
 
+
 ## event-hub
 
 A messaging middleware solution to decouple sending and receiving of events between distributed applications. The event hub offers fan out of messages to subscribers over HTTP.
@@ -226,4 +227,24 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
     topics.email.customs-data-store.mix-back-off: 10.millis
     topics.email.customs-data-store.max-retries: 5
     topics.email.customs-data-store.filter-path: $.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]
+```
+
+### Adding local configuration for event repository
+
+The following allows you to configure a time-to-live expiry in seconds on individual events stored in the dedup events collection
+
+```
+event-hub {
+  expire-after-seconds-ttl = 86400
+}
+```
+
+### Adding local configuration for subscriber repositories
+
+The following allows you to configure a time-to-live expiry in seconds on individual events stored in the subscriber collections
+
+```
+subscriber-repos {
+  expire-after-seconds-ttl = 86400
+}
 ```

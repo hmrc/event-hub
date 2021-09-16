@@ -19,14 +19,18 @@ package uk.gov.hmrc.eventhub.modules
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import play.api.Configuration
+import play.api.i18n.Lang.logger
 import uk.gov.hmrc.eventhub.config.Topic
-import uk.gov.hmrc.eventhub.model.{Event, SubscriberRepository}
-import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.eventhub.model.{Event, PublishedEvent, SubscriberRepository}
+import uk.gov.hmrc.mongo.{MongoComponent, MongoUtils}
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.workitem.{WorkItemFields, WorkItemRepository}
+
 import java.time.{Duration, Instant}
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
+import org.mongodb.scala.bson.BsonDocument
 
 trait MongoCollections
 
@@ -51,18 +55,62 @@ class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration,
         WorkItemFields.default,
         replaceIndexes = false
       ) {
+
+        lazy val expireAfterSecondsTTL: Int = {
+          val DEFAULT_TTL_SECONDS: Int = 86400 // defaulting to a 24h period
+          val ttl = configuration
+            .getOptional[Int]("event-hub.expire-after-seconds-ttl")
+            .getOrElse(DEFAULT_TTL_SECONDS)
+          logger.info(s"subscriberRepositories.expireAfterSecondsTTL: $ttl")
+          ttl
+        }
+
+        lazy val augmentedIndexes = Seq(
+          IndexModel(
+            ascending("updatedAt"),
+            IndexOptions()
+              .name("updatedAtTtlIndex")
+              .partialFilterExpression(BsonDocument("status" -> "permanently-failed"))
+              .expireAfter(expireAfterSecondsTTL, TimeUnit.SECONDS)
+          )
+        ) ++ indexes
+
+        override def ensureIndexes: Future[Seq[String]] = {
+          if (indexes.isEmpty) {
+            logger.info(s"Skipping Mongo index creation for collection '$name' as no indexes supplied")
+          }
+          MongoUtils.ensureIndexes(collection, augmentedIndexes, true)
+        }
+
         override def inProgressRetryAfter: Duration =
           Duration.ofSeconds(configuration.underlying.getInt("publish.workItem.retryAfterHours"))
         override def now(): Instant = Instant.now()
       }
     )
 
-  def eventRepository: PlayMongoRepository[Event] = {
-    val repository = new PlayMongoRepository[Event](
+  def eventRepository: PlayMongoRepository[PublishedEvent] = {
+
+    lazy val expireAfterSecondsTTL: Int = {
+      val DEFAULT_TTL_SECONDS: Int = 86400 // defaulting to a 24h period
+      val ttl = configuration
+        .getOptional[Int]("event-hub.expire-after-seconds-ttl")
+        .getOrElse(DEFAULT_TTL_SECONDS)
+      logger.info(s"eventRepository.expireAfterSecondsTTL: $ttl")
+      ttl
+    }
+
+    val repository = new PlayMongoRepository[PublishedEvent](
       mongoComponent = mongo,
       "event",
-      Event.eventFormat,
-      indexes = Seq(IndexModel(ascending("eventId"), IndexOptions().unique(true)))
+      PublishedEvent.mongoEventFormat,
+      indexes = Seq(
+        IndexModel(ascending("eventId"), IndexOptions().unique(true)),
+        IndexModel(
+          ascending("createdAt"),
+          IndexOptions().name("createdAtTtlIndex").expireAfter(expireAfterSecondsTTL, TimeUnit.SECONDS)
+        )
+      ),
+      replaceIndexes = true
     )
     repository
   }

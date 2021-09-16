@@ -19,7 +19,7 @@ package uk.gov.hmrc.eventhub.repository
 import org.mongodb.scala.ClientSession
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.result.InsertOneResult
-import uk.gov.hmrc.eventhub.model.Event
+import uk.gov.hmrc.eventhub.model.{Event, PublishedEvent}
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.util.UUID
@@ -27,18 +27,15 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class EventRepository @Inject() (
-  eventRepository: PlayMongoRepository[Event]
-) {
-  def addEvent(
-    cs: ClientSession,
-    event: Event
-  ): Future[InsertOneResult] =
-    eventRepository
-      .collection
-      .insertOne(cs, event)
-      .toFuture()
+class EventRepository @Inject() (eventRepository: PlayMongoRepository[PublishedEvent]) {
+
+  def addEvent(cs: ClientSession, event: Event): Future[InsertOneResult] =
+    eventRepository.collection.insertOne(cs, PublishedEvent.from(event)).toFuture()
 
   def find(eventId: UUID): Future[Option[Event]] =
-    eventRepository.collection.find(equal("eventId", eventId.toString)).headOption()
+    eventRepository
+      .collection
+      .find(equal("eventId", eventId.toString))
+      .map(e => PublishedEvent.to(e))
+      .headOption()
 }
