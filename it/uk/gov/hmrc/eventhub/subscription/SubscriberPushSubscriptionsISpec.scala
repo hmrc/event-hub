@@ -35,7 +35,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
 
   behavior of "SubscriberPushSubscriptions"
 
-  ignore should "push an event to a registered subscriber" in scope(channelPreferencesBouncedEmails returning OK) {
+  it should "push an event to a registered subscriber" in scope(channelPreferencesBouncedEmails returning OK) {
     setup =>
       val response = setup
         .postToTopic(EmailTopic, event)
@@ -53,7 +53,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
       }
   }
 
-  ignore should "push an event to registered subscribers" in scope(bouncedEmails returning OK) { setup =>
+  it should "push an event to registered subscribers" in scope(bouncedEmails returning OK) { setup =>
     val response = setup
       .postToTopic(EmailTopic, event)
       .futureValue
@@ -77,7 +77,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
     }
   }
 
-  ignore should "push events to all registered subscribers" in scope(bouncedEmails returning OK) { setup =>
+  it should "push events to all registered subscribers" in scope(bouncedEmails returning OK) { setup =>
     forAll { eventList: List[Event] =>
       val sentEvents =
         Source(eventList)
@@ -105,7 +105,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
     }
   }
 
-  ignore should "apply retry with exponential back-off" in scope(
+  it should "apply retry with exponential back-off" in scope(
     channelPreferencesBouncedEmails returning InternalServerError
   ) { setup =>
     forAll { event: Event =>
