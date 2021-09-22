@@ -227,3 +227,15 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
     topics.email.customs-data-store.max-retries: 5
     topics.email.customs-data-store.filter-path: $.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]
 ```
+
+## Stats
+
+Custom stats for event-hub can be collected and viewed locally by setting up graphite and grafana importing the even-hub dashboard json from [`grafana-dashboard/target/output/grafana`]("https://github.com/hmrc/grafana-dashboards#grafana-dashboards") into grafana and inserting some events.
+* To set up graphite and grafana from project root run: 
+    ```
+        docker volume create --name=grafana-volume
+        docker-compose -f stats.yml up 
+    ```
+* When logging into grafana on `http://localhost:3000` the default username and password is `admin`
+* Configure a graphite datasource to `http://graphite:8080`
+* Running integration tests, in particular `uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptionsISpec`, is a convenient way to generate most metrics.

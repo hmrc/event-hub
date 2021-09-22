@@ -42,7 +42,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
 
     Topic
       .configLoader(subscriptionDefaults)
-      .load(config, "topics") shouldBe Set(Topic("email", List(subscriber)))
+      .load(config, "topics") shouldBe Set(Topic(TopicName("email"), List(subscriber)))
   }
 
   it should "load a topic with a subscriber defining its `uri` & `http-method` properties" in {
@@ -53,7 +53,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
 
     Topic
       .configLoader(subscriptionDefaults)
-      .load(config, "topics") shouldBe Set(Topic("email", List(subscriber.copy(httpMethod = PUT))))
+      .load(config, "topics") shouldBe Set(Topic(TopicName("email"), List(subscriber.copy(httpMethod = PUT))))
   }
 
   it should "load a topic with a subscriber defining its `uri` & `elements` properties" in {
@@ -64,7 +64,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
 
     Topic
       .configLoader(subscriptionDefaults)
-      .load(config, "topics") shouldBe Set(Topic("email", List(subscriber.copy(elements = 0))))
+      .load(config, "topics") shouldBe Set(Topic(TopicName("email"), List(subscriber.copy(elements = 0))))
   }
 
   it should "load a topic with a subscriber defining its `uri` & `per` properties" in {
@@ -75,7 +75,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
 
     Topic
       .configLoader(subscriptionDefaults)
-      .load(config, "topics") shouldBe Set(Topic("email", List(subscriber.copy(per = 5.seconds))))
+      .load(config, "topics") shouldBe Set(Topic(TopicName("email"), List(subscriber.copy(per = 5.seconds))))
   }
 
   it should "load a topic with a subscriber defining its `uri` & `max-connections` properties" in {
@@ -86,7 +86,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
 
     Topic
       .configLoader(subscriptionDefaults)
-      .load(config, "topics") shouldBe Set(Topic("email", List(subscriber.copy(maxConnections = 1))))
+      .load(config, "topics") shouldBe Set(Topic(TopicName("email"), List(subscriber.copy(maxConnections = 1))))
   }
 
   it should "load a topic with a subscriber defining its `uri` & `min-back-off` properties" in {
@@ -97,7 +97,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
 
     Topic
       .configLoader(subscriptionDefaults)
-      .load(config, "topics") shouldBe Set(Topic("email", List(subscriber.copy(httpMethod = PUT))))
+      .load(config, "topics") shouldBe Set(Topic(TopicName("email"), List(subscriber.copy(httpMethod = PUT))))
   }
 
   it should "load a topic with a subscriber defining its `uri` & `max-back-off` properties" in {
@@ -108,7 +108,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
 
     Topic
       .configLoader(subscriptionDefaults)
-      .load(config, "topics") shouldBe Set(Topic("email", List(subscriber.copy(maxBackOff = 1.hour))))
+      .load(config, "topics") shouldBe Set(Topic(TopicName("email"), List(subscriber.copy(maxBackOff = 1.hour))))
   }
 
   it should "load a topic with a subscriber defining its `uri` & `max-retries` properties" in {
@@ -119,7 +119,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
 
     Topic
       .configLoader(subscriptionDefaults)
-      .load(config, "topics") shouldBe Set(Topic("email", List(subscriber.copy(maxRetries = 0))))
+      .load(config, "topics") shouldBe Set(Topic(TopicName("email"), List(subscriber.copy(maxRetries = 0))))
   }
 
   it should "load a topic with a subscriber that has path defined" in {
@@ -157,7 +157,7 @@ class TopicSpec extends AnyFlatSpec with Matchers {
 
     Topic
       .configLoader(subscriptionDefaults)
-      .load(config, "topics") shouldBe Set(Topic("email", Nil))
+      .load(config, "topics") shouldBe Set(Topic(TopicName("email"), Nil))
   }
 
   it should "fail to load when a subscribers uri property is not defined" in {
@@ -193,10 +193,10 @@ class TopicSpec extends AnyFlatSpec with Matchers {
 
     val complexTopics: Set[Topic] =
       Set(
-        Topic("email", List(subscriber, subscriberTwo)),
-        Topic("letter", List(subscriberThree)),
-        Topic("telephone", List(subscriberFour)),
-        Topic.empty("empty")
+        Topic(TopicName("email"), List(subscriber, subscriberTwo)),
+        Topic(TopicName("letter"), List(subscriberThree)),
+        Topic(TopicName("telephone"), List(subscriberFour)),
+        Topic.empty(TopicName("empty"))
       )
   }
 }

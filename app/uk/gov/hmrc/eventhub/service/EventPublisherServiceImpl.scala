@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.eventhub.service
 
-import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.eventhub.model.{DuplicateEvent, Event, PublishError}
 import uk.gov.hmrc.eventhub.repository.EventRepository
-
 import cats.syntax.either._
+import uk.gov.hmrc.eventhub.metric.MetricsReporter
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -28,20 +29,30 @@ import scala.concurrent.{ExecutionContext, Future}
 class EventPublisherServiceImpl @Inject() (
   eventRepository: EventRepository,
   subscriptionMatcher: SubscriptionMatcher,
-  eventPublisher: EventPublisher
+  eventPublisher: EventPublisher,
+  metricsReporter: MetricsReporter
 )(implicit executionContext: ExecutionContext)
     extends EventPublisherService {
-  def publish(event: Event, topic: String): Future[Either[PublishError, Set[Subscriber]]] =
+  def publish(event: Event, topicName: TopicName): Future[Either[PublishError, Set[Subscriber]]] =
     eventRepository.find(event.eventId).flatMap {
-      case Some(_) => Future.successful(DuplicateEvent(s"Duplicate Event: Event with eventId already exists").asLeft)
-      case None    => matchAndPublish(event, topic)
+      case Some(_) =>
+        metricsReporter.incrementDuplicateEventCount(event, topicName)
+        Future.successful(DuplicateEvent(s"Duplicate Event: Event with eventId already exists").asLeft)
+      case None => matchAndPublish(event, topicName)
     }
 
-  private def matchAndPublish(event: Event, topic: String): Future[Either[PublishError, Set[Subscriber]]] =
-    subscriptionMatcher(event, topic) match {
+  private def matchAndPublish(event: Event, topicName: TopicName): Future[Either[PublishError, Set[Subscriber]]] =
+    subscriptionMatcher(event, topicName) match {
       case Left(failure) => Future.successful(failure.asLeft)
       case Right(subscriberRepositories) =>
         val subscribers = subscriberRepositories.map(_.subscriber)
-        eventPublisher(event, subscriberRepositories).map(_ => subscribers.asRight)
+        eventPublisher(event, subscriberRepositories)
+          .map(_ => reportPublish(event, topicName, subscribers))
+          .map(_ => subscribers.asRight)
     }
+
+  private def reportPublish(event: Event, topicName: TopicName, subscribers: Set[Subscriber]): Unit = {
+    metricsReporter.incrementEventPublishedCount(event, topicName)
+    subscribers.foreach(metricsReporter.incrementSubscriptionEventEnqueuedCount)
+  }
 }

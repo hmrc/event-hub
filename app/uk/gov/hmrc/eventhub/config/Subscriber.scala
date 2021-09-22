@@ -77,7 +77,7 @@ object Subscriber {
   }
 
   def subscribersFromConfig(
-    topicName: String,
+    topicName: TopicName,
     configValue: ConfigValue,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, List[Subscriber]] =
@@ -86,7 +86,7 @@ object Subscriber {
       .flatMap(subscribersFromConfigObject(topicName, _, subscriptionDefaults))
 
   private def subscribersFromConfigObject(
-    topicName: String,
+    topicName: TopicName,
     configObject: ConfigObject,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, List[Subscriber]] =
@@ -96,19 +96,19 @@ object Subscriber {
       .parTraverse(subscriberFromConfig(topicName, _, subscriptionDefaults))
 
   private def subscriberFromConfig(
-    topicName: String,
+    topicName: TopicName,
     configValue: (String, ConfigValue),
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, Subscriber] =
     configValue match {
-      case (name, configValue) =>
+      case (subscriberName, configValue) =>
         configObjectConfigReader
           .from(configValue)
           .map(_.toConfig)
           .flatMap { config =>
-            val parentPath = s"$topicName.$name"
+            val parentPath = s"${topicName.name}.$subscriberName"
             (
-              name.asRight,
+              subscriberName.asRight,
               readUri(config, parentPath),
               readHttpMethod(config, parentPath),
               readElements(config, parentPath, subscriptionDefaults),

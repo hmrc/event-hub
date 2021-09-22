@@ -21,15 +21,19 @@ import akka.http.scaladsl.model.HttpMethods.POST
 import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError, OK, TooManyRequests}
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, RequestTimeoutException}
 import akka.stream.Materializer
+import org.mockito.ArgumentMatchersSugar.*
+import org.mockito.IdiomaticMockito
+import org.mockito.MockitoSugar.mock
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import uk.gov.hmrc.eventhub.config.TestModels._
+import uk.gov.hmrc.eventhub.metric.MetricsReporter
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.model.TestModels._
-import uk.gov.hmrc.eventhub.config.TestModels._
 
 import scala.util.{Failure, Success, Try}
 
-class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers {
+class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
 
   behavior of "HttpRetryHandler.shouldRetry"
 
@@ -49,12 +53,14 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers {
     shouldRetry(httpRequest -> event, Success(tooManyRequestsResponse) -> event) shouldBe Some(
       httpRequest           -> event
     )
+    metricsReporter.incrementSubscriptionRetry(*, Some(TooManyRequests)) wasCalled once
   }
 
   it should "return Some(inputs) when a http response is provided with a status in the 500 range" in new Scope {
     shouldRetry(httpRequest -> event, Success(internalServerErrorHttpResponse) -> event) shouldBe Some(
       httpRequest           -> event
     )
+    metricsReporter.incrementSubscriptionRetry(*, Some(InternalServerError)) wasCalled once
   }
 
   it should "return Some(inputs) when a RequestTimeoutException is returned" in new Scope {
@@ -64,6 +70,7 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers {
     ) shouldBe Some(
       httpRequest -> event
     )
+    metricsReporter.incrementSubscriptionRetry(*, None) wasCalled once
   }
 
   it should "return Some(inputs) when a RuntimeException a message containing `The http server closed the connection unexpectedly` is returned" in new Scope {
@@ -73,6 +80,7 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers {
     ) shouldBe Some(
       httpRequest -> event
     )
+    metricsReporter.incrementSubscriptionRetry(*, None) wasCalled once
   }
 
   trait Scope {
@@ -85,7 +93,8 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers {
     val tooManyRequestsResponse: HttpResponse = HttpResponse(status = TooManyRequests)
     val internalServerErrorHttpResponse: HttpResponse = HttpResponse(status = InternalServerError)
 
-    val httpRetryHandler = new HttpRetryHandlerImpl()(materializer)
+    val metricsReporter: MetricsReporter = mock[MetricsReporter]
+    val httpRetryHandler = new HttpRetryHandlerImpl(subscriber, metricsReporter)(materializer)
 
     def shouldRetry: ((HttpRequest, Event), (Try[HttpResponse], Event)) => Option[(HttpRequest, Event)] =
       httpRetryHandler.shouldRetry

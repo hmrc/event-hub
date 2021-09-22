@@ -17,7 +17,7 @@
 package uk.gov.hmrc.eventhub.repository
 
 import play.api.Configuration
-import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.mongo.MongoComponent
 
 import javax.inject.{Inject, Singleton}
@@ -29,8 +29,8 @@ class WorkItemSubscriberEventRepositoryFactory @Inject() (
   mongo: MongoComponent
 )(implicit executionContext: ExecutionContext)
     extends SubscriberEventRepositoryFactory {
-  override def apply(subscriber: Subscriber, topic: String): SubscriberEventRepository = {
-    val queue = new SubscriberQueueRepository(topic, subscriber, configuration, mongo)
+  override def apply(subscriber: Subscriber, topicName: TopicName): SubscriberEventRepository = {
+    val queue = new SubscriberQueueRepository(topicName, subscriber, configuration, mongo)
     new WorkItemSubscriberEventRepository(queue)
   }
 }

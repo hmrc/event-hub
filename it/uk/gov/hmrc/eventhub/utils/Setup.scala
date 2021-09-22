@@ -26,7 +26,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.{DefaultTestServerFactory, RunningServer}
-import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.subscription.SubscriberConfigOps
 import uk.gov.hmrc.eventhub.subscription.model.{SubscriberServers, SubscriberStub, TestTopic}
@@ -59,7 +59,7 @@ class Setup private (testTopics: Set[TestTopic], testId: TestId) {
         uri = subscriber.uri.withPort(if (subscriber.uri.scheme == "https") server.httpsPort() else server.port())
       )
     }
-    SubscriberServers(topic.name, subscriberServers)
+    SubscriberServers(topic.topicName, subscriberServers)
   }
 
   private val topicsConfig = subscriberServers.flatMap { topic =>
@@ -71,7 +71,7 @@ class Setup private (testTopics: Set[TestTopic], testId: TestId) {
 
   private val application: Application = new GuiceApplicationBuilder()
     .configure("mongodb.uri" -> s"mongodb://mongo:27017/${testId.id}")
-    .configure("metrics.enabled" -> false)
+    .configure("metrics.enabled" -> true)
     .configure("auditing.enabled" -> false)
     .configure("topics" -> topicsConfig)
     .build()
@@ -90,9 +90,9 @@ class Setup private (testTopics: Set[TestTopic], testId: TestId) {
 
   val materializer: Materializer = application.injector.instanceOf[Materializer]
 
-  def postToTopic(topicName: String, event: Event): Future[WSResponse] =
+  def postToTopic(topicName: TopicName, event: Event): Future[WSResponse] =
     client
-      .url(s"http://localhost:$port/event-hub/publish/${-/(topicName)}")
+      .url(s"http://localhost:$port/event-hub/publish/${-/(topicName.name)}")
       .withHttpHeaders("Content-Type" -> "application/json")
       .post(Json.toJson(event))
 

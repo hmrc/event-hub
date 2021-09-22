@@ -19,7 +19,7 @@ package uk.gov.hmrc.eventhub.service
 import cats.syntax.either._
 import net.minidev.json.JSONArray
 import play.api.libs.json.Json
-import uk.gov.hmrc.eventhub.config.Topic
+import uk.gov.hmrc.eventhub.config.{Topic, TopicName}
 import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.modules.MongoSetup
 
@@ -27,8 +27,8 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class SubscriptionMatcherImpl @Inject() (mongoSetup: MongoSetup) extends SubscriptionMatcher {
-  override def apply(event: Event, topic: String): Either[PublishError, Set[SubscriberRepository]] =
-    findTopic(topic)
+  override def apply(event: Event, topicName: TopicName): Either[PublishError, Set[SubscriberRepository]] =
+    findTopic(topicName)
       .map(subscriberRepositories)
       .map(matchingSubscribers(event, _))
       .flatMap {
@@ -36,12 +36,12 @@ class SubscriptionMatcherImpl @Inject() (mongoSetup: MongoSetup) extends Subscri
         case subscribers => subscribers.toSet.asRight
       }
 
-  private def findTopic(topic: String): Either[PublishError, Topic] =
+  private def findTopic(topicName: TopicName): Either[PublishError, Topic] =
     Either
       .fromOption(
         mongoSetup
           .topics
-          .find(_.name == topic),
+          .find(_.name == topicName),
         NoEventTopic("No such topic")
       )
 

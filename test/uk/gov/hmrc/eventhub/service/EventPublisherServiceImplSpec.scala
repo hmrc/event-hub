@@ -17,12 +17,14 @@
 package uk.gov.hmrc.eventhub.service
 
 import cats.syntax.either._
-import org.mockito.ArgumentMatchersSugar.*
+import org.mockito.ArgumentMatchersSugar.{*, any}
 import org.mockito.IdiomaticMockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import uk.gov.hmrc.eventhub.config.TestModels._
+import uk.gov.hmrc.eventhub.config.TestModels.{channelPreferences, _}
+import uk.gov.hmrc.eventhub.config.TopicName
+import uk.gov.hmrc.eventhub.metric.MetricsReporter
 import uk.gov.hmrc.eventhub.model.TestModels._
 import uk.gov.hmrc.eventhub.model.{DuplicateEvent, Event, NoSubscribersForTopic, SubscriberRepository}
 import uk.gov.hmrc.eventhub.repository.EventRepository
@@ -45,6 +47,9 @@ class EventPublisherServiceImplSpec extends AnyFlatSpec with Matchers with Idiom
     eventPublisherServiceImpl
       .publish(event, EmailTopic)
       .futureValue shouldBe Set(channelPreferences).asRight
+
+    metricsReporter.incrementEventPublishedCount(*, any[TopicName]) wasCalled once
+    metricsReporter.incrementSubscriptionEventEnqueuedCount(channelPreferences) wasCalled once
   }
 
   it should "return a DuplicateEvent error when the event has already been published" in new Scope {
@@ -53,6 +58,8 @@ class EventPublisherServiceImplSpec extends AnyFlatSpec with Matchers with Idiom
     eventPublisherServiceImpl
       .publish(event, EmailTopic)
       .futureValue shouldBe DuplicateEvent(s"Duplicate Event: Event with eventId already exists").asLeft
+
+    metricsReporter.incrementDuplicateEventCount(*, any[TopicName]) wasCalled once
   }
 
   it should "return a PublishError returned from SubscriptionMatcher" in new Scope {
@@ -63,17 +70,21 @@ class EventPublisherServiceImplSpec extends AnyFlatSpec with Matchers with Idiom
     eventPublisherServiceImpl
       .publish(event, EmailTopic)
       .futureValue shouldBe noSubscribersForTopic.asLeft
+
+    metricsReporter.incrementEventPublishedCount(*, any[TopicName]) wasNever called
   }
 
   trait Scope {
     val eventRepository: EventRepository = mock[EventRepository]
     val subscriptionMatcher: SubscriptionMatcher = mock[SubscriptionMatcher]
     val eventPublisher: EventPublisher = mock[EventPublisher]
+    val metricsReporter: MetricsReporter = mock[MetricsReporter]
 
     val eventPublisherServiceImpl: EventPublisherServiceImpl = new EventPublisherServiceImpl(
       eventRepository,
       subscriptionMatcher,
-      eventPublisher
+      eventPublisher,
+      metricsReporter
     )
   }
 }

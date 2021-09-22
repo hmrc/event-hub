@@ -19,7 +19,7 @@ package uk.gov.hmrc.eventhub.model
 import org.mongodb.scala.ClientSession
 import org.mongodb.scala.bson.ObjectId
 import org.mongodb.scala.result.InsertOneResult
-import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.eventhub.model.SubscriberRepository.subscriberWorkItem
 import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem, WorkItemRepository}
 
@@ -27,7 +27,7 @@ import java.time.Instant
 import scala.concurrent.Future
 
 class SubscriberRepository(
-  val topic: String,
+  val topicName: TopicName,
   val subscriber: Subscriber,
   val workItemRepository: WorkItemRepository[Event]
 ) {
@@ -40,11 +40,11 @@ class SubscriberRepository(
 
 object SubscriberRepository {
   def apply(
-    topic: String,
+    topicName: TopicName,
     subscriber: Subscriber,
     workItemRepository: WorkItemRepository[Event]
   ): SubscriberRepository =
-    new SubscriberRepository(topic, subscriber, workItemRepository)
+    new SubscriberRepository(topicName, subscriber, workItemRepository)
 
   def subscriberWorkItem(event: Event): WorkItem[Event] =
     WorkItem(

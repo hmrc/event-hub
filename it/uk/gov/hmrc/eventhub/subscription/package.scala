@@ -20,7 +20,7 @@ import akka.http.scaladsl.model.StatusCode
 import com.github.tomakehurst.wiremock.client.WireMock.{equalTo, equalToJson}
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import play.api.libs.json.Json
-import uk.gov.hmrc.eventhub.config.{Subscriber, Topic}
+import uk.gov.hmrc.eventhub.config.{Subscriber, Topic, TopicName}
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.subscription.model.TestTopic
 
@@ -34,20 +34,20 @@ package object subscription {
   }
 
   implicit class SubscriberConfigOps(val subscriber: Subscriber) extends AnyVal {
-    def asConfigMap(topicName: String): Map[String, Any] =
+    def asConfigMap(topicName: TopicName): Map[String, Any] =
       Map(
-        s"$topicName.${subscriber.name}.uri"             -> subscriber.uri.toString(),
-        s"$topicName.${subscriber.name}.http-method"     -> subscriber.httpMethod.value,
-        s"$topicName.${subscriber.name}.elements"        -> subscriber.elements,
-        s"$topicName.${subscriber.name}.per"             -> subscriber.per.toString(),
-        s"$topicName.${subscriber.name}.max-connections" -> subscriber.maxConnections,
-        s"$topicName.${subscriber.name}.min-back-off"    -> subscriber.minBackOff.toString(),
-        s"$topicName.${subscriber.name}.max-back-off"    -> subscriber.maxBackOff.toString(),
-        s"$topicName.${subscriber.name}.max-retries"     -> subscriber.maxRetries
+        s"${topicName.name}.${subscriber.name}.uri"             -> subscriber.uri.toString(),
+        s"${topicName.name}.${subscriber.name}.http-method"     -> subscriber.httpMethod.value,
+        s"${topicName.name}.${subscriber.name}.elements"        -> subscriber.elements,
+        s"${topicName.name}.${subscriber.name}.per"             -> subscriber.per.toString(),
+        s"${topicName.name}.${subscriber.name}.max-connections" -> subscriber.maxConnections,
+        s"${topicName.name}.${subscriber.name}.min-back-off"    -> subscriber.minBackOff.toString(),
+        s"${topicName.name}.${subscriber.name}.max-back-off"    -> subscriber.maxBackOff.toString(),
+        s"${topicName.name}.${subscriber.name}.max-retries"     -> subscriber.maxRetries
       ) ++
         subscriber
           .pathFilter
-          .map(filter => Map(s"$topicName.${subscriber.pathFilter}.filterPath" -> filter.getPath))
+          .map(filter => Map(s"${topicName.name}.${subscriber.name}.filter-path" -> filter.getPath))
           .getOrElse(Map.empty)
   }
 

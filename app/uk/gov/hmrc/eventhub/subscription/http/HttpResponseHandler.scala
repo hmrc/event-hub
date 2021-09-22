@@ -25,10 +25,12 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 import HttpResponseHandler._
 import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.eventhub.metric.MetricsReporter
 import uk.gov.hmrc.eventhub.repository.SubscriberEventRepository
 
 class HttpResponseHandler(
-  subscriberEventRepository: SubscriberEventRepository
+  subscriberEventRepository: SubscriberEventRepository,
+  metricsReporter: MetricsReporter
 )(implicit executionContext: ExecutionContext)
     extends Logging {
 
@@ -40,38 +42,51 @@ class HttpResponseHandler(
         response match {
           case Failure(e) =>
             logger.error(s"could not push event: $event to: ${subscriber.uri}, marking as failed.", e)
-            markAsFailed(event, resultF)
+            markAsFailed(event, subscriber, resultF)
 
           case Success(response) =>
             response.status match {
               case StatusCodes.Success(_) =>
                 logger.debug(s"pushed event: $event to: ${subscriber.uri}, marking as sent.")
+                metricsReporter.incrementSubscriptionPublishedCount(subscriber)
                 subscriberEventRepository.sent(event).map(_ => resultF(Sent))
 
               case StatusCodes.TooManyRequests =>
                 logger.warn(s"rate limit error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
-                markAsFailed(event, resultF)
+                markAsFailed(event, subscriber, resultF)
 
               case StatusCodes.ServerError(_) =>
                 logger.warn(s"server error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
-                markAsFailed(event, resultF)
+                markAsFailed(event, subscriber, resultF)
 
               case StatusCodes.ClientError(_) =>
                 logger.warn(s"client error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
-                remove(event, resultF)
+                remove(event, subscriber, resultF)
 
               case _ =>
                 logger.warn(s"error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
-                remove(event, resultF)
+                remove(event, subscriber, resultF)
             }
         }
     }
 
-  private def markAsFailed(event: Event, resultF: SendStatus => EventSendStatus): Future[EventSendStatus] =
+  private def markAsFailed(
+    event: Event,
+    subscriber: Subscriber,
+    resultF: SendStatus => EventSendStatus
+  ): Future[EventSendStatus] = {
+    metricsReporter.incrementSubscriptionFailure(subscriber)
     subscriberEventRepository.failed(event).map(_ => resultF(Failed))
+  }
 
-  private def remove(event: Event, resultF: SendStatus => EventSendStatus): Future[EventSendStatus] =
+  private def remove(
+    event: Event,
+    subscriber: Subscriber,
+    resultF: SendStatus => EventSendStatus
+  ): Future[EventSendStatus] = {
+    metricsReporter.incrementSubscriptionPermanentFailure(subscriber)
     subscriberEventRepository.remove(event).map(_ => resultF(Removed))
+  }
 }
 
 object HttpResponseHandler {

@@ -53,7 +53,7 @@ object TestModels {
     uri = Uri("http://localhost:8081/foo")
   )
 
-  val EmailTopic = "email"
+  val EmailTopic: TopicName = TopicName("email")
   val ChannelPreferencesBounced = "channel-preferences-bounced"
   val ChannelPreferencesBouncedPath = "/channel-preferences/process/bounce"
 
