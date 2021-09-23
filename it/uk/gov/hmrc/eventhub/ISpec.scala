@@ -46,6 +46,6 @@ trait ISpec extends PlaySpec with ServiceSpec with BeforeAndAfterEach with Integ
     super.afterAll()
     val mongoClient: MongoClient = MongoClient(s"mongodb://mongo:27017/$testName?replicaSet=devrs")
     val mongoDatabase: MongoDatabase = mongoClient.getDatabase(testName)
-    mongoDatabase.drop().toFuture().futureValue
+//    mongoDatabase.drop().toFuture().futureValue
   }
 }
