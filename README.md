@@ -227,3 +227,23 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
     topics.email.customs-data-store.max-retries: 5
     topics.email.customs-data-store.filter-path: $.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]
 ```
+
+### Adding local configuration for event repository
+
+The following allows you to configure a time-to-live expiry in seconds on individual events stored in the dedup events collection
+
+```
+event-hub {
+  expire-after-seconds-ttl = 86400
+}
+```
+
+### Adding local configuration for subscriber repositories
+
+The following allows you to configure a time-to-live expiry in seconds on individual events stored in the subscriber collections
+
+```
+subscriber-repos {
+  expire-after-seconds-ttl = 86400
+}
+```
