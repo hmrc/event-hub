@@ -1,7 +1,6 @@
 #### License
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
 
-
 ## event-hub
 
 A messaging middleware solution to decouple sending and receiving of events between distributed applications. The event hub offers fan out of messages to subscribers over HTTP.
