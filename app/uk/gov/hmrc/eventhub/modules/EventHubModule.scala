@@ -22,7 +22,7 @@ import com.google.inject.{AbstractModule, Provides}
 import play.api.Configuration
 import play.api.libs.concurrent.AkkaGuiceSupport
 import uk.gov.hmrc.eventhub.config.{PublisherConfig, ServiceInstancesConfig, SubscriberStreamConfig, SubscriptionDefaults, Topic}
-import uk.gov.hmrc.eventhub.metric.{MetricsReporter, MetricsReporterImpl}
+import uk.gov.hmrc.eventhub.metric.{BoundedTimers, Clock, MetricsReporter, MetricsReporterImpl, Timers}
 import uk.gov.hmrc.eventhub.repository.{EventRepository, SubscriberEventRepositoryFactory, WorkItemSubscriberEventRepositoryFactory}
 import uk.gov.hmrc.eventhub.service._
 import uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptions
@@ -62,6 +62,14 @@ class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTim
   def audit(configuration: Configuration, auditConnector: AuditConnector): Audit = {
     val appName = AppName.fromConfiguration(configuration)
     Audit(appName, auditConnector)
+  }
+
+  @Provides
+  @Singleton
+  def timers(configuration: Configuration, actorSystem: ActorSystem): Timers = {
+    val maxTimers = configuration.get[Int]("metrics.max-timers")
+    val clock = new Clock
+    new BoundedTimers(clock, maxTimers)(actorSystem)
   }
 
   @Provides

@@ -52,7 +52,10 @@ class EventPublisherServiceImpl @Inject() (
     }
 
   private def reportPublish(event: Event, topicName: TopicName, subscribers: Set[Subscriber]): Unit = {
+    subscribers.foreach { subscriber =>
+      metricsReporter.startSubscriptionPublishTimer(subscriber, event)
+      metricsReporter.incrementSubscriptionEventEnqueuedCount(subscriber)
+    }
     metricsReporter.incrementEventPublishedCount(event, topicName)
-    subscribers.foreach(metricsReporter.incrementSubscriptionEventEnqueuedCount)
   }
 }

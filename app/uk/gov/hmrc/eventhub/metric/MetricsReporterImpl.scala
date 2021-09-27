@@ -23,9 +23,11 @@ import uk.gov.hmrc.eventhub.metric.MetricsReporter.{EventMetricsOps, SubscriberM
 import uk.gov.hmrc.eventhub.model.Event
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.ExecutionContext
 
 @Singleton
-class MetricsReporterImpl @Inject() (metrics: Metrics) extends MetricsReporter {
+class MetricsReporterImpl @Inject() (metrics: Metrics, timers: Timers)(implicit executionContext: ExecutionContext)
+    extends MetricsReporter {
 
   override def incrementEventPublishedCount(event: Event, topicName: TopicName): Unit =
     incrementCounter(event.metricFor(topicName, "published"))
@@ -63,6 +65,24 @@ class MetricsReporterImpl @Inject() (metrics: Metrics) extends MetricsReporter {
   override def reportSubscriberRequestLatency(subscriber: Subscriber, millis: Long): Unit =
     metrics
       .defaultRegistry
-      .histogram(subscriber.metricFor("latency"))
+      .histogram(subscriber.metricFor("request-latency"))
       .update(millis)
+
+  override def startSubscriptionPublishTimer(subscriber: Subscriber, event: Event): Unit =
+    timers.startTimer(subscriberEventTimerName(subscriber, event))
+
+  override def stopSubscriptionPublishTimer(subscriber: Subscriber, event: Event): Unit =
+    timers
+      .stopTimer(subscriberEventTimerName(subscriber, event))
+      .map(
+        _.map(completedTimer =>
+          metrics
+            .defaultRegistry
+            .histogram(subscriber.metricFor("e2e-latency"))
+            .update(completedTimer.time)
+        )
+      )
+
+  private def subscriberEventTimerName(subscriber: Subscriber, event: Event): String =
+    s"${subscriber.name}.${event.eventId}"
 }

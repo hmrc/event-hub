@@ -29,6 +29,8 @@ trait MetricsReporter {
   def incrementSubscriptionFailure(subscriber: Subscriber): Unit
   def incrementSubscriptionPermanentFailure(subscriber: Subscriber): Unit
   def reportSubscriberRequestLatency(subscriber: Subscriber, millis: Long): Unit
+  def startSubscriptionPublishTimer(subscriber: Subscriber, event: Event): Unit
+  def stopSubscriptionPublishTimer(subscriber: Subscriber, event: Event): Unit
 }
 
 object MetricsReporter {

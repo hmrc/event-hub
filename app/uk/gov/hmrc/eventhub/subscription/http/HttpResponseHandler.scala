@@ -38,6 +38,7 @@ class HttpResponseHandler(
     subscriberEventHttpResponse match {
       case SubscriberEventHttpResponse(response, event, subscriber) =>
         val resultF = EventSendStatus(event, subscriber, _)
+        metricsReporter.stopSubscriptionPublishTimer(subscriber, event)
 
         response match {
           case Failure(e) =>

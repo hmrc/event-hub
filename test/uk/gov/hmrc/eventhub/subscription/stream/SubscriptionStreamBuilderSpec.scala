@@ -18,7 +18,6 @@ package uk.gov.hmrc.eventhub.subscription.stream
 
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.http.scaladsl.HttpExt
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import com.kenshoo.play.metrics.Metrics
@@ -30,9 +29,8 @@ import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.cluster.ServiceInstances
 import uk.gov.hmrc.eventhub.config.TestModels._
 import uk.gov.hmrc.eventhub.config.{SubscriberStreamConfig, TopicName}
-import uk.gov.hmrc.eventhub.metric.MetricsReporterImpl
+import uk.gov.hmrc.eventhub.metric.{MetricsReporterImpl, Timers}
 import uk.gov.hmrc.eventhub.repository.{SubscriberEventRepository, SubscriberEventRepositoryFactory}
-import uk.gov.hmrc.eventhub.subscription.http.HttpClient
 import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.EventSendStatus
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -57,7 +55,8 @@ class SubscriptionStreamBuilderSpec extends AnyFlatSpec with Matchers with Idiom
     private implicit val system: ActorSystem = ActorSystem("SubscriptionStreamBuilderSpec")
     implicit val materializer: Materializer = Materializer(system)
     val metrics: Metrics = mock[Metrics]
-    val metricsReporter = new MetricsReporterImpl(metrics)
+    val timers: Timers = mock[Timers]
+    val metricsReporter = new MetricsReporterImpl(metrics, timers)
     val subscriberEventRepositoryFactory: SubscriberEventRepositoryFactory = mock[SubscriberEventRepositoryFactory]
     val subscriberStreamConfig: SubscriberStreamConfig = SubscriberStreamConfig(300.millis)
     val serviceInstances: ServiceInstances = mock[ServiceInstances]
