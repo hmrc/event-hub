@@ -30,20 +30,19 @@ object AkkaTimers {
 // Bounded ListMap of `String -> Long`, drops the oldest element when full.
 class AkkaTimers(maxTimers: Int) extends Actor {
   require(maxTimers > 0, s"max timers must be > 0")
-  private val timers: Map[String, Long] = ListMap.empty
-
-  override def receive: Receive = onMessage(timers)
+  override def receive: Receive = onMessage(ListMap.empty)
 
   private def onMessage(timers: Map[String, Long]): Receive = {
     case Start(metricName, millis) =>
       val withTimer = timers + (metricName -> millis)
 
-      if (withTimer.size > maxTimers) {
-        context.become(onMessage(withTimer.dropRight(1)))
+      val sizedTimers = if (withTimer.size > maxTimers) {
+        withTimer.dropRight(1)
       } else {
-        context.become(onMessage(withTimer))
+        withTimer
       }
 
+      context.become(onMessage(sizedTimers))
       sender() ! RunningTimer(millis)
 
     case Stop(metricName, millis) =>
