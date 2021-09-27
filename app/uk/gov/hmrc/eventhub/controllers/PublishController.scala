@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.eventhub.controllers
 
+import play.api.Logging
 import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.eventhub.model._
@@ -27,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PublishController @Inject() (cc: ControllerComponents, eventPublisherService: EventPublisherService)(implicit
   ec: ExecutionContext
-) extends BackendController(cc) {
+) extends BackendController(cc) with Logging {
 
   def publish(topic: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     request
@@ -37,8 +38,13 @@ class PublishController @Inject() (cc: ControllerComponents, eventPublisherServi
         errors => Future.successful(BadRequest(Json.obj("Invalid Event payload: " -> JsError.toJson(errors)))),
         event =>
           eventPublisherService.publish(event, topic).map {
-            case Right(subscribers) => Created(Json.toJson(PublishResponse(subscribers.map(_.name))))
+            case Right(subscribers) =>
+              logger.warn(
+                s"published event: ${Json.toJson(event)}, to subscribers: ${subscribers.map(_.name).mkString(", ")}"
+              )
+              Created(Json.toJson(PublishResponse(subscribers.map(_.name))))
             case Left(error) =>
+              logger.warn(s"failed to publish event: ${Json.toJson(event)}, due to: $error")
               error match {
                 case e: DuplicateEvent        => Created(e.message)
                 case e: NoEventTopic          => NotFound(e.message)
