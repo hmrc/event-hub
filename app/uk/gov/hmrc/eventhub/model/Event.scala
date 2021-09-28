@@ -18,11 +18,43 @@ package uk.gov.hmrc.eventhub.model
 
 import play.api.libs.json._
 
-import java.time.LocalDateTime
+import java.time.{Instant, LocalDateTime}
 import java.util.UUID
 
 final case class Event(eventId: UUID, subject: String, groupId: String, timestamp: LocalDateTime, event: JsValue)
 
 object Event {
   implicit val eventFormat: OFormat[Event] = Json.format[Event]
+}
+
+final case class PublishedEvent(
+  createdAt: Instant,
+  eventId: UUID,
+  subject: String,
+  groupId: String,
+  timestamp: LocalDateTime,
+  event: JsValue
+)
+
+object PublishedEvent {
+  import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits.jatInstantFormat
+
+  implicit val mongoEventFormat: OFormat[PublishedEvent] = Json.format[PublishedEvent]
+
+  def from(event: Event): PublishedEvent = PublishedEvent(
+    createdAt = Instant.now(),
+    eventId = event.eventId,
+    subject = event.subject,
+    groupId = event.groupId,
+    timestamp = event.timestamp,
+    event = event.event
+  )
+
+  def to(mongoEvent: PublishedEvent): Event = Event(
+    eventId = mongoEvent.eventId,
+    subject = mongoEvent.subject,
+    groupId = mongoEvent.groupId,
+    timestamp = mongoEvent.timestamp,
+    event = mongoEvent.event
+  )
 }

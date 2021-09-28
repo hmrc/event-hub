@@ -28,7 +28,7 @@ import java.util.UUID
 object TestModels {
 
   object Events {
-    private val eventJson = Json.parse(
+    val eventJson = Json.parse(
       s"""
          |{
          |  "event": "failed",
