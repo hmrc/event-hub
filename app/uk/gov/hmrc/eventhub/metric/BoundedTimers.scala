@@ -28,7 +28,8 @@ import scala.concurrent.duration._
 class BoundedTimers(
   clock: Clock,
   maxTimers: Int
-)(implicit actorSystem: ActorSystem) extends Timers {
+)(implicit actorSystem: ActorSystem)
+    extends Timers {
   private implicit val timeout: Timeout = Timeout(3.seconds)
   private val timers: ActorRef = actorSystem.actorOf(Props(classOf[AkkaTimers], maxTimers))
 
