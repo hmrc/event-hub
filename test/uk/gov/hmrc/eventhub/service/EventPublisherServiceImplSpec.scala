@@ -50,6 +50,7 @@ class EventPublisherServiceImplSpec extends AnyFlatSpec with Matchers with Idiom
 
     metricsReporter.incrementEventPublishedCount(*, any[TopicName]) wasCalled once
     metricsReporter.incrementSubscriptionEventEnqueuedCount(channelPreferences) wasCalled once
+    metricsReporter.startSubscriptionPublishTimer(*, *) wasCalled once
   }
 
   it should "return a DuplicateEvent error when the event has already been published" in new Scope {
@@ -60,6 +61,7 @@ class EventPublisherServiceImplSpec extends AnyFlatSpec with Matchers with Idiom
       .futureValue shouldBe DuplicateEvent(s"Duplicate Event: Event with eventId already exists").asLeft
 
     metricsReporter.incrementDuplicateEventCount(*, any[TopicName]) wasCalled once
+    metricsReporter.startSubscriptionPublishTimer(*, *) wasNever called
   }
 
   it should "return a PublishError returned from SubscriptionMatcher" in new Scope {
@@ -72,6 +74,7 @@ class EventPublisherServiceImplSpec extends AnyFlatSpec with Matchers with Idiom
       .futureValue shouldBe noSubscribersForTopic.asLeft
 
     metricsReporter.incrementEventPublishedCount(*, any[TopicName]) wasNever called
+    metricsReporter.startSubscriptionPublishTimer(*, *) wasNever called
   }
 
   trait Scope {

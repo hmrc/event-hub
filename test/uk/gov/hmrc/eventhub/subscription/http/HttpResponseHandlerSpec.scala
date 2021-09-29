@@ -42,36 +42,42 @@ class HttpResponseHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMo
   it should "mark an event as sent when the response is successful and the status code is a success" in new Scope {
     when(subscriberEventRepository.sent(event)) thenReturn Future.successful(true.some)
     handle(successfulResponse) mustBe EventSendStatus(event, subscriber, Sent)
+    metricsReporter.stopSubscriptionPublishTimer(*, *) wasCalled once
   }
 
   it should "remove an event when the response is successful and the status code is 500 error" in new Scope {
     when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
     handle(internalServerErrorResponse) mustBe EventSendStatus(event, subscriber, Failed)
     metricsReporter.incrementSubscriptionFailure(*) wasCalled once
+    metricsReporter.stopSubscriptionPublishTimer(*, *) wasCalled once
   }
 
   it should "mark an event as failed when the response is successful and the status code is 429" in new Scope {
     when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
     handle(tooManyRequests) mustBe EventSendStatus(event, subscriber, Failed)
     metricsReporter.incrementSubscriptionFailure(*) wasCalled once
+    metricsReporter.stopSubscriptionPublishTimer(*, *) wasCalled once
   }
 
   it should "mark an event as failed when the response is a failure" in new Scope {
     when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
     handle(failureResponse) mustBe EventSendStatus(event, subscriber, Failed)
     metricsReporter.incrementSubscriptionFailure(*) wasCalled once
+    metricsReporter.stopSubscriptionPublishTimer(*, *) wasCalled once
   }
 
   it should "remove an event when the response is successful and the status code is a client error" in new Scope {
     when(subscriberEventRepository.remove(event)) thenReturn Future.successful(true.some)
     handle(clientErrorResponse) mustBe EventSendStatus(event, subscriber, Removed)
     metricsReporter.incrementSubscriptionPermanentFailure(*) wasCalled once
+    metricsReporter.stopSubscriptionPublishTimer(*, *) wasCalled once
   }
 
   it should "remove an event when the response is successful and the status code is a redirection" in new Scope {
     when(subscriberEventRepository.remove(event)) thenReturn Future.successful(true.some)
     handle(redirectionResponse) mustBe EventSendStatus(event, subscriber, Removed)
     metricsReporter.incrementSubscriptionPermanentFailure(*) wasCalled once
+    metricsReporter.stopSubscriptionPublishTimer(*, *) wasCalled once
   }
 
   trait Scope {
