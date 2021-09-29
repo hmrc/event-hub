@@ -27,7 +27,7 @@ object Event {
   implicit val eventFormat: OFormat[Event] = Json.format[Event]
 }
 
-final case class PublishedEvent(
+case class PublishedEvent(
   createdAt: Instant,
   eventId: UUID,
   subject: String,

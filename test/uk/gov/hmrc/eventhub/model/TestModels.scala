@@ -16,14 +16,34 @@
 
 package uk.gov.hmrc.eventhub.model
 
+import akka.http.scaladsl.model.{HttpMethods, Uri}
 import org.bson.types.ObjectId
 import play.api.libs.json.Json
+import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem}
 
 import java.time.{Instant, LocalDateTime}
 import java.util.UUID
+import scala.concurrent.duration.DurationInt
 
 trait TestModels {
+
+  def toConfigMap(subscriber: Subscriber, topicName: TopicName): Map[String, Any] =
+    Map(
+      s"${topicName.name}.${subscriber.name}.uri"             -> subscriber.uri.toString(),
+      s"${topicName.name}.${subscriber.name}.http-method"     -> subscriber.httpMethod.value,
+      s"${topicName.name}.${subscriber.name}.elements"        -> subscriber.elements,
+      s"${topicName.name}.${subscriber.name}.per"             -> subscriber.per.toString(),
+      s"${topicName.name}.${subscriber.name}.max-connections" -> subscriber.maxConnections,
+      s"${topicName.name}.${subscriber.name}.min-back-off"    -> subscriber.minBackOff.toString(),
+      s"${topicName.name}.${subscriber.name}.max-back-off"    -> subscriber.maxBackOff.toString(),
+      s"${topicName.name}.${subscriber.name}.max-retries"     -> subscriber.maxRetries
+    ) ++
+      subscriber
+        .pathFilter
+        .map(filter => Map(s"${topicName.name}.${subscriber.name}.filter-path" -> filter.getPath))
+        .getOrElse(Map.empty)
+
   private val eventJson = Json.parse(
     s"""
        |{
@@ -45,6 +65,16 @@ trait TestModels {
     event = eventJson
   )
 
+  def publishedEvent(createdAt: Instant): PublishedEvent =
+    PublishedEvent(
+      createdAt = createdAt,
+      eventId = event.eventId,
+      subject = event.subject,
+      groupId = event.groupId,
+      timestamp = event.timestamp,
+      event = event.event
+    )
+
   val now: Instant = Instant.now()
   val workItem: WorkItem[Event] = WorkItem(
     ObjectId.get,
@@ -54,6 +84,26 @@ trait TestModels {
     ProcessingStatus.ToDo,
     0,
     event
+  )
+
+  val ChannelPreferencesBounced = "channel-preferences-bounced"
+  val ChannelPreferencesBouncedPath = "/channel-preferences/process/bounce"
+
+  val Elements = 100
+  val MaxRetries = 5
+  val MaxConnections = 4
+
+  val channelPreferences: Subscriber = Subscriber(
+    name = ChannelPreferencesBounced,
+    uri = Uri(s"http://localhost$ChannelPreferencesBouncedPath"),
+    httpMethod = HttpMethods.POST,
+    elements = Elements,
+    per = 3.seconds,
+    maxConnections = MaxConnections,
+    minBackOff = 10.millis,
+    maxBackOff = 1.second,
+    maxRetries = MaxRetries,
+    None
   )
 }
 

@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.repository
+package uk.gov.hmrc.eventhub.metric
 
-import org.mongodb.scala.result.InsertOneResult
-import org.mongodb.scala.{ClientSession, SingleObservable}
-import uk.gov.hmrc.eventhub.model.Event
-import uk.gov.hmrc.mongo.workitem.{WorkItem, WorkItemRepository}
+import org.mockito.IdiomaticMockito
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-import javax.inject.Inject
+class ClockSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
 
-class SubscriberQueuesRepository @Inject() () {
+  behavior of "Clock.currentTime"
 
-  def addWorkItem(
-    clientSession: ClientSession,
-    repository: WorkItemRepository[Event],
-    eventWorkItem: WorkItem[Event]
-  ): SingleObservable[InsertOneResult] =
-    repository.collection.insertOne(clientSession, eventWorkItem)
+  it should "return the current system time" in new Scope {
+    ((clock.currentTime > System.currentTimeMillis() - 1) &&
+      (clock.currentTime < System.currentTimeMillis() + 1)) should be(true)
+  }
 
+  trait Scope {
+    val clock: Clock = new Clock()
+  }
 }

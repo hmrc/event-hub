@@ -33,7 +33,7 @@ import uk.gov.hmrc.eventhub.subscription.model.TestModels.Subscriptions.{Element
 import java.time.LocalDateTime
 import java.util.UUID
 
-class EventHubModuleSpec extends ISpec {
+class EventHubModuleISpec extends ISpec {
 
   def threeMinutes[T](fun: => T): T = eventually(timeout(3.minutes), interval(500.milliseconds))(fun)
 

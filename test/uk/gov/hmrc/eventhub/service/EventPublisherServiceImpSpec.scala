@@ -33,7 +33,7 @@ import uk.gov.hmrc.mongo.workitem.WorkItemRepository
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class EventPublisherServiceImplSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class EventPublisherServiceImpSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
 
   behavior of "EventPublisherServiceImpl.publish"
 

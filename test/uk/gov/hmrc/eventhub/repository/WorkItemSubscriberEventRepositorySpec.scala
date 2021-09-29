@@ -17,30 +17,77 @@
 package uk.gov.hmrc.eventhub.repository
 
 import org.mockito.IdiomaticMockito
+import org.mockito.ArgumentMatchersSugar.*
 import org.mongodb.scala.Observable
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import uk.gov.hmrc.eventhub.helpers.LogCapturing
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.model.TestModels.{event, workItem}
 import uk.gov.hmrc.mongo.workitem.WorkItem
+import ch.qos.logback.classic.Level
+import org.mongodb.scala.bson.ObjectId
 
 import scala.concurrent.Future
 
-class WorkItemSubscriberEventRepositorySpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class WorkItemSubscriberEventRepositorySpec
+    extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with LogCapturing {
 
   behavior of "WorkItemSubscriberEventRepository.next"
 
   it should "return an event when the underlying work item repo returns a new work item" in new Scope {
     someFutureWorkItem willBe returned by subscriberQueueRepository.getEvent
 
-    workItemSubscriberEventRepository.next().futureValue shouldBe Some(event)
+    workItemSubscriberEventRepository.next().futureValue should be(Some(event))
   }
 
   it should "return None when the underlying work item repo returns None" in new Scope {
     futureNone willBe returned by subscriberQueueRepository.getEvent
 
-    workItemSubscriberEventRepository.next().futureValue shouldBe None
+    workItemSubscriberEventRepository.next().futureValue should be(None)
+  }
+
+  behavior of "WorkItemSubscriberEventRepository.failed"
+
+  it should "find an work item containing an event and mark it as failed" in new Scope {
+    someFutureWorkItem willBe returned by subscriberQueueRepository.findAsWorkItem(*[Event])
+    futureTrue willBe returned by subscriberQueueRepository.failed(workItem)
+
+    withCaptureOfLoggingFrom[WorkItemSubscriberEventRepository] { logEvents =>
+      workItemSubscriberEventRepository.failed(event).futureValue should be(Some(true))
+      logEvents.head.getLevel should be(Level.DEBUG)
+      logEvents.head.getMessage.contains("marking") should be(true)
+      logEvents.head.getMessage.contains("as failed: true") should be(true)
+    }
+  }
+
+  behavior of "WorkItemSubscriberEventRepository.sent"
+
+  it should "find an work item containing an event and mark it as completed and delete" in new Scope {
+    someFutureWorkItem willBe returned by subscriberQueueRepository.findAsWorkItem(*[Event])
+    futureTrue willBe returned by subscriberQueueRepository.completeAndDelete(*[ObjectId])
+
+    withCaptureOfLoggingFrom[WorkItemSubscriberEventRepository] { logEvents =>
+      workItemSubscriberEventRepository.sent(event).futureValue should be(Some(true))
+      logEvents.head.getLevel should be(Level.DEBUG)
+      logEvents.head.getMessage.contains("marking") should be(true)
+      logEvents.head.getMessage.contains("as sent: true") should be(true)
+    }
+  }
+
+  behavior of "WorkItemSubscriberEventRepository.remove"
+
+  it should "find an work item containing an event and mark it as permanently failed" in new Scope {
+    someFutureWorkItem willBe returned by subscriberQueueRepository.findAsWorkItem(*[Event])
+    futureTrue willBe returned by subscriberQueueRepository.permanentlyFailed(workItem)
+
+    withCaptureOfLoggingFrom[WorkItemSubscriberEventRepository] { logEvents =>
+      workItemSubscriberEventRepository.remove(event).futureValue should be(Some(true))
+      logEvents.head.getLevel should be(Level.DEBUG)
+      logEvents.head.getMessage.contains("removing") should be(true)
+      logEvents.head.getMessage.contains(": true") should be(true)
+    }
   }
 
   trait Scope {

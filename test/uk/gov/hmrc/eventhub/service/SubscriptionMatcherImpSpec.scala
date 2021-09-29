@@ -28,7 +28,7 @@ import uk.gov.hmrc.eventhub.model.{Event, NoEventTopic, NoSubscribersForTopic, S
 import uk.gov.hmrc.eventhub.modules.MongoSetup
 import uk.gov.hmrc.mongo.workitem.WorkItemRepository
 
-class SubscriptionMatcherImplSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
+class SubscriptionMatcherImpSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
 
   behavior of "SubscriptionMatcherImpl.apply"
 

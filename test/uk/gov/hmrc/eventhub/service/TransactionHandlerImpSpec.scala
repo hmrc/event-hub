@@ -32,7 +32,7 @@ import uk.gov.hmrc.mongo.MongoComponent
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class TransactionHandlerImplSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class TransactionHandlerImpSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
 
   behavior of "TransactionHandlerImpl.startTransactionSession"
 

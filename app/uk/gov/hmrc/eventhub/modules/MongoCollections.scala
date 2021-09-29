@@ -76,12 +76,8 @@ class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration,
           )
         ) ++ indexes
 
-        override def ensureIndexes: Future[Seq[String]] = {
-          if (indexes.isEmpty) {
-            logger.info(s"Skipping Mongo index creation for collection '$name' as no indexes supplied")
-          }
+        override def ensureIndexes: Future[Seq[String]] =
           MongoUtils.ensureIndexes(collection, augmentedIndexes, true)
-        }
 
         override def inProgressRetryAfter: Duration =
           Duration.ofSeconds(configuration.underlying.getInt("publish.workItem.retryAfterHours"))
