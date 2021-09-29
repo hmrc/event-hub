@@ -60,7 +60,7 @@ class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration,
         lazy val expireAfterSecondsTTL: Int = {
           val DEFAULT_TTL_SECONDS: Int = 86400 // defaulting to a 24h period
           val ttl = configuration
-            .getOptional[Int]("event-hub.expire-after-seconds-ttl")
+            .getOptional[Int]("subscriber-repos.expire-after-seconds-ttl")
             .getOrElse(DEFAULT_TTL_SECONDS)
           logger.info(s"subscriberRepositories.expireAfterSecondsTTL: $ttl")
           ttl
@@ -94,7 +94,7 @@ class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration,
     lazy val expireAfterSecondsTTL: Int = {
       val DEFAULT_TTL_SECONDS: Int = 86400 // defaulting to a 24h period
       val ttl = configuration
-        .getOptional[Int]("event-hub.expire-after-seconds-ttl")
+        .getOptional[Int]("event-repo.expire-after-seconds-ttl")
         .getOrElse(DEFAULT_TTL_SECONDS)
       logger.info(s"eventRepository.expireAfterSecondsTTL: $ttl")
       ttl

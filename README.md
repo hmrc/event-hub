@@ -233,7 +233,7 @@ curl -v -X POST -H "Content-Type: application/json" http://localhost:9050/event-
 The following allows you to configure a time-to-live expiry in seconds on individual events stored in the dedup events collection
 
 ```
-event-hub {
+event-repo {
   expire-after-seconds-ttl = 86400
 }
 ```
