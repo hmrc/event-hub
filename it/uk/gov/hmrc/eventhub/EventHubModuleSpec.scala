@@ -35,7 +35,7 @@ import java.util.UUID
 
 class EventHubModuleSpec extends ISpec {
 
-  def oneMinute[T](fun: => T): T = eventually(timeout(1.minute), interval(500.milliseconds))(fun)
+  def threeMinutes[T](fun: => T): T = eventually(timeout(3.minutes), interval(500.milliseconds))(fun)
 
   lazy val ttlInSeconds = 10
   val event: Event = Event(
@@ -109,7 +109,7 @@ class EventHubModuleSpec extends ISpec {
         await(count) mustBe 1
       }
 
-      oneMinute {
+      threeMinutes {
         await(repo.collection.countDocuments().toFuture()) mustBe 0
       }
     }
@@ -134,7 +134,7 @@ class EventHubModuleSpec extends ISpec {
 
       await(repo.markAs(workItem.id, PermanentlyFailed)) mustBe true
 
-      oneMinute {
+      threeMinutes {
         await(repo.collection.countDocuments().toFuture()) mustBe 0
       }
     }

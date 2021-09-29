@@ -27,20 +27,21 @@ object Dependencies {
     val HmrcMongoWorkItem = "uk.gov.hmrc.mongo" %% "hmrc-mongo-work-item-repo-play-28" % "0.54.0"
     val Pureconfig = "com.github.pureconfig"    %% "pureconfig"                        % "0.16.0"
     val Cats = "org.typelevel"                  %% "cats-core"                         % "2.6.1"
-    val Swagger = "org.webjars"                 % "swagger-ui"                         % "3.50.0"
+    val Swagger = "org.webjars"                  % "swagger-ui"                        % "3.50.0"
     val Enumeration = "com.beachape"            %% "enumeratum-play"                   % "1.5.17"
     val MongoScalaDriver = "org.mongodb.scala"  %% "mongo-scala-driver"                % "4.3.2"
-    val jayway = "com.jayway.jsonpath"          % "json-path"                          % "2.6.0"
+    val jayway = "com.jayway.jsonpath"           % "json-path"                         % "2.6.0"
     val BootstrapTest = "uk.gov.hmrc"           %% "bootstrap-test-play-28"            % "5.4.0"
     val HmrcMongoTest = "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-28"           % "0.54.0"
     val Scalatest = "org.scalatest"             %% "scalatest"                         % "3.1.0"
     val PlayTest = "com.typesafe.play"          %% "play-test"                         % current
-    val Flexmark = "com.vladsch.flexmark"       % "flexmark-all"                       % "0.35.10"
+    val Flexmark = "com.vladsch.flexmark"        % "flexmark-all"                      % "0.35.10"
     val Scalatestplus = "org.scalatestplus"     %% "scalatestplus-scalacheck"          % "3.1.0.0-RC2"
     val Mockito = "org.mockito"                 %% "mockito-scala"                     % "1.16.42"
     val ServiceIntegrationTest = "uk.gov.hmrc"  %% "service-integration-test"          % "1.1.0-play-28"
-    val WireMock = "com.github.tomakehurst"     % "wiremock-standalone"                % "2.27.2"
+    val WireMock = "com.github.tomakehurst"      % "wiremock-standalone"               % "2.27.2"
     val ScalaCheck = "org.scalacheck"           %% "scalacheck"                        % "1.15.4"
+    val AkkaTestKit = "com.typesafe.akka"       %% "akka-testkit"                      % "2.6.10"
   }
 
   import Library._
@@ -66,6 +67,7 @@ object Dependencies {
     Flexmark               % "test, it",
     Scalatestplus          % "test, it",
     ServiceIntegrationTest % "test, it",
-    ScalaCheck             % "it"
+    ScalaCheck             % "it",
+    AkkaTestKit            % Test
   )
 }

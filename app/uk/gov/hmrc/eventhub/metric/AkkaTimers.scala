@@ -16,19 +16,24 @@
 
 package uk.gov.hmrc.eventhub.metric
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import uk.gov.hmrc.eventhub.metric.AkkaTimers.{Start, Stop}
 import uk.gov.hmrc.eventhub.metric.Timers.{CompletedTimer, RunningTimer}
 
 import scala.collection.immutable.ListMap
 
 object AkkaTimers {
+  def apply(maxTimers: Int, actorSystem: ActorSystem): ActorRef = {
+    require(maxTimers > 0, s"max timers must be > 0")
+    actorSystem.actorOf(Props(classOf[AkkaTimers], maxTimers))
+  }
+
   case class Start(metricName: String, millis: Long)
   case class Stop(metricName: String, millis: Long)
 }
 
 // Bounded ListMap of `String -> Long`, drops the oldest element when full.
-class AkkaTimers(maxTimers: Int) extends Actor {
+private class AkkaTimers(maxTimers: Int) extends Actor {
   require(maxTimers > 0, s"max timers must be > 0")
   override def receive: Receive = onMessage(ListMap.empty)
 
@@ -37,7 +42,7 @@ class AkkaTimers(maxTimers: Int) extends Actor {
       val withTimer = timers + (metricName -> millis)
 
       val sizedTimers = if (withTimer.size > maxTimers) {
-        withTimer.dropRight(1)
+        withTimer.drop(1)
       } else {
         withTimer
       }

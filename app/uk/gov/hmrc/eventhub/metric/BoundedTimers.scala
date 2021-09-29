@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.metric
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
 import uk.gov.hmrc.eventhub.metric.AkkaTimers.{Start, Stop}
@@ -31,7 +31,7 @@ class BoundedTimers(
 )(implicit actorSystem: ActorSystem)
     extends Timers {
   private implicit val timeout: Timeout = Timeout(3.seconds)
-  private val timers: ActorRef = actorSystem.actorOf(Props(classOf[AkkaTimers], maxTimers))
+  private val timers: ActorRef = AkkaTimers.apply(maxTimers, actorSystem)
 
   override def startTimer(metricName: String): Future[RunningTimer] =
     (timers ? Start(metricName, clock.currentTime)).mapTo[RunningTimer]
