@@ -37,7 +37,8 @@ class EventHubModuleSpec extends ISpec {
 
   def oneMinute[T](fun: => T): T = eventually(timeout(1.minute), interval(500.milliseconds))(fun)
 
-  lazy val ttlInSeconds = 10
+  lazy val ttlInSecondsEvent = 10
+  lazy val ttlInSecondsSubscribers = 12
   val event: Event = Event(
     eventId = UUID.randomUUID(),
     subject = "bounced",
@@ -50,8 +51,8 @@ class EventHubModuleSpec extends ISpec {
       "application.router"                        -> "testOnlyDoNotUseInAppConf.Routes",
       "metrics.enabled"                           -> false,
       "auditing.enabled"                          -> false,
-      "event-hub.expire-after-seconds-ttl"        -> ttlInSeconds,
-      "subscriber-repos.expire-after-seconds-ttl" -> ttlInSeconds,
+      "event-repo.expire-after-seconds-ttl"       -> ttlInSecondsEvent,
+      "subscriber-repos.expire-after-seconds-ttl" -> ttlInSecondsSubscribers,
       "topics"                                    -> channelPreferences.asConfigMap("email")
     )
 
@@ -93,7 +94,7 @@ class EventHubModuleSpec extends ISpec {
           .find(idxModel => (idxModel.getOptions.getName == "createdAtTtlIndex"))
           .get
           .getOptions
-          .getExpireAfter(TimeUnit.SECONDS) mustBe ttlInSeconds
+          .getExpireAfter(TimeUnit.SECONDS) mustBe ttlInSecondsEvent
       }
     }
 
