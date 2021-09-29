@@ -20,16 +20,17 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
+import com.kenshoo.play.metrics.Metrics
 import org.mockito.IdiomaticMockito
 import org.mockito.MockitoSugar.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.cluster.ServiceInstances
-import uk.gov.hmrc.eventhub.config.SubscriberStreamConfig
-import uk.gov.hmrc.eventhub.repository.{SubscriberEventRepository, SubscriberEventRepositoryFactory}
-import uk.gov.hmrc.eventhub.subscription.http.{HttpClient, HttpRetryHandlerImpl}
 import uk.gov.hmrc.eventhub.config.TestModels._
+import uk.gov.hmrc.eventhub.config.{SubscriberStreamConfig, TopicName}
+import uk.gov.hmrc.eventhub.metric.{MetricsReporterImpl, Timers}
+import uk.gov.hmrc.eventhub.repository.{SubscriberEventRepository, SubscriberEventRepositoryFactory}
 import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.EventSendStatus
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -40,31 +41,31 @@ class SubscriptionStreamBuilderSpec extends AnyFlatSpec with Matchers with Idiom
   behavior of "SubscriptionStreamBuilder.build"
 
   it should "build a subscription stream for a given topic and subscriber" in new Scope {
-    when(subscriberEventRepositoryFactory.apply(subscriber, topic = "email"))
+    when(subscriberEventRepositoryFactory.apply(subscriber, TopicName("email")))
       .thenReturn(mock[SubscriberEventRepository])
 
     subscriptionStreamBuilder
-      .build(subscriber, "email")
+      .build(subscriber, TopicName("email"))
       .isInstanceOf[Source[EventSendStatus, NotUsed]] shouldBe true
 
-    subscriberEventRepositoryFactory.apply(subscriber, topic = "email") wasCalled once
+    subscriberEventRepositoryFactory.apply(subscriber, TopicName("email")) wasCalled once
   }
 
   trait Scope {
     private implicit val system: ActorSystem = ActorSystem("SubscriptionStreamBuilderSpec")
     implicit val materializer: Materializer = Materializer(system)
-    val httpRetryHandler = new HttpRetryHandlerImpl()
+    val metrics: Metrics = mock[Metrics]
+    val timers: Timers = mock[Timers]
+    val metricsReporter = new MetricsReporterImpl(metrics, timers)
     val subscriberEventRepositoryFactory: SubscriberEventRepositoryFactory = mock[SubscriberEventRepositoryFactory]
     val subscriberStreamConfig: SubscriberStreamConfig = SubscriberStreamConfig(300.millis)
     val serviceInstances: ServiceInstances = mock[ServiceInstances]
-    val httpClient: HttpClient = mock[HttpClient]
 
     val subscriptionStreamBuilder = new SubscriptionStreamBuilder(
       subscriberEventRepositoryFactory = subscriberEventRepositoryFactory,
       subscriberStreamConfig = subscriberStreamConfig,
       serviceInstances = serviceInstances,
-      httpClient = httpClient,
-      httpRetryHandler = httpRetryHandler
+      metricsReporter = metricsReporter
     )
   }
 }

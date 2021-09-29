@@ -22,7 +22,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{JsObject, JsString}
 import uk.gov.hmrc.eventhub.config.TestModels.{EmailTopic, anotherSubscriber, channelPreferences, emails}
-import uk.gov.hmrc.eventhub.config.Topic
+import uk.gov.hmrc.eventhub.config.{Topic, TopicName}
 import uk.gov.hmrc.eventhub.model.TestModels.event
 import uk.gov.hmrc.eventhub.model.{Event, NoEventTopic, NoSubscribersForTopic, SubscriberRepository}
 import uk.gov.hmrc.eventhub.modules.MongoSetup
@@ -38,7 +38,7 @@ class SubscriptionMatcherImplSpec extends AnyFlatSpec with Matchers with Idiomat
     }
 
   it should "return NoEventTopic error when the topic does not exist" in new Scope {
-    subscriptionMatcherImpl.apply(event, "nope") shouldBe NoEventTopic("No such topic").asLeft
+    subscriptionMatcherImpl.apply(event, TopicName("nope")) shouldBe NoEventTopic("No such topic").asLeft
   }
 
   it should "return NoSubscribersForTopic error when the topic exists but there are no matching subscribers" in new Scope {

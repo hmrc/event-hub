@@ -19,6 +19,7 @@ package uk.gov.hmrc.eventhub.controllers
 import play.api.Logging
 import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
+import uk.gov.hmrc.eventhub.config.TopicName
 import uk.gov.hmrc.eventhub.model._
 import uk.gov.hmrc.eventhub.service.EventPublisherService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -30,14 +31,14 @@ class PublishController @Inject() (cc: ControllerComponents, eventPublisherServi
   ec: ExecutionContext
 ) extends BackendController(cc) with Logging {
 
-  def publish(topic: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def publish(topicName: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     request
       .body
       .validate[Event]
       .fold(
         errors => Future.successful(BadRequest(Json.obj("Invalid Event payload: " -> JsError.toJson(errors)))),
         event =>
-          eventPublisherService.publish(event, topic).map {
+          eventPublisherService.publish(event, TopicName(topicName)).map {
             case Right(subscribers) =>
               logger.warn(
                 s"published event: ${Json.toJson(event)}, to subscribers: ${subscribers.map(_.name).mkString(", ")}"

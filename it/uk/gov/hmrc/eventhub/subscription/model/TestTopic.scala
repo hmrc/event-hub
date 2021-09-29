@@ -17,9 +17,9 @@
 package uk.gov.hmrc.eventhub.subscription.model
 
 import akka.http.scaladsl.model.StatusCode
-import uk.gov.hmrc.eventhub.config.Topic
+import uk.gov.hmrc.eventhub.config.{Topic, TopicName}
 
-case class TestTopic(name: String, subscriberStubs: List[SubscriberStub])
+case class TestTopic(topicName: TopicName, subscriberStubs: List[SubscriberStub])
 
 object TestTopic {
   def apply(topic: Topic, statusCode: StatusCode): TestTopic =

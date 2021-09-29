@@ -16,21 +16,21 @@
 
 package uk.gov.hmrc.eventhub.modules
 
+import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import play.api.Configuration
 import play.api.i18n.Lang.logger
-import uk.gov.hmrc.eventhub.config.Topic
+import uk.gov.hmrc.eventhub.config.{Topic, TopicName}
 import uk.gov.hmrc.eventhub.model.{Event, PublishedEvent, SubscriberRepository}
-import uk.gov.hmrc.mongo.{MongoComponent, MongoUtils}
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.workitem.{WorkItemFields, WorkItemRepository}
+import uk.gov.hmrc.mongo.{MongoComponent, MongoUtils}
 
 import java.time.{Duration, Instant}
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import org.mongodb.scala.bson.BsonDocument
 
 trait MongoCollections
 
@@ -38,7 +38,8 @@ class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration,
   ec: ExecutionContext
 ) extends MongoCollections {
 
-  def collectionName(topic: String, subscriptionName: String): String = s"${topic}_${subscriptionName}_queue"
+  def collectionName(topicName: TopicName, subscriptionName: String): String =
+    s"${topicName.name}_${subscriptionName}_queue"
 
   def subscriberRepositories: Set[SubscriberRepository] =
     for {

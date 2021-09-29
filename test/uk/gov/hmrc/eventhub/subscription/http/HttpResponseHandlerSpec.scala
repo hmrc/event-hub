@@ -23,8 +23,10 @@ import org.mockito.MockitoSugar.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
-import uk.gov.hmrc.eventhub.model.TestModels._
+import org.mockito.ArgumentMatchersSugar.*
 import uk.gov.hmrc.eventhub.config.TestModels._
+import uk.gov.hmrc.eventhub.metric.MetricsReporter
+import uk.gov.hmrc.eventhub.model.TestModels._
 import uk.gov.hmrc.eventhub.repository.SubscriberEventRepository
 import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.{EventSendStatus, Failed, Removed, Sent}
 import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpResponse
@@ -40,36 +42,48 @@ class HttpResponseHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMo
   it should "mark an event as sent when the response is successful and the status code is a success" in new Scope {
     when(subscriberEventRepository.sent(event)) thenReturn Future.successful(true.some)
     handle(successfulResponse) mustBe EventSendStatus(event, subscriber, Sent)
+    metricsReporter.stopSubscriptionPublishTimer(*, *) wasCalled once
   }
 
   it should "remove an event when the response is successful and the status code is 500 error" in new Scope {
     when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
     handle(internalServerErrorResponse) mustBe EventSendStatus(event, subscriber, Failed)
+    metricsReporter.incrementSubscriptionFailure(*) wasCalled once
+    metricsReporter.stopSubscriptionPublishTimer(*, *) wasCalled once
   }
 
   it should "mark an event as failed when the response is successful and the status code is 429" in new Scope {
     when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
     handle(tooManyRequests) mustBe EventSendStatus(event, subscriber, Failed)
+    metricsReporter.incrementSubscriptionFailure(*) wasCalled once
+    metricsReporter.stopSubscriptionPublishTimer(*, *) wasCalled once
   }
 
   it should "mark an event as failed when the response is a failure" in new Scope {
     when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
     handle(failureResponse) mustBe EventSendStatus(event, subscriber, Failed)
+    metricsReporter.incrementSubscriptionFailure(*) wasCalled once
+    metricsReporter.stopSubscriptionPublishTimer(*, *) wasCalled once
   }
 
   it should "remove an event when the response is successful and the status code is a client error" in new Scope {
     when(subscriberEventRepository.remove(event)) thenReturn Future.successful(true.some)
     handle(clientErrorResponse) mustBe EventSendStatus(event, subscriber, Removed)
+    metricsReporter.incrementSubscriptionPermanentFailure(*) wasCalled once
+    metricsReporter.stopSubscriptionPublishTimer(*, *) wasCalled once
   }
 
   it should "remove an event when the response is successful and the status code is a redirection" in new Scope {
     when(subscriberEventRepository.remove(event)) thenReturn Future.successful(true.some)
     handle(redirectionResponse) mustBe EventSendStatus(event, subscriber, Removed)
+    metricsReporter.incrementSubscriptionPermanentFailure(*) wasCalled once
+    metricsReporter.stopSubscriptionPublishTimer(*, *) wasCalled once
   }
 
   trait Scope {
     val subscriberEventRepository: SubscriberEventRepository = mock[SubscriberEventRepository]
-    private val handler = new HttpResponseHandler(subscriberEventRepository)
+    val metricsReporter: MetricsReporter = mock[MetricsReporter]
+    private val handler = new HttpResponseHandler(subscriberEventRepository, metricsReporter)
 
     def handle(subscriberEventHttpResponse: SubscriberEventHttpResponse): EventSendStatus =
       handler.handle(subscriberEventHttpResponse).futureValue

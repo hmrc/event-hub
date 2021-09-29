@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.repository
+package uk.gov.hmrc.eventhub.metric
 
-import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
+import uk.gov.hmrc.eventhub.metric.Timers.{CompletedTimer, RunningTimer}
 
-trait SubscriberEventRepositoryFactory {
-  def apply(subscriber: Subscriber, topicName: TopicName): SubscriberEventRepository
+import scala.concurrent.Future
+
+object Timers {
+  sealed trait Timer
+  case class RunningTimer(start: Long) extends Timer
+  case class CompletedTimer(start: Long, end: Long) extends Timer {
+    def time: Long = end - start
+  }
+}
+
+trait Timers {
+  def startTimer(metricName: String): Future[RunningTimer]
+  def stopTimer(metricName: String): Future[Option[CompletedTimer]]
 }

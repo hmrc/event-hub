@@ -20,7 +20,7 @@ import akka.http.scaladsl.model.HttpMethods
 import org.mongodb.scala.bson.BsonDocument
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.eventhub.config.{Subscriber, Topic}
+import uk.gov.hmrc.eventhub.config.{Subscriber, Topic, TopicName}
 import uk.gov.hmrc.eventhub.model.{Event, PublishedEvent}
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.PermanentlyFailed
 import uk.gov.hmrc.eventhub.subscription._
@@ -35,7 +35,7 @@ import java.util.UUID
 
 class EventHubModuleSpec extends ISpec {
 
-  def oneMinute[T](fun: => T): T = eventually(timeout(1.minute), interval(500.milliseconds))(fun)
+  def threeMinutes[T](fun: => T): T = eventually(timeout(3.minutes), interval(500.milliseconds))(fun)
 
   lazy val ttlInSecondsEvent = 10
   lazy val ttlInSecondsSubscribers = 12
@@ -53,14 +53,14 @@ class EventHubModuleSpec extends ISpec {
       "auditing.enabled"                          -> false,
       "event-repo.expire-after-seconds-ttl"       -> ttlInSecondsEvent,
       "subscriber-repos.expire-after-seconds-ttl" -> ttlInSecondsSubscribers,
-      "topics"                                    -> channelPreferences.asConfigMap("email")
+      "topics"                                    -> channelPreferences.asConfigMap(TopicName("email"))
     )
 
   "Configuration" should {
     "include topics configuration1" in {
       mongoSetup.topics mustBe Set(
         Topic(
-          "email",
+          TopicName("email"),
           List(
             Subscriber(
               "channel-preferences-bounced",
@@ -110,7 +110,7 @@ class EventHubModuleSpec extends ISpec {
         await(count) mustBe 1
       }
 
-      oneMinute {
+      threeMinutes {
         await(repo.collection.countDocuments().toFuture()) mustBe 0
       }
     }
@@ -135,7 +135,7 @@ class EventHubModuleSpec extends ISpec {
 
       await(repo.markAs(workItem.id, PermanentlyFailed)) mustBe true
 
-      oneMinute {
+      threeMinutes {
         await(repo.collection.countDocuments().toFuture()) mustBe 0
       }
     }

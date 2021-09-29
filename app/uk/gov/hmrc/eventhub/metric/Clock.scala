@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.repository
+package uk.gov.hmrc.eventhub.metric
 
-import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
-
-trait SubscriberEventRepositoryFactory {
-  def apply(subscriber: Subscriber, topicName: TopicName): SubscriberEventRepository
+class Clock {
+  def currentTime: Long = System.currentTimeMillis()
 }

@@ -18,7 +18,7 @@ package uk.gov.hmrc.eventhub.repository
 
 import org.mongodb.scala.model.Filters.equal
 import play.api.Configuration
-import uk.gov.hmrc.eventhub.config.Subscriber
+import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.PermanentlyFailed
@@ -28,14 +28,14 @@ import java.time.{Duration, Instant}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SubscriberQueueRepository(
-  topic: String,
+  topicName: TopicName,
   subscriber: Subscriber,
   configuration: Configuration,
   mongo: MongoComponent
 )(implicit ec: ExecutionContext)
     extends WorkItemRepository[Event](
       mongoComponent = mongo,
-      collectionName = s"${topic}_${subscriber.name}_queue",
+      collectionName = s"${topicName.name}_${subscriber.name}_queue",
       itemFormat = Event.eventFormat,
       workItemFields = WorkItemFields.default,
       replaceIndexes = false
