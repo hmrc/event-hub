@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.eventhub.repository
+package uk.gov.hmrc.eventhub.metric
 
-import org.mongodb.scala.result.InsertOneResult
-import org.mongodb.scala.{ClientSession, SingleObservable}
-import uk.gov.hmrc.eventhub.model.Event
-import uk.gov.hmrc.mongo.workitem.{WorkItem, WorkItemRepository}
+import org.mockito.IdiomaticMockito
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-import javax.inject.Inject
+class TimersSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
 
-class SubscriberQueuesRepository @Inject() () {
+  behavior of "Timers.CompletedTimer.time"
 
-  def addWorkItem(
-    clientSession: ClientSession,
-    repository: WorkItemRepository[Event],
-    eventWorkItem: WorkItem[Event]
-  ): SingleObservable[InsertOneResult] =
-    repository.collection.insertOne(clientSession, eventWorkItem)
-
+  it should "return the difference between an end and start timer" in {
+    val start = 2
+    val end = 10
+    Timers.CompletedTimer(start, end).time should be(end - start)
+  }
 }

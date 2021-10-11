@@ -70,7 +70,7 @@ object TestModels {
     Some(JsonPath.compile("$.event[?(@.enrolment =~ /HMRC\\-CUS\\-ORG\\~EORINumber~.*/i)]"))
   )
 
-  val anotherSubscriber: Subscriber = Subscriber(
+  lazy val anotherSubscriber: Subscriber = Subscriber(
     name = "another-subscriber",
     uri = Uri(s"http://localhost/another-subscriber/email"),
     httpMethod = HttpMethods.POST,

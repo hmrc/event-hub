@@ -260,3 +260,18 @@ Custom stats for event-hub can be collected and viewed locally by setting up gra
 * Configure a graphite datasource to `http://graphite:8080`
 * Running integration tests, in particular `uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptionsISpec`, is a convenient way to generate most metrics.
 
+## Run the tests and sbt fmt before raising a PR
+
+Format:
+
+`sbt fmt`
+
+Then run the tests and coverage report:
+
+`sbt clean coverage test coverageReport`
+
+If your build fails due to poor test coverage, *DO NOT* lower the test coverage threshold, instead inspect the generated report located here on your local repo: `/target/scala-2.12/scoverage-report/index.html`
+
+Then run the integration tests:
+
+`sbt it:test`

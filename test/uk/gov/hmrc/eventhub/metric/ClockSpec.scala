@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-import sbt.Keys.parallelExecution
-import sbt._
-import scoverage.ScoverageKeys
+package uk.gov.hmrc.eventhub.metric
 
-object ScoverageSettings {
-  def apply(): Seq[Def.Setting[_ >: String with Double with Boolean]] =
-    Seq( // Semicolon-separated list of regexes matching classes to exclude
-      ScoverageKeys.coverageExcludedPackages := "<empty>;.*Reverse.*;.*(config|testonly).*;.*(BuildInfo|Routes).*",
-      ScoverageKeys.coverageMinimumStmtTotal := 95.00,
-      ScoverageKeys.coverageFailOnMinimum := true,
-      ScoverageKeys.coverageHighlighting := true,
-      parallelExecution in ConfigKey.configurationToKey(Test) := false
-    )
+import org.mockito.IdiomaticMockito
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+
+class ClockSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
+
+  behavior of "Clock.currentTime"
+
+  it should "return the current system time" in new Scope {
+    ((clock.currentTime > System.currentTimeMillis() - 1) &&
+      (clock.currentTime < System.currentTimeMillis() + 1)) should be(true)
+  }
+
+  trait Scope {
+    val clock: Clock = new Clock()
+  }
 }

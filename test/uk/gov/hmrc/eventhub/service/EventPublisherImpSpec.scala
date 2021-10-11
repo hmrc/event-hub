@@ -31,7 +31,7 @@ import uk.gov.hmrc.eventhub.repository.EventRepository
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class EventPublisherImplSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class EventPublisherImpSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
 
   behavior of "EventPublisherImpl.apply"
 
