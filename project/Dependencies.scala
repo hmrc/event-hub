@@ -37,7 +37,7 @@ object Dependencies {
     val PlayTest = "com.typesafe.play"          %% "play-test"                         % current
     val Flexmark = "com.vladsch.flexmark"        % "flexmark-all"                      % "0.35.10"
     val Scalatestplus = "org.scalatestplus"     %% "scalatestplus-scalacheck"          % "3.1.0.0-RC2"
-    val Mockito = "org.mockito"                 %% "mockito-scala"                     % "1.16.42"
+    val Mockito = "org.mockito"                 %% "mockito-scala"                     % "1.16.46"
     val ServiceIntegrationTest = "uk.gov.hmrc"  %% "service-integration-test"          % "1.1.0-play-28"
     val WireMock = "com.github.tomakehurst"      % "wiremock-standalone"               % "2.27.2"
     val ScalaCheck = "org.scalacheck"           %% "scalacheck"                        % "1.15.4"

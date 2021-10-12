@@ -18,7 +18,6 @@ package uk.gov.hmrc.eventhub
 
 import org.mongodb.scala.{MongoClient, MongoDatabase}
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatestplus.play.PlaySpec
@@ -28,7 +27,6 @@ import uk.gov.hmrc.integration.ServiceSpec
 import uk.gov.hmrc.mongo.MongoComponent
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.DurationInt
 
 trait ISpec extends PlaySpec with ServiceSpec with BeforeAndAfterEach with IntegrationPatience {
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
