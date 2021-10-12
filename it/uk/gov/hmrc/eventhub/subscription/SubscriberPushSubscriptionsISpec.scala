@@ -35,25 +35,24 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
 
   behavior of "SubscriberPushSubscriptions"
 
-  ignore should "push an event to a registered subscriber" in scope(channelPreferencesBouncedEmails returning OK) {
-    setup =>
-      val response = setup
-        .postToTopic(EmailTopic, event)
-        .futureValue
+  it should "push an event to a registered subscriber" in scope(channelPreferencesBouncedEmails returning OK) { setup =>
+    val response = setup
+      .postToTopic(EmailTopic, event)
+      .futureValue
 
-      response.status mustBe CREATED
+    response.status mustBe CREATED
 
-      val channelPreferencesServer = setup
-        .subscriberServer(ChannelPreferencesBounced)
-        .value
+    val channelPreferencesServer = setup
+      .subscriberServer(ChannelPreferencesBounced)
+      .value
 
-      oneSecond {
-        channelPreferencesServer
-          .verify(postRequestedFor(urlEqualTo(ChannelPreferencesBouncedPath)).withEventJson(event))
-      }
+    oneSecond {
+      channelPreferencesServer
+        .verify(postRequestedFor(urlEqualTo(ChannelPreferencesBouncedPath)).withEventJson(event))
+    }
   }
 
-  ignore should "push an event to registered subscribers" in scope(bouncedEmails returning OK) { setup =>
+  it should "push an event to registered subscribers" in scope(bouncedEmails returning OK) { setup =>
     val response = setup
       .postToTopic(EmailTopic, event)
       .futureValue
@@ -77,7 +76,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
     }
   }
 
-  ignore should "push events to all registered subscribers" in scope(bouncedEmails returning OK) { setup =>
+  it should "push events to all registered subscribers" in scope(bouncedEmails returning OK) { setup =>
     forAll { eventList: List[Event] =>
       val sentEvents =
         Source(eventList)
@@ -105,7 +104,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
     }
   }
 
-  ignore should "apply retry with exponential back-off" in scope(
+  it should "apply retry with exponential back-off" in scope(
     channelPreferencesBouncedEmails returning InternalServerError
   ) { setup =>
     forAll { event: Event =>
