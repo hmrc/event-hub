@@ -18,32 +18,41 @@ package uk.gov.hmrc.eventhub
 
 import play.api.http.{ContentTypes, HeaderNames}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.eventhub.config.TopicName
 import uk.gov.hmrc.eventhub.repository.EventRepository
+import uk.gov.hmrc.eventhub.subscription.SubscriberConfigOps
+import uk.gov.hmrc.eventhub.subscription.model.TestModels.Subscriptions.channelPreferences
 
 import java.io.File
 import java.util.UUID
 
 class PublishEventISpec extends ISpec {
   override def externalServices: Seq[String] = Seq.empty[String]
-
-  lazy val topicFromConfig: AnyRef = app.configuration.underlying.getObject("topics").keySet().toArray.head
   lazy val eventRepository: EventRepository = app.injector.instanceOf[EventRepository]
 
-  "A POST request to publish/:topic" ignore {
+  override def additionalConfig: Map[String, _ <: Any] =
+    Map(
+      "application.router" -> "testOnlyDoNotUseInAppConf.Routes",
+      "metrics.enabled"    -> true,
+      "auditing.enabled"   -> false,
+      "topics"             -> channelPreferences.asConfigMap(TopicName("email"))
+    )
+
+  "A POST request to publish/:topic" should {
 
     "return 201 if event is successfully processed" in {
-      val topic = topicFromConfig
+      val topic = "email"
       val response = wsClient
         .url(resource(s"/event-hub/publish/$topic"))
         .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
         .post(new File("./it/resources/valid-event.json"))
         .futureValue
       response.status mustBe 201
-      response.body mustBe """{"publishedSubscribers":["email-rejected"]}"""
+      response.body mustBe """{"publishedSubscribers":["channel-preferences-bounced"]}"""
     }
 
     "return 201 with DuplicateEvent message if event is already processed" in {
-      val topic = topicFromConfig
+      val topic = "email"
       val response1 = wsClient
         .url(resource(s"/event-hub/publish/$topic"))
         .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
@@ -72,6 +81,5 @@ class PublishEventISpec extends ISpec {
         .futureValue
       response.status mustBe 404
     }
-
   }
 }
