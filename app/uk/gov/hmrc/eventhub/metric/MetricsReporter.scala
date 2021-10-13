@@ -18,6 +18,7 @@ package uk.gov.hmrc.eventhub.metric
 
 import akka.http.scaladsl.model.StatusCode
 import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
+import uk.gov.hmrc.eventhub.metric.MetricsReporter.FailedStatus
 import uk.gov.hmrc.eventhub.model.Event
 
 trait MetricsReporter {
@@ -25,7 +26,7 @@ trait MetricsReporter {
   def incrementDuplicateEventCount(event: Event, topicName: TopicName): Unit
   def incrementSubscriptionEventEnqueuedCount(subscriber: Subscriber): Unit
   def incrementSubscriptionPublishedCount(subscriber: Subscriber)
-  def incrementSubscriptionRetry(subscriber: Subscriber, statusCode: Option[StatusCode]): Unit
+  def incrementSubscriptionRetry(subscriber: Subscriber, failedStatus: FailedStatus): Unit
   def incrementSubscriptionFailure(subscriber: Subscriber): Unit
   def incrementSubscriptionPermanentFailure(subscriber: Subscriber): Unit
   def reportSubscriberRequestLatency(subscriber: Subscriber, millis: Long): Unit
@@ -35,14 +36,24 @@ trait MetricsReporter {
 
 object MetricsReporter {
 
+  sealed trait FailedStatus {
+    val value: String
+  }
+  case object ExceptionalStatus extends FailedStatus {
+    override val value: String = "exceptional"
+  }
+  case class HttpStatus(statusCode: StatusCode) extends FailedStatus {
+    override val value: String = statusCode.intValue().toString
+  }
+
   implicit class SubscriberMetricsOps(val subscriber: Subscriber) extends AnyVal {
-    def metricFor(metricName: String): String = s"subscriber.$metricName;subscriber=${subscriber.name}"
-    def metricFor(metricName: String, statusCode: StatusCode): String =
-      s"${metricFor(metricName)};status=${statusCode.intValue()}"
+    def metricFor(metricName: String): String = s"subscriber.$metricName.${subscriber.name}"
+    def metricFor(metricName: String, status: FailedStatus): String =
+      s"${metricFor(metricName)}.${status.value}"
   }
 
   implicit class EventMetricsOps(val event: Event) extends AnyVal {
     def metricFor(topicName: TopicName, metricName: String): String =
-      s"event.$metricName;topic=${topicName.name};subject=${event.subject}"
+      s"event.$metricName.${topicName.name}.${event.subject}"
   }
 }

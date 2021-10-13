@@ -23,11 +23,11 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse, RequestTimeoutExcept
 import akka.stream.Materializer
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito
-import org.mockito.MockitoSugar.mock
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.config.TestModels._
 import uk.gov.hmrc.eventhub.metric.MetricsReporter
+import uk.gov.hmrc.eventhub.metric.MetricsReporter.{ExceptionalStatus, HttpStatus}
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.model.TestModels._
 
@@ -53,14 +53,14 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMocki
     shouldRetry(httpRequest -> event, Success(tooManyRequestsResponse) -> event) shouldBe Some(
       httpRequest           -> event
     )
-    metricsReporter.incrementSubscriptionRetry(*, Some(TooManyRequests)) wasCalled once
+    metricsReporter.incrementSubscriptionRetry(*, HttpStatus(TooManyRequests)) wasCalled once
   }
 
   it should "return Some(inputs) when a http response is provided with a status in the 500 range" in new Scope {
     shouldRetry(httpRequest -> event, Success(internalServerErrorHttpResponse) -> event) shouldBe Some(
       httpRequest           -> event
     )
-    metricsReporter.incrementSubscriptionRetry(*, Some(InternalServerError)) wasCalled once
+    metricsReporter.incrementSubscriptionRetry(*, HttpStatus(InternalServerError)) wasCalled once
   }
 
   it should "return Some(inputs) when a RequestTimeoutException is returned" in new Scope {
@@ -70,7 +70,7 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMocki
     ) shouldBe Some(
       httpRequest -> event
     )
-    metricsReporter.incrementSubscriptionRetry(*, None) wasCalled once
+    metricsReporter.incrementSubscriptionRetry(*, ExceptionalStatus) wasCalled once
   }
 
   it should "return Some(inputs) when a RuntimeException a message containing `The http server closed the connection unexpectedly` is returned" in new Scope {
@@ -80,7 +80,7 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMocki
     ) shouldBe Some(
       httpRequest -> event
     )
-    metricsReporter.incrementSubscriptionRetry(*, None) wasCalled once
+    metricsReporter.incrementSubscriptionRetry(*, ExceptionalStatus) wasCalled once
   }
 
   trait Scope {

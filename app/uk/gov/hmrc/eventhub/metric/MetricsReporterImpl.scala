@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.eventhub.metric
 
-import akka.http.scaladsl.model.StatusCode
 import com.kenshoo.play.metrics.Metrics
 import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
-import uk.gov.hmrc.eventhub.metric.MetricsReporter.{EventMetricsOps, SubscriberMetricsOps}
+import uk.gov.hmrc.eventhub.metric.MetricsReporter.{EventMetricsOps, FailedStatus, SubscriberMetricsOps}
 import uk.gov.hmrc.eventhub.model.Event
 
 import javax.inject.{Inject, Singleton}
@@ -41,14 +40,8 @@ class MetricsReporterImpl @Inject() (metrics: Metrics, timers: Timers)(implicit 
   override def incrementSubscriptionPublishedCount(subscriber: Subscriber): Unit =
     incrementCounter(subscriber.metricFor("published"))
 
-  override def incrementSubscriptionRetry(subscriber: Subscriber, statusCode: Option[StatusCode]): Unit = {
-    val retry = "retry"
-    val metric = statusCode
-      .map(subscriber.metricFor(retry, _))
-      .getOrElse(subscriber.metricFor(retry))
-
-    incrementCounter(metric)
-  }
+  override def incrementSubscriptionRetry(subscriber: Subscriber, failedStatus: FailedStatus): Unit =
+    incrementCounter(subscriber.metricFor("retry", failedStatus))
 
   override def incrementSubscriptionFailure(subscriber: Subscriber): Unit =
     incrementCounter(subscriber.metricFor("failed"))

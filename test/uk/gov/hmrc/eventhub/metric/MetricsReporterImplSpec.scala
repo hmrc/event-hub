@@ -23,6 +23,7 @@ import org.mockito.IdiomaticMockito
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.config.TestModels.{EmailTopic, subscriber}
+import uk.gov.hmrc.eventhub.metric.MetricsReporter.{ExceptionalStatus, HttpStatus}
 import uk.gov.hmrc.eventhub.metric.Timers.{CompletedTimer, RunningTimer}
 import uk.gov.hmrc.eventhub.model.TestModels.event
 
@@ -32,57 +33,57 @@ import scala.concurrent.Future
 class MetricsReporterImplSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
 
   "MetricsReporterImpl.incrementEventPublishedCount" should "call metrics counter inc for with the correct metric name" in new Scope {
-    metricRegistry.counter(s"event.published;topic=${EmailTopic.name};subject=${event.subject}") returns counter
+    metricRegistry.counter(s"event.published.${EmailTopic.name}.${event.subject}") returns counter
     metricsReporterImpl.incrementEventPublishedCount(event, EmailTopic)
     counter.inc() wasCalled once
   }
 
   "MetricsReporterImpl.incrementDuplicateEventCount" should "call metrics counter inc for with the correct metric name" in new Scope {
-    metricRegistry.counter(s"event.duplicate;topic=${EmailTopic.name};subject=${event.subject}") returns counter
+    metricRegistry.counter(s"event.duplicate.${EmailTopic.name}.${event.subject}") returns counter
     metricsReporterImpl.incrementDuplicateEventCount(event, EmailTopic)
     counter.inc() wasCalled once
   }
 
   "MetricsReporterImpl.incrementSubscriptionEventEnqueuedCount" should "call metrics counter inc for with the correct metric name" in new Scope {
-    metricRegistry.counter(s"subscriber.enqueued;subscriber=${subscriber.name}") returns counter
+    metricRegistry.counter(s"subscriber.enqueued.${subscriber.name}") returns counter
     metricsReporterImpl.incrementSubscriptionEventEnqueuedCount(subscriber)
     counter.inc() wasCalled once
   }
 
   "MetricsReporterImpl.incrementSubscriptionPublishedCount" should "call metrics counter inc for with the correct metric name" in new Scope {
-    metricRegistry.counter(s"subscriber.published;subscriber=${subscriber.name}") returns counter
+    metricRegistry.counter(s"subscriber.published.${subscriber.name}") returns counter
     metricsReporterImpl.incrementSubscriptionPublishedCount(subscriber)
     counter.inc() wasCalled once
   }
 
   "MetricsReporterImpl.incrementSubscriptionRetry" should "call metrics counter inc for with the correct metric name (no status code)" in new Scope {
-    metricRegistry.counter(s"subscriber.retry;subscriber=${subscriber.name}") returns counter
-    metricsReporterImpl.incrementSubscriptionRetry(subscriber, None)
+    metricRegistry.counter(s"subscriber.retry.${subscriber.name}.exceptional") returns counter
+    metricsReporterImpl.incrementSubscriptionRetry(subscriber, ExceptionalStatus)
     counter.inc() wasCalled once
   }
 
   "MetricsReporterImpl.incrementSubscriptionRetry" should "call metrics counter inc for with the correct metric name (with status code)" in new Scope {
     metricRegistry.counter(
-      s"subscriber.retry;subscriber=${subscriber.name};status=${TooManyRequests.intValue}"
+      s"subscriber.retry.${subscriber.name}.${TooManyRequests.intValue}"
     ) returns counter
-    metricsReporterImpl.incrementSubscriptionRetry(subscriber, Some(TooManyRequests))
+    metricsReporterImpl.incrementSubscriptionRetry(subscriber, HttpStatus(TooManyRequests))
     counter.inc() wasCalled once
   }
 
   "MetricsReporterImpl.incrementSubscriptionFailure" should "call metrics counter inc for with the correct metric name" in new Scope {
-    metricRegistry.counter(s"subscriber.failed;subscriber=${subscriber.name}") returns counter
+    metricRegistry.counter(s"subscriber.failed.${subscriber.name}") returns counter
     metricsReporterImpl.incrementSubscriptionFailure(subscriber)
     counter.inc() wasCalled once
   }
 
   "MetricsReporterImpl.incrementSubscriptionPermanentFailure" should "call metrics counter inc for with the correct metric name" in new Scope {
-    metricRegistry.counter(s"subscriber.permanently-failed;subscriber=${subscriber.name}") returns counter
+    metricRegistry.counter(s"subscriber.permanently-failed.${subscriber.name}") returns counter
     metricsReporterImpl.incrementSubscriptionPermanentFailure(subscriber)
     counter.inc() wasCalled once
   }
 
   "MetricsReporterImpl.reportSubscriberRequestLatency" should "call metrics counter inc for with the correct metric name" in new Scope {
-    metricRegistry.histogram(s"subscriber.request-latency;subscriber=${subscriber.name}") returns histogram
+    metricRegistry.histogram(s"subscriber.request-latency.${subscriber.name}") returns histogram
     metricsReporterImpl.reportSubscriberRequestLatency(subscriber, 1)
     histogram.update(1L) wasCalled once
   }
@@ -100,7 +101,7 @@ class MetricsReporterImplSpec extends AnyFlatSpec with Matchers with IdiomaticMo
     val end: Long = start + 1000
 
     timers.stopTimer(s"${subscriber.name}.${event.eventId}") returns Future.successful(Some(CompletedTimer(start, end)))
-    metricRegistry.histogram(s"subscriber.e2e-latency;subscriber=${subscriber.name}") returns histogram
+    metricRegistry.histogram(s"subscriber.e2e-latency.${subscriber.name}") returns histogram
 
     metricsReporterImpl.stopSubscriptionPublishTimer(subscriber, event)
     timers.stopTimer(s"${subscriber.name}.${event.eventId}") wasCalled once
