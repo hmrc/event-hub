@@ -21,6 +21,7 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse, RequestTimeoutExcept
 import akka.stream.Materializer
 import uk.gov.hmrc.eventhub.config.Subscriber
 import uk.gov.hmrc.eventhub.metric.MetricsReporter
+import uk.gov.hmrc.eventhub.metric.MetricsReporter.{ExceptionalStatus, HttpStatus}
 import uk.gov.hmrc.eventhub.model.Event
 
 import scala.util.{Failure, Success, Try}
@@ -43,17 +44,17 @@ class HttpRetryHandlerImpl(
         resp.entity.discardBytes()
         resp.status match {
           case StatusCodes.ServerError(_) | StatusCodes.TooManyRequests =>
-            metricsReporter.incrementSubscriptionRetry(subscriber, resp.status.some)
+            metricsReporter.incrementSubscriptionRetry(subscriber, HttpStatus(resp.status))
             input.some
           case _ => none
         }
       case (Failure(ex), _) =>
         ex match {
           case _: RequestTimeoutException =>
-            metricsReporter.incrementSubscriptionRetry(subscriber, none)
+            metricsReporter.incrementSubscriptionRetry(subscriber, ExceptionalStatus)
             input.some
           case e: RuntimeException if e.getMessage.contains("The http server closed the connection unexpectedly") =>
-            metricsReporter.incrementSubscriptionRetry(subscriber, none)
+            metricsReporter.incrementSubscriptionRetry(subscriber, ExceptionalStatus)
             input.some
           case _ => none
         }
