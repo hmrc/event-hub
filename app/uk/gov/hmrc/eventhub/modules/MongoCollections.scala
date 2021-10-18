@@ -41,7 +41,7 @@ class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration,
   def collectionName(topicName: TopicName, subscriptionName: String): String =
     s"${topicName.name}_${subscriptionName}_queue"
 
-  def subscriberRepositories: Set[SubscriberRepository] =
+  val subscriberRepositories: Set[SubscriberRepository] =
     for {
       topic      <- topics
       subscriber <- topic.subscribers
