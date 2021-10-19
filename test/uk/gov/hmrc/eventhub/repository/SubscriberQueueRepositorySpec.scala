@@ -42,7 +42,7 @@ class SubscriberQueueRepositorySpec
 
   override def externalServices: Seq[String] = Seq.empty[String]
 
-  override def additionalConfig: Map[String, _ <: Any] =
+  override def additionalConfig: Map[String, Any] =
     Map(
       "application.router"                        -> "testOnlyDoNotUseInAppConf.Routes",
       "metrics.enabled"                           -> false,
