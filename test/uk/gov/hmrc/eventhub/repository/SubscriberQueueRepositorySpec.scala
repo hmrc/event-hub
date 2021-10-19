@@ -18,6 +18,7 @@ package uk.gov.hmrc.eventhub.repository
 
 import org.mockito.IdiomaticMockito
 import org.mongodb.scala.bson.BsonDocument
+import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -27,15 +28,30 @@ import uk.gov.hmrc.eventhub.model.TestModels.{channelPreferences, event}
 import uk.gov.hmrc.mongo.MongoComponent
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.integration.ServiceSpec
-import uk.gov.hmrc.mongo.workitem.ProcessingStatus.{Failed, InProgress, PermanentlyFailed, ToDo}
+import uk.gov.hmrc.mongo.workitem.ProcessingStatus.{InProgress, PermanentlyFailed, ToDo}
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.DurationInt
 
 class SubscriberQueueRepositorySpec
     extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with ServiceSpec {
 
+  lazy val ttlInSecondsEvent = 300
+  lazy val ttlInSecondsSubscribers = 300
+
   override def externalServices: Seq[String] = Seq.empty[String]
+
+  override def additionalConfig: Map[String, Any] =
+    Map(
+      "application.router"                        -> "testOnlyDoNotUseInAppConf.Routes",
+      "metrics.enabled"                           -> false,
+      "auditing.enabled"                          -> false,
+      "queue.retryFailedAfter"                    -> "1 second",
+      "queue.numberOfRetries"                     -> "3",
+      "event-repo.expire-after-seconds-ttl"       -> ttlInSecondsEvent,
+      "subscriber-repos.expire-after-seconds-ttl" -> ttlInSecondsSubscribers
+    )
 
   behavior of "SubscriberQueueRepository.now"
 
@@ -85,28 +101,28 @@ class SubscriberQueueRepositorySpec
 
   behavior of "SubscriberQueueRepository.failed"
 
-  it should "***[INVESTIGATE WHY THIS TEST PASSES] - mark a work item as permanently failed if it has reached the numberOfRetries (3x) threshold" in new Scope {
-
+  it should "mark a work item as permanently failed if it has reached the numberOfRetries (3x) threshold" in new Scope {
+    val numberOfRetries = 3
     // ensuring threshold is configured to 3
-    subscriberQueueRepository.numberOfRetries should be(3)
+    subscriberQueueRepository.numberOfRetries should be(numberOfRetries)
 
     subscriberQueueRepository.collection.deleteMany(BsonDocument()).toFuture()
     subscriberQueueRepository.pushNew(event).futureValue
-    subscriberQueueRepository.getEvent.futureValue
 
-    val eventWorkItem = subscriberQueueRepository.findAsWorkItem(event).futureValue
-    eventWorkItem.get.item should be(event)
-    eventWorkItem.get.failureCount should be(0)
-    eventWorkItem.get.status should be(InProgress)
-    subscriberQueueRepository.failed(eventWorkItem.get).futureValue
+    (0 to (numberOfRetries + 1)).foreach { failureCount =>
+      tenSeconds {
+        val eventWorkItem = subscriberQueueRepository.getEvent.futureValue
+        eventWorkItem.get.item should be(event)
+        eventWorkItem.get.status should be(InProgress)
+        eventWorkItem.get.failureCount should be(failureCount)
+        subscriberQueueRepository.failed(eventWorkItem.get).futureValue
+      }
+    }
 
-    // fail this work item more than 3 times (beyond the configured threshold)
-    (1 to 10).foreach { i =>
-      val eventWorkItem = subscriberQueueRepository.findAsWorkItem(event).futureValue
-      eventWorkItem.get.item should be(event)
-//      eventWorkItem.get.failureCount should be(i)
-      eventWorkItem.get.status should be(Failed)
-      subscriberQueueRepository.failed(eventWorkItem.get).futureValue
+    tenSeconds {
+      val finalEventWorkItem = subscriberQueueRepository.findAsWorkItem(event).futureValue
+      finalEventWorkItem.get.item should be(event)
+      finalEventWorkItem.get.status should be(PermanentlyFailed)
     }
   }
 
@@ -119,5 +135,7 @@ class SubscriberQueueRepositorySpec
 
     val subscriberQueueRepository: SubscriberQueueRepository =
       new SubscriberQueueRepository(topicName, channelPreferences, configuration, mongoComponent)
+
+    def tenSeconds[T](fun: => T): T = eventually(timeout(10.seconds), interval(100.milliseconds))(fun)
   }
 }
