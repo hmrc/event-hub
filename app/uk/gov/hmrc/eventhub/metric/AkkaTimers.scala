@@ -17,10 +17,11 @@
 package uk.gov.hmrc.eventhub.metric
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import play.api.Logging
 import uk.gov.hmrc.eventhub.metric.AkkaTimers.{Start, Stop}
 import uk.gov.hmrc.eventhub.metric.Timers.{CompletedTimer, RunningTimer}
 
-import scala.collection.immutable.ListMap
+import scala.collection.mutable
 
 object AkkaTimers {
   def apply(maxTimers: Int, actorSystem: ActorSystem): ActorRef = {
@@ -32,22 +33,17 @@ object AkkaTimers {
   case class Stop(metricName: String, millis: Long)
 }
 
-// Bounded ListMap of `String -> Long`, drops the oldest element when full.
-private class AkkaTimers(maxTimers: Int) extends Actor {
-  require(maxTimers > 0, s"max timers must be > 0")
-  override def receive: Receive = onMessage(ListMap.empty)
+// Bounded ListMap of `String -> Long`, drops the most recent element when full.
+private class AkkaTimers(maxTimers: Int) extends Actor with Logging {
+  private val timers: mutable.Map[String, Long] = mutable.LinkedHashMap.empty
+  private var newestEntry: String = "newest"
 
-  private def onMessage(timers: Map[String, Long]): Receive = {
+  override def receive: Receive = {
     case Start(metricName, millis) =>
-      val withTimer = timers + (metricName -> millis)
+      if (timers.size >= maxTimers) timers -= newestEntry
 
-      val sizedTimers = if (withTimer.size > maxTimers) {
-        withTimer.drop(1)
-      } else {
-        withTimer
-      }
-
-      context.become(onMessage(sizedTimers))
+      timers += (metricName -> millis)
+      newestEntry = metricName
       sender() ! RunningTimer(millis)
 
     case Stop(metricName, millis) =>
@@ -55,7 +51,7 @@ private class AkkaTimers(maxTimers: Int) extends Actor {
         .get(metricName)
         .map(start => CompletedTimer(start, millis))
 
-      context.become(onMessage(timers - metricName))
+      timers -= metricName
       sender() ! maybeCompletedTimer
   }
 }
