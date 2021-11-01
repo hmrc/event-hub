@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.eventhub.repository
 
-import org.mockito.IdiomaticMockito
+import ch.qos.logback.classic.Level
 import org.mockito.ArgumentMatchersSugar.*
+import org.mockito.IdiomaticMockito
 import org.mongodb.scala.Observable
+import org.mongodb.scala.bson.ObjectId
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.helpers.LogCapturing
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.model.TestModels.{event, workItem}
+import uk.gov.hmrc.mongo.workitem.ProcessingStatus.PermanentlyFailed
 import uk.gov.hmrc.mongo.workitem.WorkItem
-import ch.qos.logback.classic.Level
-import org.mongodb.scala.bson.ObjectId
 
 import scala.concurrent.Future
 
@@ -47,6 +48,45 @@ class WorkItemSubscriberEventRepositorySpec
 
     workItemSubscriberEventRepository.next().futureValue should be(None)
   }
+
+  it should "attempt to mark the work item as permanently failed when the event document json could not be deserialized and call next on success" in new Scope {
+    val eventId = "61360df8bcf93f52c00f3dc8"
+    val failedId = new ObjectId(eventId)
+    val deserError = new RuntimeException(
+      """Failed to parse json as uk.gov.hmrc.mongo.workitem.WorkItem '{"_id":{"$oid":"61360df8bcf93f52c00f3dc8"},"""
+    )
+
+    subscriberQueueRepository.getEvent returns (Future.failed(deserError), futureNone)
+    subscriberQueueRepository.complete(failedId, PermanentlyFailed) returns Future.successful(true)
+
+    workItemSubscriberEventRepository
+      .next()
+      .futureValue should be(None)
+
+    subscriberQueueRepository.complete(failedId, PermanentlyFailed) wasCalled once
+    subscriberQueueRepository.getEvent wasCalled twice
+  }
+
+  it should "attempt to mark the work item as permanently failed when the event document json could not be deserialized " +
+    "and rethrow when unsuccessful" in new Scope {
+      val eventId = "61360df8bcf93f52c00f3dc8"
+      val failedId = new ObjectId(eventId)
+      val deserError = new RuntimeException(
+        """Failed to parse json as uk.gov.hmrc.mongo.workitem.WorkItem '{"_id":{"$oid":"61360df8bcf93f52c00f3dc8"},"""
+      )
+
+      subscriberQueueRepository.getEvent returns (Future.failed(deserError), futureNone)
+      subscriberQueueRepository.complete(failedId, PermanentlyFailed) returns Future.successful(false)
+
+      workItemSubscriberEventRepository
+        .next()
+        .failed
+        .futureValue
+        .getMessage should be(deserError.getMessage)
+
+      subscriberQueueRepository.complete(failedId, PermanentlyFailed) wasCalled once
+      subscriberQueueRepository.getEvent wasCalled once
+    }
 
   behavior of "WorkItemSubscriberEventRepository.failed"
 

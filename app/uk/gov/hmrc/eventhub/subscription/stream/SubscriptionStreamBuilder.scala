@@ -21,7 +21,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.Attributes
 import akka.stream.Attributes.LogLevels
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{RestartSource, Source}
 import uk.gov.hmrc.eventhub.cluster.ServiceInstances
 import uk.gov.hmrc.eventhub.config.{Subscriber, SubscriberStreamConfig, TopicName}
 import uk.gov.hmrc.eventhub.metric.MetricsReporter
@@ -53,18 +53,22 @@ class SubscriptionStreamBuilder @Inject() (
     val httpFlow = new SubscriberEventHttpFlow(subscriber, httpRetryHandler, httpClient).flow
     val responseHandler = new HttpResponseHandler(repository, metricsReporter).handle(_)
 
-    source
-      .map(requestBuilder)
-      .throttle(subscriber.elements, subscriber.per, _ => serviceInstances.instanceCount.max(1))
-      .via(httpFlow)
-      .mapAsync(parallelism = subscriber.maxConnections)(responseHandler)
-      .log(s"${topicName.name}-${subscriber.name} subscription")
-      .withAttributes(
-        Attributes.logLevels(
-          onElement = LogLevels.Debug,
-          onFinish = LogLevels.Info,
-          onFailure = LogLevels.Error
+    RestartSource.withBackoff(
+      subscriberStreamConfig.subscriberStreamBackoffConfig.asRestartSettings
+    ) { () =>
+      source
+        .map(requestBuilder)
+        .throttle(subscriber.elements, subscriber.per, _ => serviceInstances.instanceCount.max(1))
+        .via(httpFlow)
+        .mapAsyncUnordered(parallelism = subscriber.maxConnections)(responseHandler)
+        .log(s"${topicName.name}-${subscriber.name} subscription")
+        .withAttributes(
+          Attributes.logLevels(
+            onElement = LogLevels.Debug,
+            onFinish = LogLevels.Info,
+            onFailure = LogLevels.Error
+          )
         )
-      )
+    }
   }
 }

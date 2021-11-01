@@ -18,17 +18,42 @@ package uk.gov.hmrc.eventhub.repository
 
 import cats.data.OptionT
 import cats.syntax.option._
+import org.mongodb.scala.bson.ObjectId
 import play.api.Logging
 import uk.gov.hmrc.eventhub.model.Event
+import uk.gov.hmrc.mongo.workitem.ProcessingStatus.PermanentlyFailed
+import WorkItemSubscriberEventRepository.oidRegex
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.matching.Regex
 
 class WorkItemSubscriberEventRepository(
   subscriberQueueRepository: SubscriberQueueRepository
 )(implicit executionContext: ExecutionContext)
     extends SubscriberEventRepository with Logging {
   override def next(): Future[Option[Event]] =
-    subscriberQueueRepository.getEvent.map(_.map(_.item))
+    subscriberQueueRepository
+      .getEvent
+      .map(_.map(_.item))
+      .recoverWith(readRecover)
+
+  private def readRecover: PartialFunction[Throwable, Future[Option[Event]]] = {
+    case r: RuntimeException if r.getMessage.contains("Failed to parse json") =>
+      logger.error(
+        s"failed to deserialize event json, due to:  ${r.getMessage}. Attempting to mark as PermanentlyFailed."
+      )
+
+      oidRegex
+        .findFirstMatchIn(r.getMessage)
+        .flatMap(first => Option(first.group(1))) match {
+        case Some(oid) =>
+          subscriberQueueRepository.complete(new ObjectId(oid), PermanentlyFailed).flatMap {
+            case true => next()
+            case _    => throw r
+          }
+        case _ => throw r
+      }
+  }
 
   override def failed(event: Event): Future[Option[Boolean]] =
     (for {
@@ -56,4 +81,8 @@ class WorkItemSubscriberEventRepository(
       logger.debug(s"removing $event: $result")
       result
     }).value
+}
+
+object WorkItemSubscriberEventRepository {
+  val oidRegex: Regex = """oid":"([a-z0-9]+)""".r
 }

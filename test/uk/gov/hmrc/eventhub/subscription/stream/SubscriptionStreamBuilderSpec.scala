@@ -28,7 +28,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.cluster.ServiceInstances
 import uk.gov.hmrc.eventhub.config.TestModels._
-import uk.gov.hmrc.eventhub.config.{SubscriberStreamConfig, TopicName}
+import uk.gov.hmrc.eventhub.config.{SubscriberStreamBackoffConfig, SubscriberStreamConfig, TopicName}
 import uk.gov.hmrc.eventhub.metric.{MetricsReporterImpl, Timers}
 import uk.gov.hmrc.eventhub.repository.{SubscriberEventRepository, SubscriberEventRepositoryFactory}
 import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.EventSendStatus
@@ -58,7 +58,10 @@ class SubscriptionStreamBuilderSpec extends AnyFlatSpec with Matchers with Idiom
     val timers: Timers = mock[Timers]
     val metricsReporter = new MetricsReporterImpl(metrics, timers)
     val subscriberEventRepositoryFactory: SubscriberEventRepositoryFactory = mock[SubscriberEventRepositoryFactory]
-    val subscriberStreamConfig: SubscriberStreamConfig = SubscriberStreamConfig(300.millis)
+    val subscriberStreamConfig: SubscriberStreamConfig = SubscriberStreamConfig(
+      300.millis,
+      SubscriberStreamBackoffConfig(100.millis, 10.minutes)
+    )
     val serviceInstances: ServiceInstances = mock[ServiceInstances]
 
     val subscriptionStreamBuilder = new SubscriptionStreamBuilder(
