@@ -16,23 +16,23 @@
 
 package uk.gov.hmrc.eventhub.config
 
-import com.typesafe.config.Config
-import play.api.ConfigLoader
-import pureconfig.ConfigSource
-import pureconfig.generic.auto._
+import akka.stream.RestartSettings
 
 import scala.concurrent.duration.FiniteDuration
 
-case class SubscriberStreamConfig(
-  eventPollingInterval: FiniteDuration,
-  subscriberStreamBackoffConfig: SubscriberStreamBackoffConfig
+case class SubscriberStreamBackoffConfig(
+  minBackOff: FiniteDuration,
+  maxBackOff: FiniteDuration
 )
 
-object SubscriberStreamConfig {
-  implicit val configReader: ConfigLoader[SubscriberStreamConfig] = (rootConfig: Config, path: String) =>
-    ConfigSource.fromConfig(rootConfig.getConfig(path)).load[SubscriberStreamConfig] match {
-      case Left(value) =>
-        throw new IllegalArgumentException(s"could not load subscriber stream config: ${value.prettyPrint()}")
-      case Right(value) => value
-    }
+object SubscriberStreamBackoffConfig {
+  val randomFactor = 0.2
+
+  implicit class Ops(val subscriberStreamBackoffConfig: SubscriberStreamBackoffConfig) extends AnyVal {
+    def asRestartSettings: RestartSettings = RestartSettings(
+      subscriberStreamBackoffConfig.minBackOff,
+      subscriberStreamBackoffConfig.maxBackOff,
+      randomFactor
+    )
+  }
 }

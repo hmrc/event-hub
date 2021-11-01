@@ -16,16 +16,14 @@
 
 package uk.gov.hmrc.eventhub.repository
 
-import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.{IndexModel, IndexOptions, Indexes}
 import play.api.Configuration
 import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.eventhub.model.Event
-import uk.gov.hmrc.mongo.{MongoComponent, MongoUtils}
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.PermanentlyFailed
 import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem, WorkItemFields, WorkItemRepository}
+import uk.gov.hmrc.mongo.{MongoComponent, MongoUtils}
 
 import java.time.{Duration, Instant}
 import scala.concurrent.{ExecutionContext, Future}

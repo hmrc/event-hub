@@ -21,13 +21,12 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.Configuration
-import uk.gov.hmrc.eventhub.config.TopicName
-import uk.gov.hmrc.eventhub.model.TestModels.{channelPreferences, event}
-import uk.gov.hmrc.mongo.MongoComponent
 import play.api.libs.ws.WSClient
-import uk.gov.hmrc.eventhub.config.TestModels.subscriber
+import uk.gov.hmrc.eventhub.config.TopicName
+import uk.gov.hmrc.eventhub.model.TestModels.channelPreferences
 import uk.gov.hmrc.eventhub.modules.MongoSetup
 import uk.gov.hmrc.integration.ServiceSpec
+import uk.gov.hmrc.mongo.MongoComponent
 
 import scala.concurrent.ExecutionContext
 
