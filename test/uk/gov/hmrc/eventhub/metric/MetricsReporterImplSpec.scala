@@ -96,7 +96,7 @@ class MetricsReporterImplSpec extends AnyFlatSpec with Matchers with IdiomaticMo
     timers.startTimer(s"${subscriber.name}.${event.eventId}") wasCalled once
   }
 
-  "MetricsReporterImpl.stopSubscriptionPublishTimer" should "call timers to start a running timer with the correct metric name" in new Scope {
+  "MetricsReporterImpl.stopSubscriptionPublishTimer" should "call timers to stop a running timer with the correct metric name" in new Scope {
     val start: Long = System.currentTimeMillis()
     val end: Long = start + 1000
 
