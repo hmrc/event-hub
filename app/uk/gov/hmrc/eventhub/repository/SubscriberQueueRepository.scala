@@ -17,13 +17,12 @@
 package uk.gov.hmrc.eventhub.repository
 
 import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.model.{IndexModel, IndexOptions, Indexes}
 import play.api.Configuration
 import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.eventhub.model.Event
+import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.PermanentlyFailed
 import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem, WorkItemFields, WorkItemRepository}
-import uk.gov.hmrc.mongo.{MongoComponent, MongoUtils}
 
 import java.time.{Duration, Instant}
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,13 +43,6 @@ class SubscriberQueueRepository(
 
   override def now(): Instant =
     Instant.now()
-
-  lazy val augmentedIndexes: Seq[IndexModel] = Seq(
-    IndexModel(Indexes.ascending("item.eventId"), IndexOptions().background(true))
-  ) ++ indexes
-
-  override def ensureIndexes: Future[Seq[String]] =
-    MongoUtils.ensureIndexes(collection, augmentedIndexes, true)
 
   override val inProgressRetryAfter: Duration =
     configuration.underlying.getDuration("queue.retryAfter")
