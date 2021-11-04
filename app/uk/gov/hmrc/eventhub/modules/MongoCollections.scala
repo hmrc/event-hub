@@ -73,6 +73,10 @@ class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration,
               .name("updatedAtTtlIndex")
               .partialFilterExpression(BsonDocument("status" -> "permanently-failed"))
               .expireAfter(expireAfterSecondsTTL, TimeUnit.SECONDS)
+          ),
+          IndexModel(
+            ascending("item.eventId"),
+            IndexOptions().background(true)
           )
         ) ++ indexes
 
