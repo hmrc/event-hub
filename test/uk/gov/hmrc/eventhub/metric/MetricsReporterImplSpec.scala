@@ -20,6 +20,8 @@ import akka.http.scaladsl.model.StatusCodes.TooManyRequests
 import com.codahale.metrics.{Counter, Histogram, MetricRegistry}
 import com.kenshoo.play.metrics.Metrics
 import org.mockito.IdiomaticMockito
+import org.scalatest.concurrent.Eventually.eventually
+import org.scalatest.concurrent.Waiters.timeout
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.config.TestModels.{EmailTopic, subscriber}
@@ -29,6 +31,7 @@ import uk.gov.hmrc.eventhub.model.TestModels.event
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 class MetricsReporterImplSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
 
@@ -105,7 +108,10 @@ class MetricsReporterImplSpec extends AnyFlatSpec with Matchers with IdiomaticMo
 
     metricsReporterImpl.stopSubscriptionPublishTimer(subscriber, event)
     timers.stopTimer(s"${subscriber.name}.${event.eventId}") wasCalled once
-    histogram.update(end - start) wasCalled once
+
+    eventually(timeout(3.seconds)) {
+      histogram.update(end - start) wasCalled once
+    }
   }
 
   trait Scope {
