@@ -57,14 +57,14 @@ class TopicSpec extends AnyFlatSpec with Matchers {
     result shouldBe Right(subscriberName)
   }
 
-  it should "return a failure reason when provided with a topic's name which contains special characters" in {
+  it should "return a failure reason when provided with a subscriber's name which contains special characters" in {
     val subscriberName = "subscriber+++*&*&*^&^&%^@$^&%@_name"
     val result = Subscriber.validateSubscriberName(subscriberName)
     result shouldBe Left(InvalidSubscriberName(subscriberName))
     result.left.get.description shouldBe "Invalid subscriber name: subscriber+++*&*&*^&^&%^@$^&%@_name"
   }
 
-  it should "return a failure reason when provided with a topic's name which contains capitals" in {
+  it should "return a failure reason when provided with a subscriber's name which contains capitals" in {
     val subscriberName = "SubscriberName"
     val result = Subscriber.validateSubscriberName(subscriberName)
     result shouldBe Left(InvalidSubscriberName(subscriberName))
