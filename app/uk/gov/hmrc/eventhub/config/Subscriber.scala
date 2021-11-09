@@ -24,11 +24,12 @@ import com.jayway.jsonpath.JsonPath
 import com.typesafe.config.{Config, ConfigObject, ConfigValue}
 import pureconfig.ConfigReader
 import pureconfig.ConfigReader._
-import pureconfig.error.{ConfigReaderFailures, ConvertFailure, UnknownKey}
+import pureconfig.error.{ConfigReaderFailures, ConvertFailure, FailureReason, UnknownKey}
 import uk.gov.hmrc.eventhub.config.ConfigReaders._
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration.FiniteDuration
+import scala.util.matching.Regex
 
 case class Subscriber(
   name: String,
@@ -44,6 +45,30 @@ case class Subscriber(
 )
 
 object Subscriber {
+
+  val topicNamePattern: Regex = "[0-9a-z-]+".r
+  val subscriberNamePattern: Regex = "[0-9a-z-]+".r
+
+  final case class InvalidTopicName(topicName: TopicName) extends FailureReason {
+    def description: String = s"Invalid topic name: ${topicName.name}"
+  }
+
+  final case class InvalidSubscriberName(subscriberName: String) extends FailureReason {
+    def description: String = s"Invalid subscriber name: $subscriberName"
+  }
+
+  def validateTopicName(topicName: TopicName): Either[FailureReason, TopicName] =
+    topicNamePattern.pattern.matcher(topicName.name).matches match {
+      case true  => Right(topicName)
+      case false => Left(InvalidTopicName(topicName))
+    }
+
+  def validateSubscriberName(subscriberName: String): Either[FailureReason, String] =
+    subscriberNamePattern.pattern.matcher(subscriberName).matches match {
+      case true  => Right(subscriberName)
+      case false => Left(InvalidSubscriberName(subscriberName))
+    }
+
   private implicit class ConfigOps(val config: Config) extends AnyVal {
     def resultValue(path: String, parentPath: String): Result[ConfigValue] = {
       val qualifiedPath = s"$parentPath.$path"
@@ -81,9 +106,14 @@ object Subscriber {
     configValue: ConfigValue,
     subscriptionDefaults: SubscriptionDefaults
   ): Either[ConfigReaderFailures, List[Subscriber]] =
-    configObjectConfigReader
-      .from(configValue)
-      .flatMap(subscribersFromConfigObject(topicName, _, subscriptionDefaults))
+    validateTopicName(topicName) match {
+      case Right(_) =>
+        configObjectConfigReader
+          .from(configValue)
+          .flatMap(subscribersFromConfigObject(topicName, _, subscriptionDefaults))
+      case Left(failureReason) =>
+        throw new IllegalArgumentException(s"could not load subscription configuration: ${failureReason.description}")
+    }
 
   private def subscribersFromConfigObject(
     topicName: TopicName,
@@ -102,24 +132,31 @@ object Subscriber {
   ): Either[ConfigReaderFailures, Subscriber] =
     configValue match {
       case (subscriberName, configValue) =>
-        configObjectConfigReader
-          .from(configValue)
-          .map(_.toConfig)
-          .flatMap { config =>
-            val parentPath = s"${topicName.name}.$subscriberName"
-            (
-              subscriberName.asRight,
-              readUri(config, parentPath),
-              readHttpMethod(config, parentPath),
-              readElements(config, parentPath, subscriptionDefaults),
-              readElementsPer(config, parentPath, subscriptionDefaults),
-              readMaxConnections(config, parentPath, subscriptionDefaults),
-              readMinBackOff(config, parentPath, subscriptionDefaults),
-              readMaxBackOff(config, parentPath, subscriptionDefaults),
-              readMaxRetries(config, parentPath, subscriptionDefaults),
-              pathFilter(config, parentPath)
-            ).parMapN(Subscriber.apply)
-          }
+        validateSubscriberName(subscriberName) match {
+          case Right(_) =>
+            configObjectConfigReader
+              .from(configValue)
+              .map(_.toConfig)
+              .flatMap { config =>
+                val parentPath = s"${topicName.name}.$subscriberName"
+                (
+                  subscriberName.asRight,
+                  readUri(config, parentPath),
+                  readHttpMethod(config, parentPath),
+                  readElements(config, parentPath, subscriptionDefaults),
+                  readElementsPer(config, parentPath, subscriptionDefaults),
+                  readMaxConnections(config, parentPath, subscriptionDefaults),
+                  readMinBackOff(config, parentPath, subscriptionDefaults),
+                  readMaxBackOff(config, parentPath, subscriptionDefaults),
+                  readMaxRetries(config, parentPath, subscriptionDefaults),
+                  pathFilter(config, parentPath)
+                ).parMapN(Subscriber.apply)
+              }
+          case Left(failureReason) =>
+            throw new IllegalArgumentException(
+              s"could not load subscription configuration: ${failureReason.description}"
+            )
+        }
     }
 
   def readUri(config: Config, parentPath: String): Result[Uri] =
