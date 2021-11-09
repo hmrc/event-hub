@@ -20,11 +20,56 @@ import akka.http.scaladsl.model.HttpMethods.PUT
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import uk.gov.hmrc.eventhub.config.Subscriber.{InvalidSubscriberName, InvalidTopicName}
 import uk.gov.hmrc.eventhub.config.TestModels.{subscriber, subscriptionDefaults}
 
 import scala.concurrent.duration._
 
 class TopicSpec extends AnyFlatSpec with Matchers {
+
+  behavior of "Subscriber.validateTopicName"
+
+  it should "return a the topic name supplied back when provided with a topic's name which contains digits, hyphens, and lowercase letters" in {
+    val topicName = TopicName(name = "topic01-23name")
+    val result = Subscriber.validateTopicName(topicName)
+    result shouldBe Right(topicName)
+  }
+
+  it should "return a failure reason when provided with a topic's name which contains special characters" in {
+    val topicName = TopicName(name = "topic+++*&*&*^&^&%^@$^&%@_name")
+    val result = Subscriber.validateTopicName(topicName)
+    result shouldBe Left(InvalidTopicName(topicName))
+    result.left.get.description shouldBe "Invalid topic name: topic+++*&*&*^&^&%^@$^&%@_name"
+  }
+
+  it should "return a failure reason when provided with a topic's name which contains capitals" in {
+    val topicName = TopicName(name = "TopicName")
+    val result = Subscriber.validateTopicName(topicName)
+    result shouldBe Left(InvalidTopicName(topicName))
+    result.left.get.description shouldBe "Invalid topic name: TopicName"
+  }
+
+  behavior of "Subscriber.validateSubscriberName"
+
+  it should "return a the subscriber name supplied back when provided with a subscriber's name which contains digits, hyphens, and lowercase letters" in {
+    val subscriberName = "subscriber01-23name"
+    val result = Subscriber.validateSubscriberName(subscriberName)
+    result shouldBe Right(subscriberName)
+  }
+
+  it should "return a failure reason when provided with a subscriber's name which contains special characters" in {
+    val subscriberName = "subscriber+++*&*&*^&^&%^@$^&%@_name"
+    val result = Subscriber.validateSubscriberName(subscriberName)
+    result shouldBe Left(InvalidSubscriberName(subscriberName))
+    result.left.get.description shouldBe "Invalid subscriber name: subscriber+++*&*&*^&^&%^@$^&%@_name"
+  }
+
+  it should "return a failure reason when provided with a subscriber's name which contains capitals" in {
+    val subscriberName = "SubscriberName"
+    val result = Subscriber.validateSubscriberName(subscriberName)
+    result shouldBe Left(InvalidSubscriberName(subscriberName))
+    result.left.get.description shouldBe "Invalid subscriber name: SubscriberName"
+  }
 
   behavior of "Topic.configLoader"
 
@@ -33,6 +78,66 @@ class TopicSpec extends AnyFlatSpec with Matchers {
     Topic
       .configLoader(subscriptionDefaults)
       .load(config, "topics") shouldBe Set.empty[Topic]
+  }
+
+  it should "throw an exception when loading a topic with a topic's name which contains special characters" in {
+    val config: Config = ConfigFactory.parseString(s"""
+                                                      |topics.~~~.${subscriber.name}.uri="${subscriber.uri}"
+                                                      |""".stripMargin)
+
+    the[IllegalArgumentException] thrownBy {
+      Topic
+        .configLoader(subscriptionDefaults)
+        .load(config, "topics") shouldBe Set(Topic(TopicName("~~~"), List(subscriber)))
+    } should have message "could not load subscription configuration: Invalid topic name: ~~~"
+  }
+
+  it should "throw an exception when loading a topic with a subscriber's name which contains special characters" in {
+    val config: Config = ConfigFactory.parseString(s"""
+                                                      |topics.email.~~~.uri="${subscriber.uri}"
+                                                      |""".stripMargin)
+
+    the[IllegalArgumentException] thrownBy {
+      Topic
+        .configLoader(subscriptionDefaults)
+        .load(config, "topics") shouldBe Set(Topic(TopicName("email"), List(subscriber)))
+    } should have message "could not load subscription configuration: Invalid subscriber name: ~~~"
+  }
+
+  it should "throw an exception when loading a topic with a topic's name which has capitals" in {
+    val config: Config = ConfigFactory.parseString(s"""
+                                                      |topics.Email.${subscriber.name}.uri="${subscriber.uri}"
+                                                      |""".stripMargin)
+
+    the[IllegalArgumentException] thrownBy {
+      Topic
+        .configLoader(subscriptionDefaults)
+        .load(config, "topics") shouldBe Set(Topic(TopicName("Email"), List(subscriber)))
+    } should have message "could not load subscription configuration: Invalid topic name: Email"
+  }
+
+  it should "throw an exception when loading a topic with a subscriber's name which has capitals" in {
+    val config: Config = ConfigFactory.parseString(s"""
+                                                      |topics.email.${subscriber
+      .name
+      .toUpperCase}.uri="${subscriber.uri}"
+                                                      |""".stripMargin)
+
+    the[IllegalArgumentException] thrownBy {
+      Topic
+        .configLoader(subscriptionDefaults)
+        .load(config, "topics") shouldBe Set(Topic(TopicName("email"), List(subscriber)))
+    } should have message s"could not load subscription configuration: Invalid subscriber name: ${subscriber.name.toUpperCase}"
+  }
+
+  it should "load a topic with a subscriber and not throw an exception when using hyphens or numbers in the topic's name" in {
+    val config: Config = ConfigFactory.parseString(s"""
+                                                      |topics.0-1-2-3.${subscriber.name}.uri="${subscriber.uri}"
+                                                      |""".stripMargin)
+
+    Topic
+      .configLoader(subscriptionDefaults)
+      .load(config, "topics") shouldBe Set(Topic(TopicName("0-1-2-3"), List(subscriber)))
   }
 
   it should "load a topic with a subscriber only defining its `uri` property - all other properties should default" in {
