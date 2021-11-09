@@ -118,7 +118,9 @@ class TopicSpec extends AnyFlatSpec with Matchers {
 
   it should "throw an exception when loading a topic with a subscriber's name which has capitals" in {
     val config: Config = ConfigFactory.parseString(s"""
-                                                      |topics.email.${subscriber.name.toUpperCase}.uri="${subscriber.uri}"
+                                                      |topics.email.${subscriber
+      .name
+      .toUpperCase}.uri="${subscriber.uri}"
                                                       |""".stripMargin)
 
     the[IllegalArgumentException] thrownBy {
