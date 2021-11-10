@@ -25,6 +25,7 @@ import org.mongodb.scala.model._
 import org.mongodb.scala.result.UpdateResult
 import play.api.Logging
 import uk.gov.hmrc.eventhub.config.ServiceInstancesConfig
+import uk.gov.hmrc.eventhub.metric.MetricsReporter
 
 import java.time.Instant
 import java.util.concurrent.Callable
@@ -35,7 +36,8 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 @Singleton
-class ServiceInstances @Inject() (serviceInstancesTimeout: ServiceInstancesConfig)(implicit
+class ServiceInstances @Inject() (serviceInstancesTimeout: ServiceInstancesConfig, metricsReporter: MetricsReporter)(
+  implicit
   repo: ServiceInstanceRepository,
   scheduler: Scheduler,
   executionContext: ExecutionContext
@@ -65,7 +67,9 @@ class ServiceInstances @Inject() (serviceInstancesTimeout: ServiceInstancesConfi
   private def scheduleHeartBeat(retryCount: Int): Future[Long] =
     after(serviceInstancesTimeout.heartBeatInterval, scheduler, executionContext, callable)
       .transformWith {
-        case Success(_) => scheduleHeartBeat(retryCount = 0)
+        case Success(_) =>
+          logger.warn(s"heart beat success: instance count = $instanceCount")
+          scheduleHeartBeat(retryCount = 0)
         case Failure(exception) =>
           logger.error(s"heart beat failure: ${exception.getMessage} - retry attempt: $retryCount")
           scheduleHeartBeat(retryCount + 1)
@@ -80,6 +84,7 @@ class ServiceInstances @Inject() (serviceInstancesTimeout: ServiceInstancesConfi
     } yield {
       alive.wasAcknowledged()
       atomicInstanceCount.set(active)
+      metricsReporter.gaugeServiceInstances(atomicInstanceCount.get())
       active
     }
   }

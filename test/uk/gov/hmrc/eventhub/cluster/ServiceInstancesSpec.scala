@@ -18,12 +18,14 @@ package uk.gov.hmrc.eventhub.cluster
 
 import akka.actor.ActorSystem
 import org.bson.types.ObjectId
+import org.mockito.MockitoSugar.mock
 import org.mongodb.scala.model.{Filters, Updates}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.config.ServiceInstancesConfig
+import uk.gov.hmrc.eventhub.metric.MetricsReporter
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.test.CleanMongoCollectionSupport
 
@@ -81,11 +83,12 @@ class ServiceInstancesSpec
     )
 
     private val actorSystem = ActorSystem("ServiceInstancesSpec")
+    val metricsReporter: MetricsReporter = mock[MetricsReporter]
     val serviceInstanceRepository = new ServiceInstanceRepository(mongoComponent)
     val serviceInstances: ServiceInstances = instance()
 
     def instance(): ServiceInstances =
-      new ServiceInstances(serviceInstancesConfig)(
+      new ServiceInstances(serviceInstancesConfig, metricsReporter)(
         serviceInstanceRepository,
         actorSystem.scheduler,
         scala.concurrent.ExecutionContext.global
