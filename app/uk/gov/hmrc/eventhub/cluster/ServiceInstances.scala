@@ -50,6 +50,8 @@ class ServiceInstances @Inject() (serviceInstancesTimeout: ServiceInstancesConfi
   initialise()
 
   private def initialise() = {
+    metricsReporter.gaugeServiceInstances(() => instanceCount)
+
     Await
       .result(
         repo
@@ -68,7 +70,7 @@ class ServiceInstances @Inject() (serviceInstancesTimeout: ServiceInstancesConfi
     after(serviceInstancesTimeout.heartBeatInterval, scheduler, executionContext, callable)
       .transformWith {
         case Success(_) =>
-          logger.warn(s"heart beat success: instance count = $instanceCount")
+          logger.debug(s"heart beat success: instance count = $instanceCount")
           scheduleHeartBeat(retryCount = 0)
         case Failure(exception) =>
           logger.error(s"heart beat failure: ${exception.getMessage} - retry attempt: $retryCount")
@@ -84,7 +86,6 @@ class ServiceInstances @Inject() (serviceInstancesTimeout: ServiceInstancesConfi
     } yield {
       alive.wasAcknowledged()
       atomicInstanceCount.set(active)
-      metricsReporter.gaugeServiceInstances(atomicInstanceCount.get())
       active
     }
   }

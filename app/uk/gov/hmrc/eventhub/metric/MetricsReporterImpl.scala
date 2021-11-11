@@ -80,14 +80,14 @@ class MetricsReporterImpl @Inject() (metrics: Metrics, timers: Timers)(implicit 
   private def subscriberEventTimerName(subscriber: Subscriber, event: Event): String =
     s"${subscriber.name}.${event.eventId}"
 
-  override def gaugeServiceInstances(instanceCount: Long): Unit =
+  override def gaugeServiceInstances(instanceCount: () => Int): Unit =
     metrics
       .defaultRegistry
       .gauge(
         "service-instances",
         () =>
-          new Gauge[Long] {
-            override def getValue: Long = instanceCount
+          new Gauge[Int] {
+            override def getValue: Int = instanceCount()
           }
       )
 }

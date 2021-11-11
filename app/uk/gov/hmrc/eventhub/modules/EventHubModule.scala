@@ -19,10 +19,11 @@ package uk.gov.hmrc.eventhub.modules
 import akka.actor.{ActorSystem, Scheduler}
 import akka.pattern.FutureTimeoutSupport
 import com.google.inject.{AbstractModule, Provides}
+import com.kenshoo.play.metrics.Metrics
 import play.api.Configuration
 import play.api.libs.concurrent.AkkaGuiceSupport
 import uk.gov.hmrc.eventhub.config.{PublisherConfig, ServiceInstancesConfig, SubscriberStreamConfig, SubscriptionDefaults, Topic}
-import uk.gov.hmrc.eventhub.metric.{BoundedTimers, Clock, MetricsReporter, MetricsReporterImpl, Timers}
+import uk.gov.hmrc.eventhub.metric.{BoundedTimers, Clock, DisabledMetricsReporter, MetricsReporter, MetricsReporterImpl, Timers}
 import uk.gov.hmrc.eventhub.repository.{EventRepository, SubscriberEventRepositoryFactory, WorkItemSubscriberEventRepositoryFactory}
 import uk.gov.hmrc.eventhub.service._
 import uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptions
@@ -31,11 +32,10 @@ import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.play.bootstrap.config.AppName
 
 import javax.inject.Singleton
+import scala.concurrent.ExecutionContext
 
 class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTimeoutSupport {
   override def configure(): Unit = {
-    bind(classOf[MetricsReporter]).to(classOf[MetricsReporterImpl]).asEagerSingleton()
-
     bind(classOf[SubscriberEventRepositoryFactory])
       .to(classOf[WorkItemSubscriberEventRepositoryFactory])
       .asEagerSingleton()
@@ -71,6 +71,20 @@ class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTim
     val clock = new Clock
     new BoundedTimers(clock, maxTimers)(actorSystem)
   }
+
+  @Provides
+  @Singleton
+  def metricsReporter(
+    configuration: Configuration,
+    metrics: Metrics,
+    timers: Timers,
+    executionContext: ExecutionContext
+  ): MetricsReporter =
+    if (configuration.getOptional[Boolean]("metrics.enabled").getOrElse(false)) {
+      new MetricsReporterImpl(metrics, timers)(executionContext)
+    } else {
+      DisabledMetricsReporter
+    }
 
   @Provides
   @Singleton

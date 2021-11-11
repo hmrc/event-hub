@@ -32,7 +32,7 @@ trait MetricsReporter {
   def reportSubscriberRequestLatency(subscriber: Subscriber, millis: Long): Unit
   def startSubscriptionPublishTimer(subscriber: Subscriber, event: Event): Unit
   def stopSubscriptionPublishTimer(subscriber: Subscriber, event: Event): Unit
-  def gaugeServiceInstances(instanceCount: Long): Unit
+  def gaugeServiceInstances(instanceCount: () => Int): Unit
 }
 
 object MetricsReporter {

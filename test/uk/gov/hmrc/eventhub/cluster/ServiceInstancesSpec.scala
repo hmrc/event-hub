@@ -19,7 +19,6 @@ package uk.gov.hmrc.eventhub.cluster
 import akka.actor.ActorSystem
 import org.bson.types.ObjectId
 import org.mockito.MockitoSugar.mock
-import org.mongodb.scala.model.{Filters, Updates}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.flatspec.AnyFlatSpec

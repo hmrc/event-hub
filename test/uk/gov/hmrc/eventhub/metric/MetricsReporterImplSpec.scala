@@ -117,7 +117,7 @@ class MetricsReporterImplSpec extends AnyFlatSpec with Matchers with IdiomaticMo
 
   "MetricsReporterImpl.gaugeServiceInstances" should "provide the service instance count to a gauge with the correct name" in new Scope {
     val name = "service-instances"
-    metricsReporterImpl.gaugeServiceInstances(2)
+    metricsReporterImpl.gaugeServiceInstances(() => 2)
     metricRegistry.gauge(name, *[MetricRegistry.MetricSupplier[Gauge[_]]]) wasCalled once
   }
 
