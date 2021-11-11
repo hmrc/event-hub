@@ -17,9 +17,10 @@
 package uk.gov.hmrc.eventhub.metric
 
 import akka.http.scaladsl.model.StatusCodes.TooManyRequests
-import com.codahale.metrics.{Counter, Histogram, MetricRegistry}
+import com.codahale.metrics.{Counter, Gauge, Histogram, MetricRegistry}
 import com.kenshoo.play.metrics.Metrics
 import org.mockito.IdiomaticMockito
+import org.mockito.ArgumentMatchersSugar.*
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.Waiters.timeout
 import org.scalatest.flatspec.AnyFlatSpec
@@ -112,6 +113,12 @@ class MetricsReporterImplSpec extends AnyFlatSpec with Matchers with IdiomaticMo
     eventually(timeout(3.seconds)) {
       histogram.update(end - start) wasCalled once
     }
+  }
+
+  "MetricsReporterImpl.gaugeServiceInstances" should "provide the service instance count to a gauge with the correct name" in new Scope {
+    val name = "service-instances"
+    metricsReporterImpl.gaugeServiceInstances(() => 2)
+    metricRegistry.gauge(name, *[MetricRegistry.MetricSupplier[Gauge[_]]]) wasCalled once
   }
 
   trait Scope {

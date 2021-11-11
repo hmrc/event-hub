@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.eventhub.metric
 
+import com.codahale.metrics.Gauge
 import com.kenshoo.play.metrics.Metrics
 import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.eventhub.metric.MetricsReporter.{EventMetricsOps, FailedStatus, SubscriberMetricsOps}
@@ -78,4 +79,15 @@ class MetricsReporterImpl @Inject() (metrics: Metrics, timers: Timers)(implicit 
 
   private def subscriberEventTimerName(subscriber: Subscriber, event: Event): String =
     s"${subscriber.name}.${event.eventId}"
+
+  override def gaugeServiceInstances(instanceCount: () => Int): Unit =
+    metrics
+      .defaultRegistry
+      .gauge(
+        "service-instances",
+        () =>
+          new Gauge[Int] {
+            override def getValue: Int = instanceCount()
+          }
+      )
 }
