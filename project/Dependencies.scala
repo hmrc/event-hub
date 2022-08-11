@@ -23,8 +23,8 @@ object Dependencies {
   object Library {
     val AkkaHttp = "com.typesafe.akka"          %% "akka-http"                         % "10.2.9"
     val Bootstrap = "uk.gov.hmrc"               %% "bootstrap-backend-play-28"         % "5.4.0"
-    val HmrcMongo = "uk.gov.hmrc.mongo"         %% "hmrc-mongo-play-28"                % "0.68.0"
-    val HmrcMongoWorkItem = "uk.gov.hmrc.mongo" %% "hmrc-mongo-work-item-repo-play-28" % "0.68.0"
+    val HmrcMongo = "uk.gov.hmrc.mongo"         %% "hmrc-mongo-play-28"                % "0.70.0"
+    val HmrcMongoWorkItem = "uk.gov.hmrc.mongo" %% "hmrc-mongo-work-item-repo-play-28" % "0.70.0"
     val Pureconfig = "com.github.pureconfig"    %% "pureconfig"                        % "0.17.1"
     val Cats = "org.typelevel"                  %% "cats-core"                         % "2.8.0"
     val Swagger = "org.webjars"                  % "swagger-ui"                        % "3.50.0"
@@ -32,7 +32,7 @@ object Dependencies {
     val MongoScalaDriver = "org.mongodb.scala"  %% "mongo-scala-driver"                % "4.7.1"
     val jayway = "com.jayway.jsonpath"           % "json-path"                         % "2.7.0"
     val BootstrapTest = "uk.gov.hmrc"           %% "bootstrap-test-play-28"            % "5.4.0"
-    val HmrcMongoTest = "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-28"           % "0.68.0"
+    val HmrcMongoTest = "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-28"           % "0.70.0"
     val Scalatest = "org.scalatest"             %% "scalatest"                         % "3.1.0"
     val PlayTest = "com.typesafe.play"          %% "play-test"                         % current
     val Flexmark = "com.vladsch.flexmark"        % "flexmark-all"                      % "0.35.10"
