@@ -1,4 +1,3 @@
-
 import com.iheart.sbtPlaySwagger.SwaggerPlugin.autoImport.swaggerDomainNameSpaces
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.SbtBobbyPlugin.BobbyKeys.bobbyRulesURL
@@ -20,9 +19,9 @@ lazy val microservice = Project(appName, file("."))
     SwaggerPlugin
   )
   .settings(
-    majorVersion                     := 2,
-    scalaVersion                     := "2.12.13",
-    libraryDependencies              ++= Dependencies.libraries,
+    majorVersion := 2,
+    scalaVersion := "2.12.13",
+    libraryDependencies ++= Dependencies.libraries,
     // ***************
     // Use the silencer plugin to suppress warnings
     scalacOptions += "-P:silencer:pathFilters=routes",
@@ -40,14 +39,14 @@ lazy val microservice = Project(appName, file("."))
   .settings(inConfig(IntegrationTest)(org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings))
 
 lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
-compileScalastyle := scalastyle.in(Compile).toTask("").value
-(compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
+compileScalastyle := (Compile / scalastyle).toTask("").value
+Compile / compile := ((Compile / compile) dependsOn compileScalastyle).value
 
 PlayKeys.playDefaultPort := 9050
 
 swaggerDomainNameSpaces := Seq(
-    "uk.gov.hmrc.eventhub.models"
-  )
+  "uk.gov.hmrc.eventhub.models"
+)
 
 scalacOptions += "-Ypartial-unification"
 swaggerTarget := baseDirectory.value / "public"
@@ -58,7 +57,7 @@ swaggerV3 := true
 bobbyRulesURL := Some(new URL("https://webstore.tax.service.gov.uk/bobby-config/deprecated-dependencies.json"))
 
 dependencyUpdatesFailBuild := true
-(compile in Compile) := ((compile in Compile) dependsOn dependencyUpdates).value
+Compile / compile := ((Compile / compile) dependsOn dependencyUpdates).value
 dependencyUpdatesFilter -= moduleFilter(organization = "uk.gov.hmrc")
 dependencyUpdatesFilter -= moduleFilter(organization = "org.scala-lang")
 dependencyUpdatesFilter -= moduleFilter(organization = "org.scalatest")
