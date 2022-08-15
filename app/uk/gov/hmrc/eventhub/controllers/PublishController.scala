@@ -45,7 +45,7 @@ class PublishController @Inject() (cc: ControllerComponents, eventPublisherServi
               )
               Created(Json.toJson(PublishResponse(subscribers.map(_.name))))
             case Left(error) =>
-              logger.error(s"failed to publish event: ${Json.toJson(event)}, due to: $error")
+              logger.error(s"failed to publish event, due to: $error")
               error match {
                 case e: DuplicateEvent        => Created(e.message)
                 case e: NoEventTopic          => NotFound(e.message)
