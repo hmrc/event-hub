@@ -42,7 +42,9 @@ class HttpResponseHandler(
 
         response match {
           case Failure(e) =>
-            logger.error(s"could not push event: $event to: ${subscriber.uri}, marking as failed.", e)
+            logger.error(
+              s"could not push event: ${event.eventId} to: ${subscriber.uri}, marking as failed. ${e.getMessage}"
+            )
             markAsFailed(event, subscriber, resultF)
 
           case Success(response) =>
@@ -53,19 +55,21 @@ class HttpResponseHandler(
                 subscriberEventRepository.sent(event).map(_ => resultF(Sent))
 
               case StatusCodes.TooManyRequests =>
-                logger.warn(s"rate limit error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
+                logger.warn(
+                  s"rate limit error: ${response.status} when pushing: ${event.eventId} to: ${subscriber.uri}."
+                )
                 markAsFailed(event, subscriber, resultF)
 
               case StatusCodes.ServerError(_) =>
-                logger.warn(s"server error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
+                logger.warn(s"server error: ${response.status} when pushing: ${event.eventId} to: ${subscriber.uri}.")
                 markAsFailed(event, subscriber, resultF)
 
               case StatusCodes.ClientError(_) =>
-                logger.warn(s"client error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
+                logger.warn(s"client error: ${response.status} when pushing: ${event.eventId} to: ${subscriber.uri}.")
                 remove(event, subscriber, resultF)
 
               case _ =>
-                logger.warn(s"error: ${response.status} when pushing: $event to: ${subscriber.uri}.")
+                logger.warn(s"error: ${response.status} when pushing: ${event.eventId} to: ${subscriber.uri}.")
                 remove(event, subscriber, resultF)
             }
         }
