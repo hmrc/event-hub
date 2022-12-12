@@ -35,7 +35,7 @@ class HttpResponseHandler(
     extends Logging {
 
   def handle(subscriberEventHttpResponse: SubscriberEventHttpResponse): Future[EventSendStatus] = {
-    logger.warn(s"subscriberEventHttpResponse - ${subscriberEventHttpResponse.response.get}")
+    logger.warn(s"subscriberEventHttpResponse - ${subscriberEventHttpResponse.response}")
     subscriberEventHttpResponse match {
       case SubscriberEventHttpResponse(response, event, subscriber) =>
         val resultF = EventSendStatus(event, subscriber, _)
