@@ -20,8 +20,10 @@ import sbt._
 
 object Dependencies {
 
+  private val akkaVersion = "2.7.0"
+  private val akkaHttpVersion = "10.4.0"
+
   object Library {
-    val AkkaHttp = "com.typesafe.akka"          %% "akka-http"                         % "10.4.0"
     val Bootstrap = "uk.gov.hmrc"               %% "bootstrap-backend-play-28"         % "5.4.0"
     val HmrcMongo = "uk.gov.hmrc.mongo"         %% "hmrc-mongo-play-28"                % "0.74.0"
     val HmrcMongoWorkItem = "uk.gov.hmrc.mongo" %% "hmrc-mongo-work-item-repo-play-28" % "0.74.0"
@@ -41,7 +43,8 @@ object Dependencies {
     val ServiceIntegrationTest = "uk.gov.hmrc"  %% "service-integration-test"          % "1.1.0-play-28"
     val WireMock = "com.github.tomakehurst"      % "wiremock-standalone"               % "2.27.2"
     val ScalaCheck = "org.scalacheck"           %% "scalacheck"                        % "1.17.0"
-    val AkkaTestKit = "com.typesafe.akka"       %% "akka-testkit"                      % "2.6.14"
+    val AkkaTestKit = "com.typesafe.akka"       %% "akka-testkit"                      % akkaVersion
+    val AkkaHttp = "com.typesafe.akka"          %% "akka-http"                         % akkaHttpVersion
   }
 
   import Library._
@@ -69,5 +72,16 @@ object Dependencies {
     ServiceIntegrationTest % "test, it",
     ScalaCheck             % "it",
     AkkaTestKit            % Test
+  )
+
+  val overrides = Seq(
+    "com.typesafe.akka" %% "akka-stream"    % akkaVersion,
+    "com.typesafe.akka" %% "akka-protobuf"  % akkaVersion,
+    "com.typesafe.akka" %% "akka-slf4j"     % akkaVersion,
+    "com.typesafe.akka" %% "akka-actor"     % akkaVersion,
+    "com.typesafe.akka" %% "akka-serialization-jackson" % akkaVersion,
+    "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
+    "com.typesafe.akka" %% "akka-testkit"   % akkaVersion,
+    "com.typesafe.akka" %% "akka-http-core"  % akkaHttpVersion
   )
 }
