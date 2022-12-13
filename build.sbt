@@ -1,6 +1,5 @@
 import com.iheart.sbtPlaySwagger.SwaggerPlugin.autoImport.swaggerDomainNameSpaces
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
-import uk.gov.hmrc.SbtBobbyPlugin.BobbyKeys.bobbyRulesURL
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings
 
@@ -54,9 +53,8 @@ swaggerFileName := "schema.json"
 swaggerPrettyJson := true
 swaggerRoutesFile := "prod.routes"
 swaggerV3 := true
-bobbyRulesURL := Some(new URL("https://webstore.tax.service.gov.uk/bobby-config/deprecated-dependencies.json"))
 
-dependencyUpdatesFailBuild := true
+dependencyUpdatesFailBuild := false
 Compile / compile := ((Compile / compile) dependsOn dependencyUpdates).value
 dependencyUpdatesFilter -= moduleFilter(organization = "uk.gov.hmrc")
 dependencyUpdatesFilter -= moduleFilter(organization = "org.scala-lang")
