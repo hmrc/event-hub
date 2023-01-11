@@ -43,33 +43,39 @@ class HttpResponseHandler(
         response match {
           case Failure(e) =>
             logger.error(
-              s"could not push event: ${event.eventId} to: ${subscriber.uri}, marking as failed. ${e.getMessage}"
+              s"Publish event: could not push event: ${event.eventId} to: ${subscriber.uri}, marking as failed. ${e.getMessage}"
             )
             markAsFailed(event, subscriber, resultF)
 
           case Success(response) =>
             response.status match {
               case StatusCodes.Success(_) =>
-                logger.debug(s"pushed event: $event to: ${subscriber.uri}, marking as sent.")
+                logger.warn(s"Publish event: pushed event: $event to: ${subscriber.uri}, marking as sent.")
                 metricsReporter.incrementSubscriptionPublishedCount(subscriber)
                 subscriberEventRepository.sent(event).map(_ => resultF(Sent))
 
               case StatusCodes.TooManyRequests =>
                 logger.warn(
-                  s"rate limit error: ${response.status} when pushing: ${event.eventId} to: ${subscriber.uri}."
+                  s"Publish event: rate limit error: ${response.status} when pushing: ${event.eventId} to: ${subscriber.uri}."
                 )
                 markAsFailed(event, subscriber, resultF)
 
               case StatusCodes.ServerError(_) =>
-                logger.warn(s"server error: ${response.status} when pushing: ${event.eventId} to: ${subscriber.uri}.")
+                logger.warn(
+                  s"Publish event: server error: ${response.status} when pushing: ${event.eventId} to: ${subscriber.uri}."
+                )
                 markAsFailed(event, subscriber, resultF)
 
               case StatusCodes.ClientError(_) =>
-                logger.warn(s"client error: ${response.status} when pushing: ${event.eventId} to: ${subscriber.uri}.")
+                logger.warn(
+                  s"Publish event: client error: ${response.status} when pushing: ${event.eventId} to: ${subscriber.uri}."
+                )
                 remove(event, subscriber, resultF)
 
               case _ =>
-                logger.warn(s"error: ${response.status} when pushing: ${event.eventId} to: ${subscriber.uri}.")
+                logger.warn(
+                  s"Publish event: error: ${response.status} when pushing: ${event.eventId} to: ${subscriber.uri}."
+                )
                 remove(event, subscriber, resultF)
             }
         }
