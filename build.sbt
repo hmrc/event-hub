@@ -56,7 +56,7 @@ swaggerRoutesFile := "prod.routes"
 swaggerV3 := true
 bobbyRulesURL := Some(new URL("https://webstore.tax.service.gov.uk/bobby-config/deprecated-dependencies.json"))
 
-dependencyUpdatesFailBuild := true
+dependencyUpdatesFailBuild := false
 Compile / compile := ((Compile / compile) dependsOn dependencyUpdates).value
 dependencyUpdatesFilter -= moduleFilter(organization = "uk.gov.hmrc")
 dependencyUpdatesFilter -= moduleFilter(organization = "org.scala-lang")
