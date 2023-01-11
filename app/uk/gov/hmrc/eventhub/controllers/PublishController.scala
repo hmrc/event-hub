@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,9 @@ class PublishController @Inject() (cc: ControllerComponents, eventPublisherServi
         event =>
           eventPublisherService.publish(event, TopicName(topicName)).map {
             case Right(subscribers) =>
-              logger.debug(
-                s"published event: ${Json.toJson(event)}, to subscribers: ${subscribers.map(_.name).mkString(", ")}"
+              logger.warn(
+                s"published event: ${Json
+                  .toJson(event)}, to topicName: $topicName, to subscribers: ${subscribers.map(_.name).mkString(", ")}"
               )
               Created(Json.toJson(PublishResponse(subscribers.map(_.name))))
             case Left(error) =>
