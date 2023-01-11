@@ -43,14 +43,17 @@ class HttpResponseHandler(
         response match {
           case Failure(e) =>
             logger.error(
-              s"Publish event: could not push event: ${event.eventId} to: ${subscriber.uri}, marking as failed. ${e.getMessage}"
+              s"Publish event: could not push event: groupId: ${event.groupId}, eventId: ${event.eventId}" +
+                s" to: ${subscriber.uri}, marking as failed. ${e.getMessage}"
             )
             markAsFailed(event, subscriber, resultF)
 
           case Success(response) =>
             response.status match {
               case StatusCodes.Success(_) =>
-                logger.warn(s"Publish event: pushed event: $event to: ${subscriber.uri}, marking as sent.")
+                logger.warn(
+                  s"Publish event: pushed event: groupId: ${event.groupId}, eventId: ${event.eventId} to: ${subscriber.uri}, marking as sent."
+                )
                 metricsReporter.incrementSubscriptionPublishedCount(subscriber)
                 subscriberEventRepository.sent(event).map(_ => resultF(Sent))
 
