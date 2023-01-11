@@ -41,7 +41,8 @@ class PublishController @Inject() (cc: ControllerComponents, eventPublisherServi
           eventPublisherService.publish(event, TopicName(topicName)).map {
             case Right(subscribers) =>
               logger.warn(
-                s"published event: ${Json.toJson(event)}, to topicName: $topicName, to subscribers: ${subscribers.map(_.name).mkString(", ")}"
+                s"published event: ${Json
+                  .toJson(event)}, to topicName: $topicName, to subscribers: ${subscribers.map(_.name).mkString(", ")}"
               )
               Created(Json.toJson(PublishResponse(subscribers.map(_.name))))
             case Left(error) =>
