@@ -40,20 +40,27 @@ class PublishController @Inject() (cc: ControllerComponents, eventPublisherServi
         event =>
           eventPublisherService.publish(event, TopicName(topicName)).map {
             case Right(subscribers) =>
-              logger.warn(
+              logger.debug(
                 s"published event: groupId: ${event.groupId}, eventId: ${event.eventId} " +
                   s"to topicName: $topicName, to subscribers: ${subscribers.map(_.name).mkString(", ")}"
               )
               Created(Json.toJson(PublishResponse(subscribers.map(_.name))))
             case Left(error) =>
-              logger.error(s"failed to publish event, due to: $error")
+              logPublishEventFailure(error)
               error match {
                 case e: DuplicateEvent        => Created(e.message)
-                case e: NoEventTopic          => NotFound(e.message)
                 case e: NoSubscribersForTopic => Created(e.message)
+                case e: NoEventTopic          => NotFound(e.message)
                 case e                        => InternalServerError(e.message)
               }
           }
       )
+  }
+
+  private def logPublishEventFailure(error: PublishError): Unit = error match {
+    case DuplicateEvent(_) | NoSubscribersForTopic(_) | NoEventTopic(_) =>
+      logger.debug(s"failed to publish event, due to: $error")
+    case _ =>
+      logger.error(s"failed to publish event, due to: $error")
   }
 }
