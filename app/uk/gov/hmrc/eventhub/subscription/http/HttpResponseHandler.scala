@@ -51,7 +51,7 @@ class HttpResponseHandler(
           case Success(response) =>
             response.status match {
               case StatusCodes.Success(_) =>
-                logger.warn(s"Publish event: pushed event: $event to: ${subscriber.uri}, marking as sent.")
+                logger.warn(s"Publish event: pushed event: ${event.eventId} to: ${subscriber.uri}, marking as sent.")
                 metricsReporter.incrementSubscriptionPublishedCount(subscriber)
                 subscriberEventRepository.sent(event).map(_ => resultF(Sent))
 
