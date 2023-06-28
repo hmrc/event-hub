@@ -22,14 +22,13 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.model.TestModels.event
 import uk.gov.hmrc.play.audit.model.{Audit, DataEvent}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class PublishEventAuditorImplSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
 
   behavior of "PublishEventAuditorImpl.failed"
 
   it should "raises a new DataEvent object from an Event and Exception" in new Scope {
-    func.apply(*[DataEvent]) returns Unit
-    auditMock.sendDataEvent returns func
     val publishEventAuditorImpl = new PublishEventAuditorImpl(auditMock)
     publishEventAuditorImpl.failed(event, exception)
     auditMock.sendDataEvent(*[DataEvent]) wasCalled once
