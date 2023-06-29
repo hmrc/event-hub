@@ -23,7 +23,6 @@ object Dependencies {
   object Library {
     val AkkaHttp = "com.typesafe.akka"          %% "akka-http"                         % "10.2.9"
     val Bootstrap = "uk.gov.hmrc"               %% "bootstrap-backend-play-28"         % "7.19.0"
-    val HmrcMongo = "uk.gov.hmrc.mongo"         %% "hmrc-mongo-play-28"                % "1.3.0"
     val HmrcMongoWorkItem = "uk.gov.hmrc.mongo" %% "hmrc-mongo-work-item-repo-play-28" % "1.3.0"
     val Pureconfig = "com.github.pureconfig"    %% "pureconfig"                        % "0.17.4"
     val Cats = "org.typelevel"                  %% "cats-core"                         % "2.9.0"
@@ -50,7 +49,6 @@ object Dependencies {
     AkkaHttp,
     ws,
     Bootstrap,
-    HmrcMongo,
     HmrcMongoWorkItem,
     Pureconfig,
     Cats,

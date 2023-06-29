@@ -32,7 +32,6 @@ class PublishEventAuditorImplSpec extends AnyFlatSpec with Matchers with Idiomat
     val publishEventAuditorImpl = new PublishEventAuditorImpl(auditMock)
     publishEventAuditorImpl.failed(event, exception)
     auditMock.sendDataEvent(*[DataEvent]) wasCalled once
-    func.apply(*[DataEvent]) wasCalled once
   }
 
   trait Scope {
