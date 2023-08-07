@@ -1,6 +1,5 @@
 import com.iheart.sbtPlaySwagger.SwaggerPlugin.autoImport.swaggerDomainNameSpaces
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
 val appName = "event-hub"
 
@@ -14,7 +13,7 @@ lazy val microservice = Project(appName, file("."))
   )
   .settings(
     majorVersion := 2,
-    scalaVersion := "2.13.8",
+    scalaVersion := "2.13.11",
     libraryDependencies ++= Dependencies.libraries
   )
   .configs(IntegrationTest)
