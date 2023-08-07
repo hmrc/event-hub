@@ -21,7 +21,7 @@ import sbt._
 object Dependencies {
 
   object Library {
-    val AkkaHttp = "com.typesafe.akka"          %% "akka-http"                         % "10.5.2"
+    val AkkaHttp = "com.typesafe.akka"          %% "akka-http"                         % "10.2.9"
     val Bootstrap = "uk.gov.hmrc"               %% "bootstrap-backend-play-28"         % "7.21.0"
     val HmrcMongoWorkItem = "uk.gov.hmrc.mongo" %% "hmrc-mongo-work-item-repo-play-28" % "1.3.0"
     val Pureconfig = "com.github.pureconfig"    %% "pureconfig"                        % "0.17.4"
