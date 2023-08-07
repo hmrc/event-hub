@@ -26,7 +26,7 @@ object Dependencies {
     val HmrcMongoWorkItem = "uk.gov.hmrc.mongo" %% "hmrc-mongo-work-item-repo-play-28" % "1.3.0"
     val Pureconfig = "com.github.pureconfig"    %% "pureconfig"                        % "0.17.4"
     val Cats = "org.typelevel"                  %% "cats-core"                         % "2.9.0"
-    val Swagger = "org.webjars"                  % "swagger-ui"                        % "5.3.1"
+    val Swagger = "org.webjars"                  % "swagger-ui"                        % "5.2.0"
     val Enumeration = "com.beachape"            %% "enumeratum-play"                   % "1.7.3"
     val MongoScalaDriver = "org.mongodb.scala"  %% "mongo-scala-driver"                % "4.10.2"
     val jayway = "com.jayway.jsonpath"           % "json-path"                         % "2.8.0"
