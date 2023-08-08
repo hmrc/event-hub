@@ -76,7 +76,8 @@ class SubscriberQueueRepositorySpec
 
   it should "return an event when the underlying repo successfully finds one for that event" in new Scope {
     subscriberQueueRepository.collection.deleteMany(BsonDocument()).toFuture()
-    subscriberQueueRepository.pushNew(event).futureValue
+    val item = subscriberQueueRepository.pushNew(event).futureValue
+    item.status should be(ToDo)
     val eventWorkItem = subscriberQueueRepository.findAsWorkItem(event).futureValue
     eventWorkItem.get.item should be(event)
     eventWorkItem.get.status should be(ToDo)
