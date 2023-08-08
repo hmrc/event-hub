@@ -40,7 +40,7 @@ object Dependencies {
     val ServiceIntegrationTest = "uk.gov.hmrc"  %% "service-integration-test"          % "1.4.0-play-28"
     val WireMock = "com.github.tomakehurst"      % "wiremock-standalone"               % "2.27.2"
     val ScalaCheck = "org.scalacheck"           %% "scalacheck"                        % "1.17.0"
-    val AkkaTestKit = "com.typesafe.akka"       %% "akka-testkit"                      % "2.6.20"
+    val AkkaTestKit = "com.typesafe.akka"       %% "akka-testkit"                      % "2.6.21"
   }
 
   import Library._
