@@ -14,7 +14,8 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     majorVersion := 2,
     scalaVersion := "2.13.8",
-    libraryDependencies ++= Dependencies.libraries
+    libraryDependencies ++= Dependencies.libraries,
+    scalacOptions ++= List("-Wconf:cat=unused-imports&src=.*routes.*:s")
   )
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
@@ -40,4 +41,3 @@ swaggerV3 := true
 
 dependencyUpdatesFailBuild := false
 Compile / compile := ((Compile / compile) dependsOn dependencyUpdates).value
-dependencyUpdatesFilter -= moduleFilter(name = "akka-testkit")
