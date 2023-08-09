@@ -32,7 +32,7 @@ object Dependencies {
     val jayway = "com.jayway.jsonpath"           % "json-path"                         % "2.8.0"
     val BootstrapTest = "uk.gov.hmrc"           %% "bootstrap-test-play-28"            % "7.21.0"
     val HmrcMongoTest = "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-28"           % "1.3.0"
-    val Scalatest = "org.scalatest"             %% "scalatest"                         % "3.2.16"
+    val Scalatest = "org.scalatest"             %% "scalatest"                         % "3.1.1"
     val PlayTest = "com.typesafe.play"          %% "play-test"                         % current
     val Scalatestplus = "org.scalatestplus"     %% "scalatestplus-scalacheck"          % "3.1.0.0-RC2"
     val Mockito = "org.mockito"                 %% "mockito-scala"                     % "1.17.14"
