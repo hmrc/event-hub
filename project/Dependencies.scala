@@ -32,8 +32,9 @@ object Dependencies {
     val jayway = "com.jayway.jsonpath"           % "json-path"                         % "2.8.0"
     val BootstrapTest = "uk.gov.hmrc"           %% "bootstrap-test-play-28"            % "7.21.0"
     val HmrcMongoTest = "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-28"           % "1.3.0"
-    val Scalatest = "org.scalatest"             %% "scalatest"                         % "3.1.1"
+    val Scalatest = "org.scalatest"             %% "scalatest"                         % "3.2.15"
     val PlayTest = "com.typesafe.play"          %% "play-test"                         % current
+    val Flexmark = "com.vladsch.flexmark"        % "flexmark-all"                      % "0.64.4"
     val Scalatestplus = "org.scalatestplus"     %% "scalatestplus-scalacheck"          % "3.1.0.0-RC2"
     val Mockito = "org.mockito"                 %% "mockito-scala"                     % "1.17.14"
     val ServiceIntegrationTest = "uk.gov.hmrc"  %% "service-integration-test"          % "1.4.0-play-28"
@@ -61,6 +62,7 @@ object Dependencies {
     PlayTest               % Test,
     Mockito                % Test,
     WireMock               % "it",
+    Flexmark               % "test, it",
     Scalatestplus          % "test, it",
     ServiceIntegrationTest % "test, it",
     ScalaCheck             % "it",
