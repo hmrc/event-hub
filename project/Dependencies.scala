@@ -38,7 +38,6 @@ object Dependencies {
     val Flexmark = "com.vladsch.flexmark"        % "flexmark-all"                      % "0.35.10"
     val Scalatestplus = "org.scalatestplus"     %% "scalatestplus-scalacheck"          % "3.1.0.0-RC2"
     val Mockito = "org.mockito"                 %% "mockito-scala"                     % "1.17.12"
-    val ServiceIntegrationTest = "uk.gov.hmrc"  %% "service-integration-test"          % "1.1.0-play-28"
     val WireMock = "com.github.tomakehurst"      % "wiremock-standalone"               % "2.27.2"
     val ScalaCheck = "org.scalacheck"           %% "scalacheck"                        % "1.16.0"
     val AkkaTestKit = "com.typesafe.akka"       %% "akka-testkit"                      % "2.6.14"
@@ -58,16 +57,15 @@ object Dependencies {
     Enumeration,
     MongoScalaDriver,
     jayway,
-    BootstrapTest          % Test,
-    HmrcMongoTest          % Test,
-    Scalatest              % Test,
-    PlayTest               % Test,
-    Mockito                % Test,
-    WireMock               % "it",
-    Flexmark               % "test, it",
-    Scalatestplus          % "test, it",
-    ServiceIntegrationTest % "test, it",
-    ScalaCheck             % "it",
-    AkkaTestKit            % Test
+    BootstrapTest % Test,
+    HmrcMongoTest % Test,
+    Scalatest     % Test,
+    PlayTest      % Test,
+    Mockito       % Test,
+    WireMock      % "it",
+    Flexmark      % "test, it",
+    Scalatestplus % "test, it",
+    ScalaCheck    % "it",
+    AkkaTestKit   % Test
   )
 }
