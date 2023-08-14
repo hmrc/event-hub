@@ -104,7 +104,7 @@ class TransactionHandlerImpSpec extends AnyFlatSpec with Matchers with Idiomatic
 
     mongoComponent.client returns mongoClient
     mongoClient.startSession(sessionOptions) returns SingleObservable(clientSession)
-    clientSession.startTransaction(transactionOptions) doesNothing ()
+    clientSession.startTransaction(transactionOptions).doesNothing()
     clientSession.commitTransaction() returns publisher
 
     val transactionHandlerImpl: TransactionHandlerImpl = new TransactionHandlerImpl(

@@ -82,7 +82,7 @@ class EventPublisherImpSpec extends AnyFlatSpec with Matchers with IdiomaticMock
     val publishEventAuditor: PublishEventAuditor = mock[PublishEventAuditor]
 
     transactionHandler.startTransactionSession(*, *) returns Future.successful(clientSession)
-    publishEventAuditor.failed(*, *) doesNothing ()
+    publishEventAuditor.failed(*, *).doesNothing()
 
     val eventPublisherImpl: EventPublisherImpl = new EventPublisherImpl(
       transactionHandler,

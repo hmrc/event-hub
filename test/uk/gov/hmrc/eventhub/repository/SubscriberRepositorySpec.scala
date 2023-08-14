@@ -33,6 +33,19 @@ import uk.gov.hmrc.mongo.workitem.{WorkItem, WorkItemRepository}
 
 class SubscriberRepositorySpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
 
+  trait Scope {
+    val clientSessionMock: ClientSession = mock[ClientSession]
+    val workItemRepositoryMock: WorkItemRepository[Event] = mock[WorkItemRepository[Event]]
+    val mongoCollectionMock: MongoCollection[WorkItem[Event]] = mock[MongoCollection[WorkItem[Event]]]
+    val topicName: TopicName = TopicName(name = "topicName")
+    val subscriber: Subscriber = channelPreferences
+    val subscriberRepository: SubscriberRepository =
+      new SubscriberRepository(topicName, subscriber, workItemRepositoryMock)
+    val insertOneResult: InsertOneResult = InsertOneResult.acknowledged(BsonObjectId())
+
+    workItemRepositoryMock.collection returns mongoCollectionMock
+  }
+
   behavior of "SubscriberRepository.insertOne"
 
   it should "return a mongo InsertOneResult when the underlying repo adds a new event to the event repo" in new Scope {
@@ -47,18 +60,5 @@ class SubscriberRepositorySpec extends AnyFlatSpec with Matchers with IdiomaticM
     workItem.status should be(ToDo)
     workItem.failureCount should be(0)
     workItem.item should be(event)
-  }
-
-  trait Scope {
-    val clientSessionMock: ClientSession = mock[ClientSession]
-    val workItemRepositoryMock: WorkItemRepository[Event] = mock[WorkItemRepository[Event]]
-    val mongoCollectionMock: MongoCollection[WorkItem[Event]] = mock[MongoCollection[WorkItem[Event]]]
-    val topicName: TopicName = TopicName(name = "topicName")
-    val subscriber: Subscriber = channelPreferences
-    val subscriberRepository: SubscriberRepository =
-      new SubscriberRepository(topicName, subscriber, workItemRepositoryMock)
-    val insertOneResult: InsertOneResult = InsertOneResult.acknowledged(BsonObjectId())
-
-    workItemRepositoryMock.collection returns mongoCollectionMock
   }
 }

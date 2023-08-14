@@ -56,8 +56,8 @@ class WorkItemSubscriberEventRepositorySpec
       """Failed to parse json as uk.gov.hmrc.mongo.workitem.WorkItem '{"_id":{"$oid":"61360df8bcf93f52c00f3dc8"},"""
     )
 
-    subscriberQueueRepository.getEvent returns (Future.failed(deserError), futureNone)
-    subscriberQueueRepository.complete(failedId, PermanentlyFailed) returns Future.successful(true)
+    subscriberQueueRepository.getEvent.returns(Future.failed(deserError), futureNone)
+    subscriberQueueRepository.complete(failedId, PermanentlyFailed).returns(Future.successful(true))
 
     workItemSubscriberEventRepository
       .next()
@@ -75,8 +75,8 @@ class WorkItemSubscriberEventRepositorySpec
         """Failed to parse json as uk.gov.hmrc.mongo.workitem.WorkItem '{"_id":{"$oid":"61360df8bcf93f52c00f3dc8"},"""
       )
 
-      subscriberQueueRepository.getEvent returns (Future.failed(deserError), futureNone)
-      subscriberQueueRepository.complete(failedId, PermanentlyFailed) returns Future.successful(false)
+      subscriberQueueRepository.getEvent.returns(Future.failed(deserError), futureNone)
+      subscriberQueueRepository.complete(failedId, PermanentlyFailed).returns(Future.successful(false))
 
       workItemSubscriberEventRepository
         .next()

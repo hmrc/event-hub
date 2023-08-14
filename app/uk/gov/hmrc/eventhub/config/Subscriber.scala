@@ -27,7 +27,7 @@ import pureconfig.ConfigReader._
 import pureconfig.error.{ConfigReaderFailures, ConvertFailure, FailureReason, UnknownKey}
 import uk.gov.hmrc.eventhub.config.ConfigReaders._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.FiniteDuration
 import scala.util.matching.Regex
 

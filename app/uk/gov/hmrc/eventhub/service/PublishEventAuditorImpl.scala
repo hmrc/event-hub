@@ -21,8 +21,9 @@ import uk.gov.hmrc.eventhub.service.PublishEventAuditor.asDataEvent
 import uk.gov.hmrc.play.audit.model.Audit
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
-class PublishEventAuditorImpl @Inject() (audit: Audit) extends PublishEventAuditor {
+class PublishEventAuditorImpl @Inject() (audit: Audit)(implicit ec: ExecutionContext) extends PublishEventAuditor {
   override def failed(event: Event, exception: Exception): Unit = {
     val dataEvent = asDataEvent(event: Event, exception: Exception)
     audit.sendDataEvent(dataEvent)

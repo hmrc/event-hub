@@ -23,7 +23,7 @@ import play.api.ConfigLoader
 import pureconfig.ConfigReader.configObjectConfigReader
 import pureconfig.error.ConfigReaderFailures
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 case class Topic(name: TopicName, subscribers: List[Subscriber])
 

@@ -20,7 +20,7 @@ import ch.qos.logback.classic.{Level, Logger => LogbackLogger}
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import org.slf4j.LoggerFactory
-import play.api.{Logger, LoggerLike}
+import play.api.LoggerLike
 
 import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.reflect.{ClassTag, classTag}
