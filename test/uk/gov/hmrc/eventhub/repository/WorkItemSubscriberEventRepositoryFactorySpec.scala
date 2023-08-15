@@ -21,8 +21,9 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.Configuration
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
+import play.api.{Application, Configuration}
 import uk.gov.hmrc.eventhub.config.TopicName
 import uk.gov.hmrc.eventhub.model.TestModels.channelPreferences
 import uk.gov.hmrc.eventhub.modules.MongoSetup
@@ -32,6 +33,15 @@ import scala.concurrent.ExecutionContext
 
 class WorkItemSubscriberEventRepositoryFactorySpec
     extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with GuiceOneServerPerSuite {
+
+  protected def serviceMongoUri =
+    s"mongodb://localhost:27017/${getClass.getSimpleName}"
+
+  private lazy val mongoConfig =
+    Map(s"mongodb.uri" -> serviceMongoUri)
+
+  override def fakeApplication(): Application =
+    new GuiceApplicationBuilder().configure(mongoConfig).build()
 
   behavior of "WorkItemSubscriberEventRepositoryFactory.apply"
 
