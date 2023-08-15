@@ -32,6 +32,7 @@ import uk.gov.hmrc.eventhub.config.TestModels._
 import uk.gov.hmrc.eventhub.model.TestModels._
 import uk.gov.hmrc.eventhub.subscription.http.{HttpClient, HttpEventRequestBuilder, HttpRetryHandler}
 import org.mockito.ArgumentMatchersSugar.*
+import uk.gov.hmrc.eventhub.model.Event
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -56,10 +57,11 @@ class SubscriberEventHttpFlowSpec
   }
 
   it should "handle retry calling the function returned from `httpRetryHandler.shouldRetry` * `subscriber.maxRetries`" in new Scope {
+    val requestWithEvent: (HttpRequest, Event) = (httpRequest, event)
     when(httpClient.singleRequest(httpRequest)).thenAnswer(Future.successful(httpResponse))
     when(httpRetryHandler.shouldRetry(*, *))
-      .thenAnswer(Some(httpRequest, event))
-      .andThenAnswer(Some(httpRequest, event))
+      .thenAnswer(Some(requestWithEvent))
+      .andThenAnswer(Some(requestWithEvent))
 
     Source
       .single(httpRequest -> event)

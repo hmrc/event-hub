@@ -20,20 +20,18 @@ import org.mockito.IdiomaticMockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Configuration
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.eventhub.config.TopicName
 import uk.gov.hmrc.eventhub.model.TestModels.channelPreferences
 import uk.gov.hmrc.eventhub.modules.MongoSetup
-import uk.gov.hmrc.integration.ServiceSpec
 import uk.gov.hmrc.mongo.MongoComponent
 
 import scala.concurrent.ExecutionContext
 
 class WorkItemSubscriberEventRepositoryFactorySpec
-    extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with ServiceSpec {
-
-  override def externalServices: Seq[String] = Seq.empty[String]
+    extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with GuiceOneServerPerSuite {
 
   behavior of "WorkItemSubscriberEventRepositoryFactory.apply"
 

@@ -22,12 +22,13 @@ import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import play.api.Configuration
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.{Application, Configuration}
 import uk.gov.hmrc.eventhub.config.TopicName
 import uk.gov.hmrc.eventhub.model.TestModels.{channelPreferences, event}
 import uk.gov.hmrc.mongo.MongoComponent
 import play.api.libs.ws.WSClient
-import uk.gov.hmrc.integration.ServiceSpec
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.{InProgress, PermanentlyFailed, ToDo}
 
 import java.time.Instant
@@ -35,14 +36,12 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
 
 class SubscriberQueueRepositorySpec
-    extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with ServiceSpec {
+    extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with GuiceOneServerPerSuite {
 
   lazy val ttlInSecondsEvent = 300
   lazy val ttlInSecondsSubscribers = 300
 
-  override def externalServices: Seq[String] = Seq.empty[String]
-
-  override def additionalConfig: Map[String, Any] =
+  def additionalConfig: Map[String, Any] =
     Map(
       "application.router"                        -> "testOnlyDoNotUseInAppConf.Routes",
       "metrics.enabled"                           -> false,
@@ -52,6 +51,9 @@ class SubscriberQueueRepositorySpec
       "event-repo.expire-after-seconds-ttl"       -> ttlInSecondsEvent,
       "subscriber-repos.expire-after-seconds-ttl" -> ttlInSecondsSubscribers
     )
+
+  override def fakeApplication(): Application =
+    new GuiceApplicationBuilder().configure(additionalConfig).build()
 
   behavior of "SubscriberQueueRepository.now"
 

@@ -20,25 +20,25 @@ import org.mockito.IdiomaticMockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import play.api.Configuration
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.{Application, Configuration}
+import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.eventhub.config.TestModels.emails
 import uk.gov.hmrc.eventhub.config.TopicName
 import uk.gov.hmrc.eventhub.model.TestModels.{channelPreferences, toConfigMap}
-import uk.gov.hmrc.integration.ServiceSpec
 import uk.gov.hmrc.mongo.MongoComponent
 
 import java.time.{Duration, Instant}
 import scala.concurrent.ExecutionContext
 
-class MongoSetupSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with ServiceSpec {
+class MongoSetupSpec
+    extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with GuiceOneServerPerSuite {
 
   lazy val ttlInSecondsEvent = 10
   lazy val ttlInSecondsSubscribers = 12
   val inProgressRetryAfterInHours = 24
 
-  override def externalServices: Seq[String] = Seq.empty[String]
-
-  override def additionalConfig: Map[String, _ <: Any] =
+  def additionalConfig: Map[String, _ <: Any] =
     Map(
       "application.router"                        -> "testOnlyDoNotUseInAppConf.Routes",
       "metrics.enabled"                           -> false,
@@ -48,6 +48,9 @@ class MongoSetupSpec extends AnyFlatSpec with Matchers with IdiomaticMockito wit
       "subscriber-repos.expire-after-seconds-ttl" -> ttlInSecondsSubscribers,
       "topics"                                    -> toConfigMap(channelPreferences, TopicName("email"))
     )
+
+  override def fakeApplication(): Application =
+    new GuiceApplicationBuilder().configure(additionalConfig).build()
 
   behavior of "MongoSetup.collectionName"
 
