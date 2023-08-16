@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,11 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.{DefaultTestServerFactory, RunningServer}
+import uk.gov.hmrc.eventhub.UrlHelper.-/
 import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.subscription.SubscriberConfigOps
 import uk.gov.hmrc.eventhub.subscription.model.{SubscriberServers, SubscriberStub, TestTopic}
-import uk.gov.hmrc.integration.UrlHelper.-/
 import uk.gov.hmrc.mongo.MongoComponent
 
 import scala.concurrent.Future

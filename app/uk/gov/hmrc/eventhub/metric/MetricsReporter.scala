@@ -25,7 +25,7 @@ trait MetricsReporter {
   def incrementEventPublishedCount(event: Event, topicName: TopicName): Unit
   def incrementDuplicateEventCount(event: Event, topicName: TopicName): Unit
   def incrementSubscriptionEventEnqueuedCount(subscriber: Subscriber): Unit
-  def incrementSubscriptionPublishedCount(subscriber: Subscriber)
+  def incrementSubscriptionPublishedCount(subscriber: Subscriber): Unit
   def incrementSubscriptionRetry(subscriber: Subscriber, failedStatus: FailedStatus): Unit
   def incrementSubscriptionFailure(subscriber: Subscriber): Unit
   def incrementSubscriptionPermanentFailure(subscriber: Subscriber): Unit

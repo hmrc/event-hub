@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.io.File
 import java.util.UUID
 
 class PublishEventISpec extends ISpec {
-  override def externalServices: Seq[String] = Seq.empty[String]
   lazy val eventRepository: EventRepository = app.injector.instanceOf[EventRepository]
 
   override def additionalConfig: Map[String, _ <: Any] =
@@ -69,7 +68,6 @@ class PublishEventISpec extends ISpec {
 
       val events = eventRepository.find(UUID.fromString("1ebbc004-d2ce-11eb-b8bc-0242ac130003"))
       await(events).size mustBe 1
-
     }
 
     "return 404 if topic is not configured" in {

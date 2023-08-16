@@ -67,6 +67,7 @@ object PublishEventAuditor {
     val map = Json
       .toJsObject(event)
       .value
+      .view
       .mapValues(_.toString())
       .toMap + ("reason" -> exception.getMessage)
 
