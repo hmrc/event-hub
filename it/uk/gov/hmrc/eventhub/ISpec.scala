@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,20 @@
 package uk.gov.hmrc.eventhub
 
 import org.mongodb.scala.{MongoClient, MongoDatabase}
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.concurrent.IntegrationPatience
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, SuiteMixin, TestSuite}
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.{Application, Environment, Logger, Mode}
 import play.api.libs.ws.WSClient
+import uk.gov.hmrc.eventhub.UrlHelper.-/
 import uk.gov.hmrc.eventhub.modules.MongoSetup
-import uk.gov.hmrc.integration.ServiceSpec
 import uk.gov.hmrc.mongo.MongoComponent
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import scala.concurrent.ExecutionContext
 
 trait ISpec extends PlaySpec with ServiceSpec with BeforeAndAfterEach with IntegrationPatience {
@@ -46,4 +51,61 @@ trait ISpec extends PlaySpec with ServiceSpec with BeforeAndAfterEach with Integ
     val mongoDatabase: MongoDatabase = mongoClient.getDatabase(testName)
 //    mongoDatabase.drop().toFuture().futureValue
   }
+}
+
+trait ServiceSpec
+    extends SuiteMixin with BeforeAndAfterAll with ScalaFutures with IntegrationPatience with GuiceOneServerPerSuite {
+  this: TestSuite =>
+
+  private val logger = Logger(getClass)
+
+  override def fakeApplication(): Application = {
+    logger.info(s"""Starting application with additional config:
+                   |  ${configMap.mkString("\n  ")}""".stripMargin)
+    GuiceApplicationBuilder()
+      .configure(configMap)
+      .build()
+  }
+
+  def additionalConfig: Map[String, _ <: Any] =
+    Map.empty
+
+  def testName: String =
+    getClass.getSimpleName
+
+  protected val testId =
+    TestId(testName)
+
+  protected def serviceMongoUri =
+    s"mongodb://localhost:27017/${testId.toString}"
+
+  private lazy val mongoConfig =
+    Map(s"mongodb.uri" -> serviceMongoUri)
+
+  private lazy val configMap =
+    mongoConfig ++
+      additionalConfig
+
+  def resource(path: String): String =
+    s"http://localhost:$port/${-/(path)}"
+
+  override def beforeAll(): Unit =
+    super.beforeAll()
+
+  override def afterAll(): Unit =
+    super.afterAll()
+}
+
+object UrlHelper {
+  def -/(uri: String) =
+    if (uri.startsWith("/")) uri.drop(1) else uri
+}
+
+case class TestId(testName: String) {
+
+  val runId =
+    DateTimeFormatter.ofPattern("HHmmssSSS").format(LocalDateTime.now())
+
+  override val toString =
+    s"${testName.toLowerCase.take(30)}-$runId"
 }

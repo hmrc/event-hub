@@ -27,7 +27,7 @@ import scala.reflect.{ClassTag, classTag}
 
 trait LogCapturing {
 
-  def withCaptureOfLoggingFrom(logger: LogbackLogger)(body: (=> List[ILoggingEvent]) => Any) {
+  def withCaptureOfLoggingFrom(logger: LogbackLogger)(body: (=> List[ILoggingEvent]) => Any): Unit = {
     val appender = new ListAppender[ILoggingEvent]()
     appender.setContext(logger.getLoggerContext)
     appender.start()
@@ -37,9 +37,8 @@ trait LogCapturing {
     body(appender.list.asScala.toList)
   }
 
-  def withCaptureOfLoggingFrom(logger: LoggerLike)(body: (=> List[ILoggingEvent]) => Unit) {
+  def withCaptureOfLoggingFrom(logger: LoggerLike)(body: (=> List[ILoggingEvent]) => Unit): Unit =
     withCaptureOfLoggingFrom(logger.logger.asInstanceOf[LogbackLogger])(body)
-  }
 
   def withCaptureOfLoggingFrom[T: ClassTag](body: (=> List[ILoggingEvent]) => Any): Any = {
     val logger = LoggerFactory.getLogger(classTag[T].runtimeClass).asInstanceOf[LogbackLogger]
