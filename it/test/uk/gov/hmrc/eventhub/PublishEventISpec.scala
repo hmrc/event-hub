@@ -44,7 +44,7 @@ class PublishEventISpec extends ISpec {
       val response = wsClient
         .url(resource(s"/event-hub/publish/$topic"))
         .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
-        .post(new File("./it/test/resources/valid-event.json"))
+        .post(new File("./test/resources/valid-event.json"))
         .futureValue
       response.status mustBe 201
       response.body mustBe """{"publishedSubscribers":["channel-preferences-bounced"]}"""
@@ -55,14 +55,14 @@ class PublishEventISpec extends ISpec {
       val response1 = wsClient
         .url(resource(s"/event-hub/publish/$topic"))
         .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
-        .post(new File("./it/test/resources/valid-event.json"))
+        .post(new File("./test/resources/valid-event.json"))
         .futureValue
       response1.status mustBe 201
 
       val response2 = wsClient
         .url(resource(s"/event-hub/publish/$topic"))
         .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
-        .post(new File("./it/test/resources/valid-event.json"))
+        .post(new File("./test/resources/valid-event.json"))
         .futureValue
       response2.status mustBe 201
 
@@ -75,7 +75,7 @@ class PublishEventISpec extends ISpec {
       val response = wsClient
         .url(resource(s"/event-hub/publish/$topic"))
         .withHttpHeaders((HeaderNames.CONTENT_TYPE, ContentTypes.JSON))
-        .post(new File("./it/test/resources/valid-event-min.json"))
+        .post(new File("./test/resources/valid-event-min.json"))
         .futureValue
       response.status mustBe 404
     }
