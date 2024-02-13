@@ -19,7 +19,7 @@ package uk.gov.hmrc.eventhub.metric
 import org.apache.pekko.actor.{ActorRef, ActorSystem}
 import org.apache.pekko.pattern.ask
 import org.apache.pekko.util.Timeout
-import uk.gov.hmrc.eventhub.metric.AkkaTimers.{Start, Stop}
+import uk.gov.hmrc.eventhub.metric.ActorTimers.{Start, Stop}
 import uk.gov.hmrc.eventhub.metric.Timers.{CompletedTimer, RunningTimer}
 
 import scala.concurrent.Future
@@ -31,7 +31,7 @@ class BoundedTimers(
 )(implicit actorSystem: ActorSystem)
     extends Timers {
   private implicit val timeout: Timeout = Timeout(3.seconds)
-  private val timers: ActorRef = AkkaTimers.apply(maxTimers, actorSystem)
+  private val timers: ActorRef = ActorTimers.apply(maxTimers, actorSystem)
 
   override def startTimer(metricName: String): Future[RunningTimer] =
     (timers ? Start(metricName, clock.currentTime)).mapTo[RunningTimer]

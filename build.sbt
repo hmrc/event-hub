@@ -1,5 +1,4 @@
 import com.iheart.sbtPlaySwagger.SwaggerPlugin.autoImport.swaggerDomainNameSpaces
-import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 
 val appName = "event-hub"
 

@@ -21,69 +21,69 @@ import org.apache.pekko.testkit.{ImplicitSender, TestKit}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
-import uk.gov.hmrc.eventhub.metric.AkkaTimers.{Start, Stop}
+import uk.gov.hmrc.eventhub.metric.ActorTimers.{Start, Stop}
 import uk.gov.hmrc.eventhub.metric.Timers.{CompletedTimer, RunningTimer}
 
-class AkkaTimersSpec
-    extends TestKit(ActorSystem("AkkaTimersSpec")) with ImplicitSender with AnyFlatSpecLike with Matchers
+class ActorTimersSpec
+    extends TestKit(ActorSystem("ActorTimersSpec")) with ImplicitSender with AnyFlatSpecLike with Matchers
     with BeforeAndAfterAll {
 
   override def afterAll(): Unit =
     TestKit.shutdownActorSystem(system)
 
-  behavior of "AkkaTimers"
+  behavior of "ActorTimers"
 
   it should "return a running timer" in {
-    val akkaTimers = AkkaTimers.apply(1, system)
+    val actorTimers = ActorTimers.apply(1, system)
     val metricName = "test"
     val millis = System.currentTimeMillis()
 
-    akkaTimers ! Start(metricName, millis)
+    actorTimers ! Start(metricName, millis)
     expectMsg(RunningTimer(millis))
   }
 
   it should "return a completed timer" in {
-    val akkaTimers = AkkaTimers.apply(1, system)
+    val actorTimers = ActorTimers.apply(1, system)
     val metricName = "test"
     val start = System.currentTimeMillis()
 
-    akkaTimers ! Start(metricName, start)
+    actorTimers ! Start(metricName, start)
     expectMsg(RunningTimer(start))
 
     val end = System.currentTimeMillis()
 
-    akkaTimers ! Stop(metricName, end)
+    actorTimers ! Stop(metricName, end)
     expectMsg(Some(CompletedTimer(start, end)))
   }
 
   it should "return none when the timer for a metric is not running" in {
-    val akkaTimers = AkkaTimers.apply(1, system)
+    val actorTimers = ActorTimers.apply(1, system)
     val metricName = "test"
     val end = System.currentTimeMillis()
 
-    akkaTimers ! Stop(metricName, end)
+    actorTimers ! Stop(metricName, end)
     expectMsg(None)
   }
 
   it should "return none when the timer for a metric that was running is dropped" in {
-    val akkaTimers = AkkaTimers.apply(1, system)
+    val actorTimers = ActorTimers.apply(1, system)
     val metricName = "test"
     val start = System.currentTimeMillis()
 
-    akkaTimers ! Start(metricName, start)
+    actorTimers ! Start(metricName, start)
     expectMsg(RunningTimer(start))
 
-    akkaTimers ! Start("foo", start)
+    actorTimers ! Start("foo", start)
     expectMsg(RunningTimer(start))
 
     val end = System.currentTimeMillis()
 
-    akkaTimers ! Stop(metricName, end)
+    actorTimers ! Stop(metricName, end)
     expectMsg(None)
   }
 
-  it should "fail to instance akka timers when maxTimers is not > 0" in {
-    the[IllegalArgumentException] thrownBy AkkaTimers.apply(
+  it should "fail to instance actor timers when maxTimers is not > 0" in {
+    the[IllegalArgumentException] thrownBy ActorTimers.apply(
       -1,
       system
     ) should have message "requirement failed: max timers must be > 0"
