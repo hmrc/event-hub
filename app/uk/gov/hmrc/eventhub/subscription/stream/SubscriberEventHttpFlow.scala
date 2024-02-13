@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.eventhub.subscription.stream
 
-import akka.NotUsed
-import akka.http.scaladsl.model._
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Flow, RetryFlow}
+import org.apache.pekko.NotUsed
+import org.apache.pekko.http.scaladsl.model._
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.{Flow, RetryFlow}
 import play.api.Logging
 import uk.gov.hmrc.eventhub.config.Subscriber
 import uk.gov.hmrc.eventhub.model.Event

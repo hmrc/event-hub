@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub
 
-import akka.http.scaladsl.model.StatusCode
+import org.apache.pekko.http.scaladsl.model.StatusCode
 import com.github.tomakehurst.wiremock.client.WireMock.{equalTo, equalToJson}
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import play.api.libs.json.Json

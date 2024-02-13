@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.model
 
-import akka.http.scaladsl.model.{HttpMethods, Uri}
+import org.apache.pekko.http.scaladsl.model.{HttpMethods, Uri}
 import org.bson.types.ObjectId
 import play.api.libs.json.Json
 import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}

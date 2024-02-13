@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.eventhub.config
 
-import akka.http.scaladsl.model.HttpMethod
-import akka.http.scaladsl.model.HttpMethods.POST
+import org.apache.pekko.http.scaladsl.model.HttpMethod
+import org.apache.pekko.http.scaladsl.model.HttpMethods.POST
 import com.typesafe.config.Config
 import play.api.ConfigLoader
 import pureconfig.ConfigSource

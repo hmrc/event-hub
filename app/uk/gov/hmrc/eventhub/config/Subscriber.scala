@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.config
 
-import akka.http.scaladsl.model.{HttpMethod, Uri}
+import org.apache.pekko.http.scaladsl.model.{HttpMethod, Uri}
 import cats.syntax.option._
 import cats.syntax.either._
 import cats.syntax.parallel._

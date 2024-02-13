@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.eventhub.subscription.http
 
-import akka.http.scaladsl.HttpExt
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
+import org.apache.pekko.http.scaladsl.HttpExt
+import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse}
 import uk.gov.hmrc.eventhub.config.Subscriber
 import uk.gov.hmrc.eventhub.metric.MetricsReporter
 
@@ -27,7 +27,7 @@ trait HttpClient {
   def singleRequest(httpRequest: HttpRequest): Future[HttpResponse]
 }
 
-class AkkaHttpClient(
+class PekkoHttpClient(
   httpExt: HttpExt,
   subscriber: Subscriber,
   metricsReporter: MetricsReporter

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.subscription.http
 
-import akka.http.scaladsl.model.StatusCodes
+import org.apache.pekko.http.scaladsl.model.StatusCodes
 import play.api.Logging
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.subscription.stream.SubscriberEventHttpResponse

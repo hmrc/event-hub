@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.eventhub.cluster
 
-import akka.actor.Scheduler
-import akka.pattern.Patterns.after
+import org.apache.pekko.actor.Scheduler
+import org.apache.pekko.pattern.Patterns.after
 import org.bson.types.ObjectId
 import org.mongodb.scala.SingleObservable
 import org.mongodb.scala.model.Filters.equal

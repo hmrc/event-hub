@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.metric
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import org.apache.pekko.actor.{Actor, ActorRef, ActorSystem, Props}
 import play.api.Logging
 import uk.gov.hmrc.eventhub.metric.AkkaTimers.{Start, Stop}
 import uk.gov.hmrc.eventhub.metric.Timers.{CompletedTimer, RunningTimer}

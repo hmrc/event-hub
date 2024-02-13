@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.eventhub.subscription
 
-import akka.http.scaladsl.model.StatusCodes.{InternalServerError, OK}
-import akka.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.http.scaladsl.model.StatusCodes.{InternalServerError, OK}
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks

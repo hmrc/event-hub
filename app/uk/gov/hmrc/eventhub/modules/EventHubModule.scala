@@ -16,12 +16,11 @@
 
 package uk.gov.hmrc.eventhub.modules
 
-import akka.actor.{ActorSystem, Scheduler}
-import akka.pattern.FutureTimeoutSupport
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
+import org.apache.pekko.pattern.FutureTimeoutSupport
 import com.google.inject.{AbstractModule, Provides}
-import com.kenshoo.play.metrics.Metrics
 import play.api.Configuration
-import play.api.libs.concurrent.AkkaGuiceSupport
+import play.api.libs.concurrent.PekkoGuiceSupport
 import uk.gov.hmrc.eventhub.config.{PublisherConfig, ServiceInstancesConfig, SubscriberStreamConfig, SubscriptionDefaults, Topic}
 import uk.gov.hmrc.eventhub.metric.{BoundedTimers, Clock, DisabledMetricsReporter, MetricsReporter, MetricsReporterImpl, Timers}
 import uk.gov.hmrc.eventhub.repository.{EventRepository, SubscriberEventRepositoryFactory, WorkItemSubscriberEventRepositoryFactory}
@@ -30,11 +29,12 @@ import uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptions
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.play.bootstrap.config.AppName
+import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 import javax.inject.Singleton
 import scala.concurrent.ExecutionContext
 
-class EventHubModule extends AbstractModule with AkkaGuiceSupport with FutureTimeoutSupport {
+class EventHubModule extends AbstractModule with PekkoGuiceSupport with FutureTimeoutSupport {
   override def configure(): Unit = {
     bind(classOf[SubscriberEventRepositoryFactory])
       .to(classOf[WorkItemSubscriberEventRepositoryFactory])

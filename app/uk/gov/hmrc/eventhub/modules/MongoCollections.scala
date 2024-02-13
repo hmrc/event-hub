@@ -80,7 +80,7 @@ class MongoSetup @Inject() (mongo: MongoComponent, configuration: Configuration,
           )
         ) ++ indexes
 
-        override def ensureIndexes: Future[Seq[String]] =
+        override def ensureIndexes(): Future[Seq[String]] =
           MongoUtils.ensureIndexes(collection, augmentedIndexes, true)
 
         override def inProgressRetryAfter: Duration =

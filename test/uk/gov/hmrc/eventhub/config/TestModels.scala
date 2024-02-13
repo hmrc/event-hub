@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.config
 
-import akka.http.scaladsl.model.{HttpMethods, Uri}
+import org.apache.pekko.http.scaladsl.model.{HttpMethods, Uri}
 import com.jayway.jsonpath.JsonPath
 
 import scala.concurrent.duration._

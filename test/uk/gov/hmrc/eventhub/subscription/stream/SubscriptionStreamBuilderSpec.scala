@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.eventhub.subscription.stream
 
-import akka.NotUsed
-import akka.actor.ActorSystem
-import akka.stream.Materializer
-import akka.stream.scaladsl.Source
-import com.kenshoo.play.metrics.Metrics
+import org.apache.pekko.NotUsed
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.Source
 import org.mockito.IdiomaticMockito
 import org.mockito.MockitoSugar.when
 import org.scalatest.concurrent.ScalaFutures
@@ -32,6 +31,7 @@ import uk.gov.hmrc.eventhub.config.{SubscriberStreamBackoffConfig, SubscriberStr
 import uk.gov.hmrc.eventhub.metric.{MetricsReporterImpl, Timers}
 import uk.gov.hmrc.eventhub.repository.{SubscriberEventRepository, SubscriberEventRepositoryFactory}
 import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.EventSendStatus
+import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._

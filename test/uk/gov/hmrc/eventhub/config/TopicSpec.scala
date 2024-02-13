@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.config
 
-import akka.http.scaladsl.model.HttpMethods.PUT
+import org.apache.pekko.http.scaladsl.model.HttpMethods.PUT
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

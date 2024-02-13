@@ -3,6 +3,9 @@ import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 
 val appName = "event-hub"
 
+Global / majorVersion := 2
+Global / scalaVersion := "2.13.12"
+
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(
     play.sbt.PlayScala,
@@ -13,16 +16,12 @@ lazy val microservice = Project(appName, file("."))
   )
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(
-    majorVersion := 2,
-    scalaVersion := "2.13.8",
     libraryDependencies ++= Dependencies.libraries,
     scalacOptions ++= List("-Wconf:cat=unused-imports&src=.*routes.*:s")
   )
-  .configs(IntegrationTest)
-  .settings(integrationTestSettings(): _*)
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(ScoverageSettings())
-  .settings(inConfig(IntegrationTest)(org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings))
+  .settings(inConfig(Test)(org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings))
 
 lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
 compileScalastyle := (Compile / scalastyle).toTask("").value
@@ -40,5 +39,6 @@ swaggerPrettyJson := true
 swaggerRoutesFile := "prod.routes"
 swaggerV3 := true
 
-dependencyUpdatesFailBuild := false
-Compile / compile := ((Compile / compile) dependsOn dependencyUpdates).value
+lazy val it = (project in file("it"))
+  .enablePlugins(PlayScala)
+  .dependsOn(`microservice` % "test->test")

@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.eventhub.metric
 
-import akka.actor.ActorSystem
-import akka.testkit.TestKit
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.testkit.TestKit
 import org.mockito.IdiomaticMockito
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures

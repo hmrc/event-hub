@@ -17,8 +17,8 @@
 package uk.gov.hmrc.eventhub.subscription.http
 
 import cats.syntax.option._
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, RequestTimeoutException, StatusCodes}
-import akka.stream.Materializer
+import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse, RequestTimeoutException, StatusCodes}
+import org.apache.pekko.stream.Materializer
 import uk.gov.hmrc.eventhub.config.Subscriber
 import uk.gov.hmrc.eventhub.metric.MetricsReporter
 import uk.gov.hmrc.eventhub.metric.MetricsReporter.{ExceptionalStatus, HttpStatus}

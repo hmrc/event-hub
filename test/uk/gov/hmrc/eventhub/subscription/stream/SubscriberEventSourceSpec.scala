@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.eventhub.subscription.stream
 
-import akka.actor.ActorSystem
-import akka.stream.Materializer
-import akka.stream.scaladsl.Sink
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.Sink
 import org.mockito.IdiomaticMockito
 import org.mockito.IdiomaticMockitoBase.AtLeast
 import org.mockito.MockitoSugar.when

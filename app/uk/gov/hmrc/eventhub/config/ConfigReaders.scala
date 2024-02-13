@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.eventhub.config
 
-import akka.http.scaladsl.model.HttpMethods.{POST, PUT}
-import akka.http.scaladsl.model.{HttpMethod, HttpMethods, Uri}
+import org.apache.pekko.http.scaladsl.model.HttpMethods.{POST, PUT}
+import org.apache.pekko.http.scaladsl.model.{HttpMethod, HttpMethods, Uri}
 import com.jayway.jsonpath.JsonPath
 import pureconfig.{ConfigCursor, ConfigReader}
 

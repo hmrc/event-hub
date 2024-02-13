@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.eventhub.subscription.http
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.model.HttpMethods.POST
-import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError, OK, TooManyRequests}
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, RequestTimeoutException}
-import akka.stream.Materializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.model.HttpMethods.POST
+import org.apache.pekko.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError, OK, TooManyRequests}
+import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse, RequestTimeoutException}
+import org.apache.pekko.stream.Materializer
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito
 import org.scalatest.flatspec.AnyFlatSpec

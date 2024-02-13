@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub
 
-import akka.http.scaladsl.model.HttpMethods
+import org.apache.pekko.http.scaladsl.model.HttpMethods
 import org.mongodb.scala.bson.BsonDocument
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.test.Helpers.{await, defaultAwaitTimeout}

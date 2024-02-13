@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.utils
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig

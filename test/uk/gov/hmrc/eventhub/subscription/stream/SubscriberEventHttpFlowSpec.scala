@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.eventhub.subscription.stream
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse}
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import org.mockito.IdiomaticMockito
 import org.mockito.IdiomaticMockitoBase.Times
 import org.mockito.MockitoSugar.when
