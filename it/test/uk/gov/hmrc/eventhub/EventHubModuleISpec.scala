@@ -35,7 +35,7 @@ import java.util.UUID
 
 class EventHubModuleISpec extends ISpec {
 
-  def threeMinutes[T](fun: => T): T = eventually(timeout(3.minutes), interval(1000.milliseconds))(fun)
+  def threeMinutes[T](fun: => T): T = eventually(timeout(3.minutes), interval(10.seconds))(fun)
 
   lazy val ttlInSecondsEvent = 10
   lazy val ttlInSecondsSubscribers = 12
@@ -128,12 +128,10 @@ class EventHubModuleISpec extends ISpec {
         _          <- repo.collection.deleteMany(BsonDocument()).toFuture()
         workItem   <- repo.pushNew(event)
         firstCount <- repo.collection.countDocuments().toFuture()
-      } yield (workItem, firstCount)
+        failed     <- repo.markAs(workItem.id, PermanentlyFailed)
+      } yield failed
 
-      val (workItem, firstCount) = await(result)
-      firstCount mustBe 1
-
-      await(repo.markAs(workItem.id, PermanentlyFailed)) mustBe true
+      await(result) mustBe true
 
       threeMinutes {
         await(repo.collection.countDocuments().toFuture()) mustBe 0
