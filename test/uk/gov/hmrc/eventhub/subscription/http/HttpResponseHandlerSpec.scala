@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.subscription.http
 
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
+import org.apache.pekko.http.scaladsl.model.{HttpResponse, StatusCodes}
 import cats.syntax.option._
 import org.mockito.IdiomaticMockito
 import org.mockito.MockitoSugar.when

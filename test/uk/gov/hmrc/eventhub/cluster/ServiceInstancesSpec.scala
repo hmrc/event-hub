@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.cluster
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import org.bson.types.ObjectId
 import org.mockito.MockitoSugar.mock
 import org.scalatest.BeforeAndAfterEach

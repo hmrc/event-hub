@@ -17,10 +17,10 @@
 package uk.gov.hmrc.eventhub.metric
 
 import com.codahale.metrics.Gauge
-import com.kenshoo.play.metrics.Metrics
 import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.eventhub.metric.MetricsReporter.{EventMetricsOps, FailedStatus, SubscriberMetricsOps}
 import uk.gov.hmrc.eventhub.model.Event
+import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext

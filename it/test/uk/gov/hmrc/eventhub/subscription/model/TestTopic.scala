@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.subscription.model
 
-import akka.http.scaladsl.model.StatusCode
+import org.apache.pekko.http.scaladsl.model.StatusCode
 import uk.gov.hmrc.eventhub.config.{Topic, TopicName}
 
 case class TestTopic(topicName: TopicName, subscriberStubs: List[SubscriberStub])

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.subscription.stream
 
-import akka.http.scaladsl.model.HttpResponse
+import org.apache.pekko.http.scaladsl.model.HttpResponse
 import uk.gov.hmrc.eventhub.config.Subscriber
 import uk.gov.hmrc.eventhub.model.Event
 

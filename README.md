@@ -274,4 +274,4 @@ If your build fails due to poor test coverage, *DO NOT* lower the test coverage 
 
 Then run the integration tests:
 
-`sbt it:test`
+`sbt it/test`

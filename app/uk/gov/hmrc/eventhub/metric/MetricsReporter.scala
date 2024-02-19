@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.metric
 
-import akka.http.scaladsl.model.StatusCode
+import org.apache.pekko.http.scaladsl.model.StatusCode
 import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.eventhub.metric.MetricsReporter.FailedStatus
 import uk.gov.hmrc.eventhub.model.Event

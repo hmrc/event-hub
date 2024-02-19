@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.eventhub.controllers
 
-import akka.stream.Materializer
-import akka.stream.testkit.NoMaterializer
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.testkit.NoMaterializer
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar.mock

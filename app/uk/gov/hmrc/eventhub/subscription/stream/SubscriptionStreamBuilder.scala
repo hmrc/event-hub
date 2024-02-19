@@ -16,19 +16,19 @@
 
 package uk.gov.hmrc.eventhub.subscription.stream
 
-import akka.NotUsed
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.stream.Attributes
-import akka.stream.Attributes.LogLevels
-import akka.stream.scaladsl.{RestartSource, Source}
+import org.apache.pekko.NotUsed
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.stream.Attributes
+import org.apache.pekko.stream.Attributes.LogLevels
+import org.apache.pekko.stream.scaladsl.{RestartSource, Source}
 import uk.gov.hmrc.eventhub.cluster.ServiceInstances
 import uk.gov.hmrc.eventhub.config.{Subscriber, SubscriberStreamConfig, TopicName}
 import uk.gov.hmrc.eventhub.metric.MetricsReporter
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.repository.SubscriberEventRepositoryFactory
 import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.EventSendStatus
-import uk.gov.hmrc.eventhub.subscription.http.{AkkaHttpClient, HttpEventRequestBuilder, HttpResponseHandler, HttpRetryHandlerImpl}
+import uk.gov.hmrc.eventhub.subscription.http.{HttpEventRequestBuilder, HttpResponseHandler, HttpRetryHandlerImpl, PekkoHttpClient}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
@@ -49,7 +49,7 @@ class SubscriptionStreamBuilder @Inject() (
     ).source
     val requestBuilder = (event: Event) => HttpEventRequestBuilder.build(subscriber, event) -> event
     val httpRetryHandler = new HttpRetryHandlerImpl(subscriber, metricsReporter)
-    val httpClient = new AkkaHttpClient(Http(), subscriber, metricsReporter)
+    val httpClient = new PekkoHttpClient(Http(), subscriber, metricsReporter)
     val httpFlow = new SubscriberEventHttpFlow(subscriber, httpRetryHandler, httpClient).flow
     val responseHandler = new HttpResponseHandler(repository, metricsReporter).handle(_)
 

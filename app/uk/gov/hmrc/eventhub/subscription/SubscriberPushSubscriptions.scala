@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.eventhub.subscription
 
-import akka.NotUsed
-import akka.stream.scaladsl.{Keep, Sink}
-import akka.stream.{KillSwitches, Materializer, SharedKillSwitch}
+import org.apache.pekko.NotUsed
+import org.apache.pekko.stream.scaladsl.{Keep, Sink}
+import org.apache.pekko.stream.{KillSwitches, Materializer, SharedKillSwitch}
 import play.api.Logging
 import play.api.inject.ApplicationLifecycle
 import uk.gov.hmrc.eventhub.config.Topic

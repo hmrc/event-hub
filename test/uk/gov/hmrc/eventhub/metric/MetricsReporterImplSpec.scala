@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.eventhub.metric
 
-import akka.http.scaladsl.model.StatusCodes.TooManyRequests
+import org.apache.pekko.http.scaladsl.model.StatusCodes.TooManyRequests
 import com.codahale.metrics.{Counter, Gauge, Histogram, MetricRegistry}
-import com.kenshoo.play.metrics.Metrics
 import org.mockito.IdiomaticMockito
 import org.mockito.ArgumentMatchersSugar.*
 import org.scalatest.concurrent.Eventually.eventually
@@ -29,6 +28,7 @@ import uk.gov.hmrc.eventhub.config.TestModels.{EmailTopic, subscriber}
 import uk.gov.hmrc.eventhub.metric.MetricsReporter.{ExceptionalStatus, HttpStatus}
 import uk.gov.hmrc.eventhub.metric.Timers.{CompletedTimer, RunningTimer}
 import uk.gov.hmrc.eventhub.model.TestModels.event
+import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

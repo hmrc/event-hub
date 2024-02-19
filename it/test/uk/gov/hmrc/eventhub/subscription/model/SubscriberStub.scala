@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.subscription.model
 
-import akka.http.scaladsl.model.{HttpMethods, StatusCode}
+import org.apache.pekko.http.scaladsl.model.{HttpMethods, StatusCode}
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, put, urlEqualTo}
 import com.github.tomakehurst.wiremock.matching.UrlPattern
 import com.github.tomakehurst.wiremock.stubbing.StubMapping

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.config
 
-import akka.stream.RestartSettings
+import org.apache.pekko.stream.RestartSettings
 
 import scala.concurrent.duration.FiniteDuration
 
