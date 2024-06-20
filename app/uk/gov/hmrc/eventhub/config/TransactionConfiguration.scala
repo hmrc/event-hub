@@ -18,10 +18,19 @@ package uk.gov.hmrc.eventhub.config
 
 import org.mongodb.scala.{ClientSessionOptions, ReadConcern, TransactionOptions, WriteConcern}
 
+import java.util.concurrent.TimeUnit
+
 object TransactionConfiguration {
   val sessionOptions: ClientSessionOptions =
     ClientSessionOptions.builder().causallyConsistent(true).build()
 
+  lazy val maxCommitTime = 15000
+
   val transactionOptions: TransactionOptions =
-    TransactionOptions.builder().readConcern(ReadConcern.SNAPSHOT).writeConcern(WriteConcern.MAJORITY).build()
+    TransactionOptions
+      .builder()
+      .readConcern(ReadConcern.SNAPSHOT)
+      .writeConcern(WriteConcern.MAJORITY)
+      .maxCommitTime(maxCommitTime, TimeUnit.MILLISECONDS)
+      .build()
 }
