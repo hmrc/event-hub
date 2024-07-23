@@ -20,7 +20,7 @@ import sbt._
 object Dependencies {
 
   object Library {
-    val PekkoHttp = "org.apache.pekko"          %% "pekko-http"                        % "1.0.0"
+    val PekkoHttp = "org.apache.pekko"          %% "pekko-http"                        % "1.0.1"
     val PekkoActorTyped = "org.apache.pekko"    %% "pekko-actor-typed"                 % "1.0.2"
     val PekkoStream = "org.apache.pekko"        %% "pekko-stream"                      % "1.0.2"
     val Bootstrap = "uk.gov.hmrc"               %% "bootstrap-backend-play-30"         % "9.0.0"
