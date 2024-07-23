@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.eventhub.repository
 
-import org.mockito.IdiomaticMockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -32,7 +31,7 @@ import uk.gov.hmrc.mongo.MongoComponent
 import scala.concurrent.ExecutionContext
 
 class WorkItemSubscriberEventRepositoryFactorySpec
-    extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with GuiceOneServerPerSuite {
+    extends AnyFlatSpec with Matchers with ScalaFutures with GuiceOneServerPerSuite {
 
   protected def serviceMongoUri =
     s"mongodb://localhost:27017/${getClass.getSimpleName}"

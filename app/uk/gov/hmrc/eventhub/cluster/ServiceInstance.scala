@@ -32,5 +32,5 @@ object ServiceInstance {
   implicit val mongoFormat: OFormat[ServiceInstance] = (
     (JsPath \ "_id").format[ObjectId]
       ~ (JsPath \ "lastSeenAt").format[Instant]
-  )(ServiceInstance.apply, unlift(ServiceInstance.unapply))
+  )(ServiceInstance.apply, s => Tuple.fromProductTyped(s))
 }

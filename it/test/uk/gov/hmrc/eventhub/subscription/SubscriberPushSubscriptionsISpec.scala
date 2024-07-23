@@ -77,7 +77,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
   }
 
   it should "push events to all registered subscribers" in scope(bouncedEmails returning OK) { setup =>
-    forAll { eventList: List[Event] =>
+    forAll { (eventList: List[Event]) =>
       val sentEvents =
         Source(eventList)
           .mapAsyncUnordered(1)(event => setup.postToTopic(EmailTopic, event).map(_ -> event))
@@ -107,7 +107,7 @@ class SubscriberPushSubscriptionsISpec extends AnyFlatSpec with ISpec with Scala
   it should "apply retry with exponential back-off" in scope(
     channelPreferencesBouncedEmails returning InternalServerError
   ) { setup =>
-    forAll { event: Event =>
+    forAll { (event: Event) =>
       val response = setup
         .postToTopic(EmailTopic, event)
         .futureValue

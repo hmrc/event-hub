@@ -19,6 +19,7 @@ package uk.gov.hmrc.eventhub.model
 import org.mongodb.scala.ClientSession
 import org.mongodb.scala.bson.ObjectId
 import org.mongodb.scala.result.InsertOneResult
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.eventhub.model.SubscriberRepository.subscriberWorkItem
 import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem, WorkItemRepository}

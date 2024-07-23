@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.eventhub.modules
 
-import org.mockito.IdiomaticMockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.{Application, Configuration}
@@ -31,8 +31,7 @@ import uk.gov.hmrc.mongo.MongoComponent
 import java.time.{Duration, Instant}
 import scala.concurrent.ExecutionContext
 
-class MongoSetupSpec
-    extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with GuiceOneServerPerSuite {
+class MongoSetupSpec extends AnyFlatSpec with Matchers with ScalaFutures with GuiceOneServerPerSuite {
 
   lazy val ttlInSecondsEvent = 10
   lazy val ttlInSecondsSubscribers = 12

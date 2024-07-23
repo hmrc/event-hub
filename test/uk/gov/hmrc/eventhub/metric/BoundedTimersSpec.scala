@@ -18,16 +18,17 @@ package uk.gov.hmrc.eventhub.metric
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.testkit.TestKit
-import org.mockito.IdiomaticMockito
+import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.eventhub.metric.Timers.{CompletedTimer, RunningTimer}
 
 class BoundedTimersSpec
     extends TestKit(ActorSystem("BoundedTimersSpec")) with AnyFlatSpecLike with Matchers with BeforeAndAfterAll
-    with ScalaFutures with IdiomaticMockito {
+    with ScalaFutures with MockitoSugar {
 
   override def afterAll(): Unit =
     TestKit.shutdownActorSystem(system)
@@ -35,19 +36,19 @@ class BoundedTimersSpec
   behavior of "BoundedTimers"
 
   it should "return a running timer for a given metric name" in new Scope {
-    clock.currentTime returns startTime
+    when(clock.currentTime) thenReturn startTime
     boundedTimers
       .startTimer("foo")
       .futureValue shouldBe RunningTimer(startTime)
   }
 
   it should "return a completed timer for a given metric name" in new Scope {
-    clock.currentTime returns startTime
+    when(clock.currentTime) thenReturn startTime
     boundedTimers
       .startTimer("foo")
       .futureValue shouldBe RunningTimer(startTime)
 
-    clock.currentTime returns endTime
+    when(clock.currentTime) thenReturn endTime
     boundedTimers
       .stopTimer("foo")
       .futureValue shouldBe Some(CompletedTimer(startTime, endTime))

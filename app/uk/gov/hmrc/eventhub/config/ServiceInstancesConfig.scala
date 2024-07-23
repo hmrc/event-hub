@@ -18,14 +18,14 @@ package uk.gov.hmrc.eventhub.config
 
 import com.typesafe.config.Config
 import play.api.ConfigLoader
-import pureconfig.ConfigSource
-import pureconfig.generic.auto._
-
+import pureconfig.{ConfigConvert, ConfigSource}
+import pureconfig.generic.semiauto._
 import scala.concurrent.duration.FiniteDuration
 
 case class ServiceInstancesConfig(timeout: FiniteDuration, heartBeatInterval: FiniteDuration)
 
 object ServiceInstancesConfig {
+  implicit val configConvert: ConfigConvert[ServiceInstancesConfig] = deriveConvert[ServiceInstancesConfig]
   implicit val configReader: ConfigLoader[ServiceInstancesConfig] = (rootConfig: Config, path: String) =>
     ConfigSource.fromConfig(rootConfig.getConfig(path)).load[ServiceInstancesConfig] match {
       case Left(value) =>

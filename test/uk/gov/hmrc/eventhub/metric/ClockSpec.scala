@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.eventhub.metric
 
-import org.mockito.IdiomaticMockito
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class ClockSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
+class ClockSpec extends AnyFlatSpec with Matchers {
 
   behavior of "Clock.currentTime"
 

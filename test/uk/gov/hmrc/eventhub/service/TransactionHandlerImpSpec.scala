@@ -17,14 +17,16 @@
 package uk.gov.hmrc.eventhub.service
 
 import com.mongodb.MongoException
-import org.mockito.ArgumentMatchersSugar.{*, any}
-import org.mockito.IdiomaticMockito
-import org.mockito.MockitoSugar.when
+import org.mockito.ArgumentMatchers.*
+import org.mockito.Mockito.{doNothing, verify, when, atLeast as atLeastTimes}
+import org.mockito.invocation.InvocationOnMock
+import org.mockito.stubbing.Answer
 import org.mongodb.scala.{ClientSession, MongoClient, SingleObservable}
 import org.reactivestreams.{Publisher, Subscriber, Subscription}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.eventhub.config.TestModels.publisherConfig
 import uk.gov.hmrc.eventhub.config.TransactionConfiguration.{sessionOptions, transactionOptions}
 import uk.gov.hmrc.mongo.MongoComponent
@@ -32,7 +34,7 @@ import uk.gov.hmrc.mongo.MongoComponent
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class TransactionHandlerImpSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class TransactionHandlerImpSpec extends AnyFlatSpec with Matchers with MockitoSugar with ScalaFutures {
 
   behavior of "TransactionHandlerImpl.startTransactionSession"
 
@@ -45,7 +47,7 @@ class TransactionHandlerImpSpec extends AnyFlatSpec with Matchers with Idiomatic
   it should "return future unit when the transaction succeeds" in new Scope {
     transactionHandlerImpl
       .commit(clientSession)
-      .futureValue should be()
+      .futureValue shouldBe ()
   }
 
   it should "return failed future when the transaction fails" in new Scope {
@@ -73,7 +75,7 @@ class TransactionHandlerImpSpec extends AnyFlatSpec with Matchers with Idiomatic
       .futureValue
       .getMessage shouldBe s"failed to commit transaction after ${publisherConfig.transactionRetries} retry attempts, due to: boom boom"
 
-    clientSession.commitTransaction() wasCalled atLeastSixTimes
+    verify(clientSession, atLeastTimes(6)).commitTransaction()
   }
 
   trait Scope {
@@ -87,13 +89,16 @@ class TransactionHandlerImpSpec extends AnyFlatSpec with Matchers with Idiomatic
     var subscriber: Subscriber[_ >: Void] = _
     // The subscription request method is called twice, reacting to the second call with onComplete() errors
     val atomicCallCounter = new AtomicInteger()
-    publisher.subscribe(any[Subscriber[_ >: Void]]) answers { (sub: Subscriber[_ >: Void]) =>
-      subscriber = sub
-      atomicCallCounter.set(0)
-      sub.onSubscribe(subscription)
-    }
+    when(publisher.subscribe(any[Subscriber[_ >: Void]])).thenAnswer(new Answer[Unit] {
+      override def answer(invocation: InvocationOnMock): Unit = {
+        val sub: Subscriber[_ >: Void] = invocation.getArgument(0, classOf[Subscriber[_ >: Void]])
+        subscriber = sub
+        atomicCallCounter.set(0)
+        sub.onSubscribe(subscription)
+      }
+    })
 
-    when(subscription.request(*)).thenAnswer { _: Long =>
+    when(subscription.request(any)).thenAnswer { _ =>
       if (atomicCallCounter.getAndAdd(1) == 0) {
         subscriptionRequestBehavior(subscriber)
       }
@@ -102,10 +107,10 @@ class TransactionHandlerImpSpec extends AnyFlatSpec with Matchers with Idiomatic
     def subscriptionRequestBehavior(subscriber: Subscriber[_ >: Void]): Unit =
       subscriber.onComplete()
 
-    mongoComponent.client returns mongoClient
-    mongoClient.startSession(sessionOptions) returns SingleObservable(clientSession)
-    clientSession.startTransaction(transactionOptions).doesNothing()
-    clientSession.commitTransaction() returns publisher
+    when(mongoComponent.client).thenReturn(mongoClient)
+    when(mongoClient.startSession(sessionOptions)).thenReturn(SingleObservable(clientSession))
+    doNothing().when(clientSession).startTransaction(transactionOptions)
+    when(clientSession.commitTransaction()).thenReturn(publisher)
 
     val transactionHandlerImpl: TransactionHandlerImpl = new TransactionHandlerImpl(
       mongoComponent,

@@ -20,32 +20,31 @@ import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse}
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.{Sink, Source}
-import org.mockito.IdiomaticMockito
-import org.mockito.IdiomaticMockitoBase.Times
-import org.mockito.MockitoSugar.when
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.config.Subscriber
-import uk.gov.hmrc.eventhub.config.TestModels._
-import uk.gov.hmrc.eventhub.model.TestModels._
+import uk.gov.hmrc.eventhub.config.TestModels.*
+import uk.gov.hmrc.eventhub.model.TestModels.*
 import uk.gov.hmrc.eventhub.subscription.http.{HttpClient, HttpEventRequestBuilder, HttpRetryHandler}
-import org.mockito.ArgumentMatchersSugar.*
+import org.mockito.ArgumentMatchers.*
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.eventhub.model.Event
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.util.Try
 
 class SubscriberEventHttpFlowSpec
-    extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with IntegrationPatience {
+    extends AnyFlatSpec with Matchers with MockitoSugar with ScalaFutures with IntegrationPatience {
 
   behavior of "SubscriberEventHttpFlow.flow"
 
   it should "handle a successful response" in new Scope {
-    when(httpClient.singleRequest(httpRequest)).thenAnswer(Future.successful(httpResponse))
-    when(httpRetryHandler.shouldRetry(*, *)).thenAnswer(None)
+    when(httpClient.singleRequest(httpRequest)).thenAnswer(_ => Future.successful(httpResponse))
+    when(httpRetryHandler.shouldRetry(any, any)).thenAnswer(_ => None)
 
     Source
       .single(httpRequest -> event)
@@ -53,15 +52,15 @@ class SubscriberEventHttpFlowSpec
       .runWith(Sink.head)
       .futureValue shouldBe SubscriberEventHttpResponse(Try(httpResponse), event, subscriber)
 
-    httpRetryHandler.shouldRetry(*, *) wasCalled once
+    verify(httpRetryHandler, times(1)).shouldRetry(any, any)
   }
 
   it should "handle retry calling the function returned from `httpRetryHandler.shouldRetry` * `subscriber.maxRetries`" in new Scope {
     val requestWithEvent: (HttpRequest, Event) = (httpRequest, event)
-    when(httpClient.singleRequest(httpRequest)).thenAnswer(Future.successful(httpResponse))
-    when(httpRetryHandler.shouldRetry(*, *))
-      .thenAnswer(Some(requestWithEvent))
-      .andThenAnswer(Some(requestWithEvent))
+    when(httpClient.singleRequest(httpRequest)).thenAnswer(_ => Future.successful(httpResponse))
+    when(httpRetryHandler.shouldRetry(any, any))
+      .thenAnswer(_ => Some(requestWithEvent))
+      .thenAnswer(_ => Some(requestWithEvent))
 
     Source
       .single(httpRequest -> event)
@@ -70,13 +69,13 @@ class SubscriberEventHttpFlowSpec
       .futureValue shouldBe SubscriberEventHttpResponse(Try(httpResponse), event, subscriber)
 
     threeSeconds {
-      httpRetryHandler.shouldRetry(*, *) wasCalled Times(subscriber.maxRetries)
+      verify(httpRetryHandler, times(subscriber.maxRetries)).shouldRetry(any, any)
     }
   }
 
   it should "handle a failure response" in new Scope {
-    when(httpClient.singleRequest(httpRequest)).thenAnswer(Future.failed(new IllegalStateException("boom")))
-    when(httpRetryHandler.shouldRetry(*, *)).thenAnswer(None)
+    when(httpClient.singleRequest(httpRequest)).thenAnswer(_ => Future.failed(new IllegalStateException("boom")))
+    when(httpRetryHandler.shouldRetry(any, any)).thenAnswer(_ => None)
 
     Source
       .single(httpRequest -> event)
@@ -88,7 +87,7 @@ class SubscriberEventHttpFlowSpec
       .get
       .getMessage shouldBe "boom"
 
-    httpRetryHandler.shouldRetry(*, *) wasCalled once
+    verify(httpRetryHandler, times(1)).shouldRetry(any, any)
   }
 
   trait Scope {

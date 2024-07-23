@@ -20,13 +20,14 @@ import org.apache.pekko.NotUsed
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Source
-import org.mockito.IdiomaticMockito
-import org.mockito.MockitoSugar.when
+import org.mockito.Mockito.{atLeastOnce, verify, when}
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.eventhub.cluster.ServiceInstances
-import uk.gov.hmrc.eventhub.config.TestModels._
+import uk.gov.hmrc.eventhub.config.TestModels.*
 import uk.gov.hmrc.eventhub.config.{SubscriberStreamBackoffConfig, SubscriberStreamConfig, TopicName}
 import uk.gov.hmrc.eventhub.metric.{MetricsReporterImpl, Timers}
 import uk.gov.hmrc.eventhub.repository.{SubscriberEventRepository, SubscriberEventRepositoryFactory}
@@ -34,9 +35,9 @@ import uk.gov.hmrc.eventhub.subscription.http.HttpResponseHandler.EventSendStatu
 import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
-class SubscriptionStreamBuilderSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class SubscriptionStreamBuilderSpec extends AnyFlatSpec with Matchers with MockitoSugar with ScalaFutures {
 
   behavior of "SubscriptionStreamBuilder.build"
 
@@ -48,7 +49,7 @@ class SubscriptionStreamBuilderSpec extends AnyFlatSpec with Matchers with Idiom
       .build(subscriber, TopicName("email"))
       .isInstanceOf[Source[EventSendStatus, NotUsed]] shouldBe true
 
-    subscriberEventRepositoryFactory.apply(subscriber, TopicName("email")) wasCalled once
+    verify(subscriberEventRepositoryFactory, atLeastOnce).apply(subscriber, TopicName("email"))
   }
 
   trait Scope {

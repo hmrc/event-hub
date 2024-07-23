@@ -18,7 +18,7 @@ package uk.gov.hmrc.eventhub.cluster
 
 import org.apache.pekko.actor.ActorSystem
 import org.bson.types.ObjectId
-import org.mockito.MockitoSugar.mock
+import org.mockito.Mockito
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.flatspec.AnyFlatSpec
@@ -27,13 +27,15 @@ import uk.gov.hmrc.eventhub.config.ServiceInstancesConfig
 import uk.gov.hmrc.eventhub.metric.MetricsReporter
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.test.CleanMongoCollectionSupport
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
+import org.scalatestplus.mockito.MockitoSugar
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 class ServiceInstancesSpec
-    extends AnyFlatSpec with CleanMongoCollectionSupport with Matchers with BeforeAndAfterEach
+    extends AnyFlatSpec with CleanMongoCollectionSupport with Matchers with MockitoSugar with BeforeAndAfterEach
     with MongoJavatimeFormats {
 
   behavior of "ServiceInstances"

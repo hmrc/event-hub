@@ -18,25 +18,24 @@ package uk.gov.hmrc.eventhub.controllers
 
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.testkit.NoMaterializer
-import org.mockito.ArgumentMatchersSugar.any
+import org.mockito.ArgumentMatchers.*
 import org.mockito.Mockito.when
-import org.mockito.MockitoSugar.mock
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.{ContentTypes, Status}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{CONTENT_TYPE, contentAsString, defaultAwaitTimeout, status}
 import play.api.test.{FakeHeaders, FakeRequest, Helpers}
 import uk.gov.hmrc.eventhub.config.TestModels.channelPreferences
 import uk.gov.hmrc.eventhub.config.TopicName
-import uk.gov.hmrc.eventhub.model._
+import uk.gov.hmrc.eventhub.model.*
 import uk.gov.hmrc.eventhub.service.EventPublisherService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class PublishControllerSpec extends AnyWordSpec with Matchers {
+class PublishControllerSpec extends AnyWordSpec with Matchers with MockitoSugar {
 
   "createEvent" must {
     "return Created if payload id valid and publish response is success" in new TestSetup {
@@ -151,8 +150,8 @@ class PublishControllerSpec extends AnyWordSpec with Matchers {
         )
 
       val result = controller.publish("email")(fakeRequest)
-      status(result) mustBe Status.BAD_REQUEST
-      contentAsString(result) must include("Invalid Event payload:")
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsString(result) should include("Invalid Event payload:")
     }
 
   }

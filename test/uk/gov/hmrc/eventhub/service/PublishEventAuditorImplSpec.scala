@@ -16,22 +16,25 @@
 
 package uk.gov.hmrc.eventhub.service
 
-import org.mockito.IdiomaticMockito
-import org.mockito.ArgumentMatchersSugar.*
+import org.mockito.Mockito.{times, verify}
+import org.mockito.ArgumentMatchers.{eq as equalTo, *}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.eventhub.model.TestModels.event
 import uk.gov.hmrc.play.audit.model.{Audit, DataEvent}
+
+import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class PublishEventAuditorImplSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
+class PublishEventAuditorImplSpec extends AnyFlatSpec with Matchers with MockitoSugar {
 
   behavior of "PublishEventAuditorImpl.failed"
 
   it should "raises a new DataEvent object from an Event and Exception" in new Scope {
     val publishEventAuditorImpl = new PublishEventAuditorImpl(auditMock)
     publishEventAuditorImpl.failed(event, exception)
-    auditMock.sendDataEvent(*[DataEvent]) wasCalled once
+    verify(auditMock, times(1)).sendDataEvent(any[DataEvent])(any[ExecutionContext])
   }
 
   trait Scope {

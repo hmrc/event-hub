@@ -22,6 +22,7 @@ import uk.gov.hmrc.eventhub.config.TopicName
 import uk.gov.hmrc.eventhub.repository.EventRepository
 import uk.gov.hmrc.eventhub.subscription.SubscriberConfigOps
 import uk.gov.hmrc.eventhub.subscription.model.TestModels.Subscriptions.channelPreferences
+import play.api.libs.ws.{readableAsString, writeableOf_JsValue}
 
 import java.io.File
 import java.util.UUID
