@@ -25,7 +25,6 @@ object Dependencies {
     val PekkoStream = "org.apache.pekko"        %% "pekko-stream"                      % "1.0.2"
     val Bootstrap = "uk.gov.hmrc"               %% "bootstrap-backend-play-30"         % "9.0.0"
     val HmrcMongoWorkItem = "uk.gov.hmrc.mongo" %% "hmrc-mongo-work-item-repo-play-30" % "2.1.0"
-//    val mongoDirver = "org.mongodb.scala"       %% "mongo-scala-driver"                % "5.1.1" cross CrossVersion.for3Use2_13
     val Pureconfig = "com.github.pureconfig"    %% "pureconfig-generic-scala3"         % "0.17.7"
     val Cats = "org.typelevel"                  %% "cats-core"                         % "2.9.0"
     val Swagger = "org.webjars"                  % "swagger-ui"                        % "5.2.0"
@@ -47,7 +46,6 @@ object Dependencies {
     ws,
     Bootstrap,
     HmrcMongoWorkItem,
-//    mongoDirver,
     Pureconfig,
     Cats,
     Swagger,
