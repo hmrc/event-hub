@@ -17,7 +17,7 @@
 package uk.gov.hmrc.eventhub.cluster
 
 import org.mongodb.scala.bson.ObjectId
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{Format, JsPath, OFormat}
 import uk.gov.hmrc.mongo.play.json.formats.{MongoFormats, MongoJavatimeFormats}
 
