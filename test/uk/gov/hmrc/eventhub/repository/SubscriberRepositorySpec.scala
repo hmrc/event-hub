@@ -43,7 +43,7 @@ class SubscriberRepositorySpec extends AnyFlatSpec with Matchers with MockitoSug
       new SubscriberRepository(topicName, subscriber, workItemRepositoryMock)
     val insertOneResult: InsertOneResult = InsertOneResult.acknowledged(BsonObjectId())
 
-    when(workItemRepositoryMock.collection) thenReturn mongoCollectionMock
+    when(workItemRepositoryMock.collection).thenReturn(mongoCollectionMock)
   }
 
   behavior of "SubscriberRepository.insertOne"

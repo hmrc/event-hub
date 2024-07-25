@@ -30,7 +30,7 @@ import uk.gov.hmrc.eventhub.config.TopicName
 import uk.gov.hmrc.eventhub.model.TestModels.{channelPreferences, event}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.{InProgress, PermanentlyFailed, ToDo}
-import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
+import org.mongodb.scala.SingleObservableFuture
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext

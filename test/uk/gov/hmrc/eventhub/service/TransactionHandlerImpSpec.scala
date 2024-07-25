@@ -51,7 +51,7 @@ class TransactionHandlerImpSpec extends AnyFlatSpec with Matchers with MockitoSu
   }
 
   it should "return failed future when the transaction fails" in new Scope {
-    override def subscriptionRequestBehavior(subscriber: Subscriber[_ >: Void]): Unit =
+    override def subscriptionRequestBehavior(subscriber: Subscriber[? >: Void]): Unit =
       subscriber.onError(new IllegalStateException("boom"))
 
     transactionHandlerImpl
@@ -62,7 +62,7 @@ class TransactionHandlerImpSpec extends AnyFlatSpec with Matchers with MockitoSu
   }
 
   it should "retry the configured amount of times before giving up and returning a TransientTransaction exception" in new Scope {
-    override def subscriptionRequestBehavior(subscriber: Subscriber[_ >: Void]): Unit =
+    override def subscriptionRequestBehavior(subscriber: Subscriber[? >: Void]): Unit =
       subscriber.onError {
         val exception = MongoException.fromThrowable(new IllegalStateException("boom boom"))
         exception.addLabel(MongoException.TRANSIENT_TRANSACTION_ERROR_LABEL)
@@ -86,12 +86,12 @@ class TransactionHandlerImpSpec extends AnyFlatSpec with Matchers with MockitoSu
     // (╯°□°)╯︵ ┻━┻
     val publisher: Publisher[Void] = mock[Publisher[Void]]
     val subscription: Subscription = mock[Subscription]
-    var subscriber: Subscriber[_ >: Void] = _
+    var subscriber: Subscriber[? >: Void] = scala.compiletime.uninitialized
     // The subscription request method is called twice, reacting to the second call with onComplete() errors
     val atomicCallCounter = new AtomicInteger()
-    when(publisher.subscribe(any[Subscriber[_ >: Void]])).thenAnswer(new Answer[Unit] {
+    when(publisher.subscribe(any[Subscriber[? >: Void]])).thenAnswer(new Answer[Unit] {
       override def answer(invocation: InvocationOnMock): Unit = {
-        val sub: Subscriber[_ >: Void] = invocation.getArgument(0, classOf[Subscriber[_ >: Void]])
+        val sub: Subscriber[? >: Void] = invocation.getArgument(0, classOf[Subscriber[? >: Void]])
         subscriber = sub
         atomicCallCounter.set(0)
         sub.onSubscribe(subscription)
@@ -104,7 +104,7 @@ class TransactionHandlerImpSpec extends AnyFlatSpec with Matchers with MockitoSu
       }
     }
 
-    def subscriptionRequestBehavior(subscriber: Subscriber[_ >: Void]): Unit =
+    def subscriptionRequestBehavior(subscriber: Subscriber[? >: Void]): Unit =
       subscriber.onComplete()
 
     when(mongoComponent.client).thenReturn(mongoClient)

@@ -19,7 +19,6 @@ package uk.gov.hmrc.eventhub.modules
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.{Application, Configuration}
@@ -43,7 +42,7 @@ class MongoSetupSpec extends AnyFlatSpec with Matchers with ScalaFutures with Gu
   private lazy val mongoConfig =
     Map(s"mongodb.uri" -> serviceMongoUri)
 
-  def additionalConfig: Map[String, _ <: Any] =
+  def additionalConfig: Map[String, ? <: Any] =
     Map(
       "application.router"                        -> "testOnlyDoNotUseInAppConf.Routes",
       "metrics.enabled"                           -> false,

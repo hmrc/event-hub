@@ -14,7 +14,6 @@ lazy val microservice = Project(appName, file("."))
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(
     libraryDependencies ++= Dependencies.libraries,
-    scalacOptions ++= List("-Wconf:cat=unused-imports&src=.*routes.*:s") ,
     scalacOptions ++= List("-Xmax-inlines", "64"),
   )
   .settings(resolvers += Resolver.jcenterRepo)

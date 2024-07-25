@@ -36,19 +36,19 @@ class BoundedTimersSpec
   behavior of "BoundedTimers"
 
   it should "return a running timer for a given metric name" in new Scope {
-    when(clock.currentTime) thenReturn startTime
+    when(clock.currentTime).thenReturn(startTime)
     boundedTimers
       .startTimer("foo")
       .futureValue shouldBe RunningTimer(startTime)
   }
 
   it should "return a completed timer for a given metric name" in new Scope {
-    when(clock.currentTime) thenReturn startTime
+    when(clock.currentTime).thenReturn(startTime)
     boundedTimers
       .startTimer("foo")
       .futureValue shouldBe RunningTimer(startTime)
 
-    when(clock.currentTime) thenReturn endTime
+    when(clock.currentTime).thenReturn(endTime)
     boundedTimers
       .stopTimer("foo")
       .futureValue shouldBe Some(CompletedTimer(startTime, endTime))

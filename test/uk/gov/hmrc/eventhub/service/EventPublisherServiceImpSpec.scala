@@ -23,7 +23,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.Logging
 import uk.gov.hmrc.eventhub.config.TestModels.{channelPreferences, *}
 import uk.gov.hmrc.eventhub.config.TopicName
 import uk.gov.hmrc.eventhub.metric.MetricsReporter
@@ -40,11 +39,13 @@ class EventPublisherServiceImpSpec extends AnyFlatSpec with Matchers with Mockit
   behavior of "EventPublisherServiceImpl.publish"
 
   it should "return a set of subscribers that were successfully published to" in new Scope {
-    when(eventRepository.find(event.eventId)) thenReturn Future.successful(None)
-    when(subscriptionMatcher(event, EmailTopic)) thenReturn Set(
-      SubscriberRepository(EmailTopic, channelPreferences, mock[WorkItemRepository[Event]])
-    ).asRight
-    when(eventPublisher.apply(any, any)) thenReturn Future.successful(())
+    when(eventRepository.find(event.eventId)).thenReturn(Future.successful(None))
+    when(subscriptionMatcher(event, EmailTopic)).thenReturn(
+      Set(
+        SubscriberRepository(EmailTopic, channelPreferences, mock[WorkItemRepository[Event]])
+      ).asRight
+    )
+    when(eventPublisher.apply(any, any)).thenReturn(Future.successful(()))
 
     eventPublisherServiceImpl
       .publish(event, EmailTopic)
@@ -56,7 +57,7 @@ class EventPublisherServiceImpSpec extends AnyFlatSpec with Matchers with Mockit
   }
 
   it should "return a DuplicateEvent error when the event has already been published" in new Scope {
-    when(eventRepository.find(event.eventId)) thenReturn Future.successful(Some(event))
+    when(eventRepository.find(event.eventId)).thenReturn(Future.successful(Some(event)))
 
     eventPublisherServiceImpl
       .publish(event, EmailTopic)
@@ -68,8 +69,8 @@ class EventPublisherServiceImpSpec extends AnyFlatSpec with Matchers with Mockit
 
   it should "return a PublishError returned from SubscriptionMatcher" in new Scope {
     val noSubscribersForTopic: NoSubscribersForTopic = NoSubscribersForTopic("No subscribers for topic")
-    when(eventRepository.find(event.eventId)) thenReturn Future.successful(None)
-    when(subscriptionMatcher.apply(event, EmailTopic)) thenReturn noSubscribersForTopic.asLeft
+    when(eventRepository.find(event.eventId)).thenReturn(Future.successful(None))
+    when(subscriptionMatcher.apply(event, EmailTopic)).thenReturn(noSubscribersForTopic.asLeft)
 
     eventPublisherServiceImpl
       .publish(event, EmailTopic)

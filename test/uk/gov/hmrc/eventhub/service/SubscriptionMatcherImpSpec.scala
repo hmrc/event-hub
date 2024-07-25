@@ -43,7 +43,7 @@ class SubscriptionMatcherImpSpec extends AnyFlatSpec with Matchers with MockitoS
   }
 
   it should "return NoSubscribersForTopic error when the topic exists but there are no matching subscribers" in new Scope {
-    when(mongoSetup.topics) thenReturn Set(Topic(EmailTopic, List(channelPreferences)))
+    when(mongoSetup.topics).thenReturn(Set(Topic(EmailTopic, List(channelPreferences))))
 
     subscriptionMatcherImpl.apply(
       event.copy(
@@ -60,8 +60,8 @@ class SubscriptionMatcherImpSpec extends AnyFlatSpec with Matchers with MockitoS
     )
 
     val mongoSetup: MongoSetup = mock[MongoSetup]
-    when(mongoSetup.topics) thenReturn Set(emails)
-    when(mongoSetup.subscriberRepositories) thenReturn subscriberRepos
+    when(mongoSetup.topics).thenReturn(Set(emails))
+    when(mongoSetup.subscriberRepositories).thenReturn(subscriberRepos)
 
     val subscriptionMatcherImpl: SubscriptionMatcherImpl = new SubscriptionMatcherImpl(mongoSetup)
   }

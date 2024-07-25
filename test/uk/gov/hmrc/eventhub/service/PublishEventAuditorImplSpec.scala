@@ -17,7 +17,7 @@
 package uk.gov.hmrc.eventhub.service
 
 import org.mockito.Mockito.{times, verify}
-import org.mockito.ArgumentMatchers.{eq as equalTo, *}
+import org.mockito.ArgumentMatchers.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar

@@ -22,7 +22,6 @@ import org.mockito.Mockito.when
 import org.mongodb.scala.{ClientSession, FindObservable, MongoCollection, Observable, SingleObservable}
 import org.mongodb.scala.bson.BsonObjectId
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.result.InsertOneResult
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -45,8 +44,8 @@ class EventRepositorySpec extends AnyFlatSpec with Matchers with MockitoSugar wi
   behavior of "EventRepository.find"
 
   it should "return an event when the underlying repo successfully finds one for that event ID" in new Scope {
-    when(findObservableMock.map[Event](any())) thenReturn Observable(Seq(event))
-    when(mongoCollectionMock.find[PublishedEvent](any[Bson])(any, any)) thenReturn findObservableMock
+    when(findObservableMock.map[Event](any())).thenReturn(Observable(Seq(event)))
+    when(mongoCollectionMock.find[PublishedEvent](any[Bson])(any, any)).thenReturn(findObservableMock)
     eventRepository.find(UUID.randomUUID()).futureValue should be(Some(event))
   }
 
@@ -58,6 +57,6 @@ class EventRepositorySpec extends AnyFlatSpec with Matchers with MockitoSugar wi
     val eventRepository: EventRepository = new EventRepository(playMongoEventRepository)
     val insertOneResult: InsertOneResult = InsertOneResult.acknowledged(BsonObjectId())
 
-    when(playMongoEventRepository.collection) thenReturn mongoCollectionMock
+    when(playMongoEventRepository.collection).thenReturn(mongoCollectionMock)
   }
 }

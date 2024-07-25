@@ -25,7 +25,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.eventhub.cluster.ServiceInstances
 import uk.gov.hmrc.eventhub.config.TestModels.*
 import uk.gov.hmrc.eventhub.config.{SubscriberStreamBackoffConfig, SubscriberStreamConfig, TopicName}

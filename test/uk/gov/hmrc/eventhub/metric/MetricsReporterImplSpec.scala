@@ -39,31 +39,31 @@ import scala.concurrent.duration.*
 class MetricsReporterImplSpec extends AnyFlatSpec with Matchers with MockitoSugar {
 
   "MetricsReporterImpl.incrementEventPublishedCount" should "call metrics counter inc for with the correct metric name" in new Scope {
-    when(metricRegistry.counter(s"event.published.${EmailTopic.name}.${event.subject}")) thenReturn counter
+    when(metricRegistry.counter(s"event.published.${EmailTopic.name}.${event.subject}")).thenReturn(counter)
     metricsReporterImpl.incrementEventPublishedCount(event, EmailTopic)
     verify(counter, times(1)).inc()
   }
 
   "MetricsReporterImpl.incrementDuplicateEventCount" should "call metrics counter inc for with the correct metric name" in new Scope {
-    when(metricRegistry.counter(s"event.duplicate.${EmailTopic.name}.${event.subject}")) thenReturn counter
+    when(metricRegistry.counter(s"event.duplicate.${EmailTopic.name}.${event.subject}")).thenReturn(counter)
     metricsReporterImpl.incrementDuplicateEventCount(event, EmailTopic)
     verify(counter, times(1)).inc()
   }
 
   "MetricsReporterImpl.incrementSubscriptionEventEnqueuedCount" should "call metrics counter inc for with the correct metric name" in new Scope {
-    when(metricRegistry.counter(s"subscriber.enqueued.${subscriber.name}")) thenReturn counter
+    when(metricRegistry.counter(s"subscriber.enqueued.${subscriber.name}")).thenReturn(counter)
     metricsReporterImpl.incrementSubscriptionEventEnqueuedCount(subscriber)
     verify(counter, times(1)).inc()
   }
 
   "MetricsReporterImpl.incrementSubscriptionPublishedCount" should "call metrics counter inc for with the correct metric name" in new Scope {
-    when(metricRegistry.counter(s"subscriber.published.${subscriber.name}")) thenReturn counter
+    when(metricRegistry.counter(s"subscriber.published.${subscriber.name}")).thenReturn(counter)
     metricsReporterImpl.incrementSubscriptionPublishedCount(subscriber)
     verify(counter, times(1)).inc()
   }
 
   "MetricsReporterImpl.incrementSubscriptionRetry" should "call metrics counter inc for with the correct metric name (no status code)" in new Scope {
-    when(metricRegistry.counter(s"subscriber.retry.${subscriber.name}.exceptional")) thenReturn counter
+    when(metricRegistry.counter(s"subscriber.retry.${subscriber.name}.exceptional")).thenReturn(counter)
     metricsReporterImpl.incrementSubscriptionRetry(subscriber, ExceptionalStatus)
     verify(counter, times(1)).inc()
   }
@@ -73,32 +73,34 @@ class MetricsReporterImplSpec extends AnyFlatSpec with Matchers with MockitoSuga
       metricRegistry.counter(
         s"subscriber.retry.${subscriber.name}.${TooManyRequests.intValue}"
       )
-    ) thenReturn counter
+    ).thenReturn(counter)
     metricsReporterImpl.incrementSubscriptionRetry(subscriber, HttpStatus(TooManyRequests))
     verify(counter, times(1)).inc()
   }
 
   "MetricsReporterImpl.incrementSubscriptionFailure" should "call metrics counter inc for with the correct metric name" in new Scope {
-    when(metricRegistry.counter(s"subscriber.failed.${subscriber.name}")) thenReturn counter
+    when(metricRegistry.counter(s"subscriber.failed.${subscriber.name}")).thenReturn(counter)
     metricsReporterImpl.incrementSubscriptionFailure(subscriber)
     verify(counter, times(1)).inc()
   }
 
   "MetricsReporterImpl.incrementSubscriptionPermanentFailure" should "call metrics counter inc for with the correct metric name" in new Scope {
-    when(metricRegistry.counter(s"subscriber.permanently-failed.${subscriber.name}")) thenReturn counter
+    when(metricRegistry.counter(s"subscriber.permanently-failed.${subscriber.name}")).thenReturn(counter)
     metricsReporterImpl.incrementSubscriptionPermanentFailure(subscriber)
     verify(counter, times(1)).inc()
   }
 
   "MetricsReporterImpl.reportSubscriberRequestLatency" should "call metrics counter inc for with the correct metric name" in new Scope {
-    when(metricRegistry.histogram(s"subscriber.request-latency.${subscriber.name}")) thenReturn histogram
+    when(metricRegistry.histogram(s"subscriber.request-latency.${subscriber.name}")).thenReturn(histogram)
     metricsReporterImpl.reportSubscriberRequestLatency(subscriber, 1)
     verify(histogram, times(1)).update(1L)
   }
 
   "MetricsReporterImpl.startSubscriptionPublishTimer" should "call timers to start a running timer with the correct metric name" in new Scope {
-    when(timers.startTimer(s"${subscriber.name}.${event.eventId}")) thenReturn Future.successful(
-      RunningTimer(System.currentTimeMillis())
+    when(timers.startTimer(s"${subscriber.name}.${event.eventId}")).thenReturn(
+      Future.successful(
+        RunningTimer(System.currentTimeMillis())
+      )
     )
     metricsReporterImpl.startSubscriptionPublishTimer(subscriber, event)
     verify(timers, times(1)).startTimer(s"${subscriber.name}.${event.eventId}")
@@ -108,10 +110,12 @@ class MetricsReporterImplSpec extends AnyFlatSpec with Matchers with MockitoSuga
     val start: Long = System.currentTimeMillis()
     val end: Long = start + 1000
 
-    when(timers.stopTimer(s"${subscriber.name}.${event.eventId}")) thenReturn Future.successful(
-      Some(CompletedTimer(start, end))
+    when(timers.stopTimer(s"${subscriber.name}.${event.eventId}")).thenReturn(
+      Future.successful(
+        Some(CompletedTimer(start, end))
+      )
     )
-    when(metricRegistry.histogram(s"subscriber.e2e-latency.${subscriber.name}")) thenReturn histogram
+    when(metricRegistry.histogram(s"subscriber.e2e-latency.${subscriber.name}")).thenReturn(histogram)
 
     metricsReporterImpl.stopSubscriptionPublishTimer(subscriber, event)
     verify(timers, times(1)).stopTimer(s"${subscriber.name}.${event.eventId}")
@@ -124,7 +128,7 @@ class MetricsReporterImplSpec extends AnyFlatSpec with Matchers with MockitoSuga
   "MetricsReporterImpl.gaugeServiceInstances" should "provide the service instance count to a gauge with the correct name" in new Scope {
     val name = "service-instances"
     metricsReporterImpl.gaugeServiceInstances(() => 2)
-    verify(metricRegistry, times(1)).gauge(ArgumentMatchers.eq(name), any[MetricRegistry.MetricSupplier[Gauge[_]]])
+    verify(metricRegistry, times(1)).gauge(ArgumentMatchers.eq(name), any[MetricRegistry.MetricSupplier[Gauge[?]]])
   }
 
   trait Scope {
@@ -132,7 +136,7 @@ class MetricsReporterImplSpec extends AnyFlatSpec with Matchers with MockitoSuga
     val metricRegistry: MetricRegistry = mock[MetricRegistry]
     val counter: Counter = mock[Counter]
     val histogram: Histogram = mock[Histogram]
-    when(metrics.defaultRegistry) thenReturn metricRegistry
+    when(metrics.defaultRegistry).thenReturn(metricRegistry)
 
     val timers: Timers = mock[Timers]
     val metricsReporterImpl: MetricsReporterImpl = new MetricsReporterImpl(metrics, timers)

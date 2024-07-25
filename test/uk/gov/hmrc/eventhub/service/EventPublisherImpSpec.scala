@@ -37,13 +37,17 @@ class EventPublisherImpSpec extends AnyFlatSpec with Matchers with MockitoSugar 
   behavior of "EventPublisherImpl.apply"
 
   it should "return a successful future unit when publishing succeeds" in new Scope {
-    when(eventRepository.addEvent(clientSession, event)) thenReturn Future.successful(
-      InsertOneResult.acknowledged(BsonObjectId())
+    when(eventRepository.addEvent(clientSession, event)).thenReturn(
+      Future.successful(
+        InsertOneResult.acknowledged(BsonObjectId())
+      )
     )
-    when(subscriberRepository.insertOne(clientSession, event)) thenReturn Future.successful(
-      InsertOneResult.acknowledged(BsonObjectId())
+    when(subscriberRepository.insertOne(clientSession, event)).thenReturn(
+      Future.successful(
+        InsertOneResult.acknowledged(BsonObjectId())
+      )
     )
-    when(transactionHandler.commit(clientSession)) thenReturn Future.unit
+    when(transactionHandler.commit(clientSession)).thenReturn(Future.unit)
 
     eventPublisherImpl
       .apply(event, targets)
@@ -51,7 +55,7 @@ class EventPublisherImpSpec extends AnyFlatSpec with Matchers with MockitoSugar 
   }
 
   it should "return a failed future when adding the initial event to the EventRepository fails" in new Scope {
-    when(eventRepository.addEvent(clientSession, event)) thenReturn Future.failed(new IllegalStateException("boom"))
+    when(eventRepository.addEvent(clientSession, event)).thenReturn(Future.failed(new IllegalStateException("boom")))
 
     eventPublisherImpl
       .apply(event, targets)
@@ -59,15 +63,18 @@ class EventPublisherImpSpec extends AnyFlatSpec with Matchers with MockitoSugar 
       .futureValue
       .getMessage shouldBe "boom"
   }
-
   it should "return a failed future when committing the transaction fails" in new Scope {
-    when(eventRepository.addEvent(clientSession, event)) thenReturn Future.successful(
-      InsertOneResult.acknowledged(BsonObjectId())
+    when(eventRepository.addEvent(clientSession, event)).thenReturn(
+      Future.successful(
+        InsertOneResult.acknowledged(BsonObjectId())
+      )
     )
-    when(subscriberRepository.insertOne(clientSession, event)) thenReturn Future.successful(
-      InsertOneResult.acknowledged(BsonObjectId())
+    when(subscriberRepository.insertOne(clientSession, event)).thenReturn(
+      Future.successful(
+        InsertOneResult.acknowledged(BsonObjectId())
+      )
     )
-    when(transactionHandler.commit(clientSession)) thenReturn Future.failed(new IllegalStateException("commit boom"))
+    when(transactionHandler.commit(clientSession)).thenReturn(Future.failed(new IllegalStateException("commit boom")))
 
     eventPublisherImpl
       .apply(event, targets)
@@ -82,7 +89,7 @@ class EventPublisherImpSpec extends AnyFlatSpec with Matchers with MockitoSugar 
     val transactionHandler: TransactionHandler = mock[TransactionHandler]
     val publishEventAuditor: PublishEventAuditor = mock[PublishEventAuditor]
 
-    when(transactionHandler.startTransactionSession(any, any)) thenReturn Future.successful(clientSession)
+    when(transactionHandler.startTransactionSession(any, any)).thenReturn(Future.successful(clientSession))
     doNothing().when(publishEventAuditor).failed(any, any)
 
     val eventPublisherImpl: EventPublisherImpl = new EventPublisherImpl(

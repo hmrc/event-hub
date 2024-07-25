@@ -40,41 +40,41 @@ class HttpResponseHandlerSpec extends AnyFlatSpec with Matchers with MockitoSuga
   behavior of "HttpResponseHandler.handle"
 
   it should "mark an event as sent when the response is successful and the status code is a success" in new Scope {
-    when(subscriberEventRepository.sent(event)) thenReturn Future.successful(true.some)
+    when(subscriberEventRepository.sent(event)).thenReturn(Future.successful(true.some))
     handle(successfulResponse) mustBe EventSendStatus(event, subscriber, Sent)
     verify(metricsReporter, times(1)).stopSubscriptionPublishTimer(any, any)
   }
 
   it should "remove an event when the response is successful and the status code is 500 error" in new Scope {
-    when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
+    when(subscriberEventRepository.failed(event)).thenReturn(Future.successful(true.some))
     handle(internalServerErrorResponse) mustBe EventSendStatus(event, subscriber, Failed)
     verify(metricsReporter, times(1)).incrementSubscriptionFailure(any)
     verify(metricsReporter, times(1)).stopSubscriptionPublishTimer(any, any)
   }
 
   it should "mark an event as failed when the response is successful and the status code is 429" in new Scope {
-    when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
+    when(subscriberEventRepository.failed(event)).thenReturn(Future.successful(true.some))
     handle(tooManyRequests) mustBe EventSendStatus(event, subscriber, Failed)
     verify(metricsReporter, times(1)).incrementSubscriptionFailure(any)
     verify(metricsReporter, times(1)).stopSubscriptionPublishTimer(any, any)
   }
 
   it should "mark an event as failed when the response is a failure" in new Scope {
-    when(subscriberEventRepository.failed(event)) thenReturn Future.successful(true.some)
+    when(subscriberEventRepository.failed(event)).thenReturn(Future.successful(true.some))
     handle(failureResponse) mustBe EventSendStatus(event, subscriber, Failed)
     verify(metricsReporter, times(1)).incrementSubscriptionFailure(any)
     verify(metricsReporter, times(1)).stopSubscriptionPublishTimer(any, any)
   }
 
   it should "remove an event when the response is successful and the status code is a client error" in new Scope {
-    when(subscriberEventRepository.remove(event)) thenReturn Future.successful(true.some)
+    when(subscriberEventRepository.remove(event)).thenReturn(Future.successful(true.some))
     handle(clientErrorResponse) mustBe EventSendStatus(event, subscriber, Removed)
     verify(metricsReporter, times(1)).incrementSubscriptionPermanentFailure(any)
     verify(metricsReporter, times(1)).stopSubscriptionPublishTimer(any, any)
   }
 
   it should "remove an event when the response is successful and the status code is a redirection" in new Scope {
-    when(subscriberEventRepository.remove(event)) thenReturn Future.successful(true.some)
+    when(subscriberEventRepository.remove(event)).thenReturn(Future.successful(true.some))
     handle(redirectionResponse) mustBe EventSendStatus(event, subscriber, Removed)
     verify(metricsReporter, times(1)).incrementSubscriptionPermanentFailure(any)
     verify(metricsReporter, times(1)).stopSubscriptionPublishTimer(any, any)

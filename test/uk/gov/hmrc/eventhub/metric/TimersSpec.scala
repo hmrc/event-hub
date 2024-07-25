@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.eventhub.metric
 
-import org.mockito.Mockito
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

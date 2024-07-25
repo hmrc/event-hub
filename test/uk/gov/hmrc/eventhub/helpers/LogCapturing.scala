@@ -22,7 +22,7 @@ import ch.qos.logback.core.read.ListAppender
 import org.slf4j.LoggerFactory
 import play.api.LoggerLike
 
-import scala.collection.JavaConverters.asScalaBufferConverter
+import scala.jdk.CollectionConverters.*
 import scala.reflect.{ClassTag, classTag}
 
 trait LogCapturing {
