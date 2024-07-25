@@ -17,7 +17,7 @@
 package uk.gov.hmrc.eventhub.events
 
 import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
+import org.mongodb.scala.SingleObservableFuture
 import org.scalatest.concurrent.Eventually.eventually
 import uk.gov.hmrc.eventhub.ISpec
 import uk.gov.hmrc.eventhub.config.TransactionConfiguration.sessionOptions
