@@ -18,7 +18,7 @@ package uk.gov.hmrc.eventhub
 
 import org.apache.pekko.http.scaladsl.model.HttpMethods
 import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
+import org.mongodb.scala.SingleObservableFuture
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.eventhub.config.{Subscriber, Topic, TopicName}
@@ -47,7 +47,7 @@ class EventHubModuleISpec extends ISpec {
     timestamp = LocalDateTime.now(),
     event = eventJson
   )
-  override def additionalConfig: Map[String, _ <: Any] =
+  override def additionalConfig: Map[String, ? <: Any] =
     Map(
       "application.router"                        -> "testOnlyDoNotUseInAppConf.Routes",
       "metrics.enabled"                           -> false,

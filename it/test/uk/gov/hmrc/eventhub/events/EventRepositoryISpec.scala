@@ -46,7 +46,7 @@ class EventRepositoryISpec extends ISpec {
     timestamp = LocalDateTime.now(),
     event = eventJson
   )
-  override def additionalConfig: Map[String, _ <: Any] =
+  override def additionalConfig: Map[String, ? <: Any] =
     Map(
       "application.router"                        -> "testOnlyDoNotUseInAppConf.Routes",
       "metrics.enabled"                           -> false,

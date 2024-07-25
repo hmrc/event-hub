@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.eventhub.utils
 
-import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
+import org.mongodb.scala.SingleObservableFuture
 import play.api.libs.ws.writeableOf_JsValue
 import org.apache.pekko.stream.Materializer
 import com.github.tomakehurst.wiremock.WireMockServer
