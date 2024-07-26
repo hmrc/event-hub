@@ -19,31 +19,30 @@ package uk.gov.hmrc.eventhub.subscription.stream
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Sink
-import org.mockito.IdiomaticMockito
-import org.mockito.IdiomaticMockitoBase.AtLeast
-import org.mockito.MockitoSugar.when
+import org.mockito.Mockito.{verify, times, when, atLeastOnce, atLeast => atLeastTimes}
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{Seconds, Span}
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.model.TestModels.event
 import uk.gov.hmrc.eventhub.repository.SubscriberEventRepository
-import scala.concurrent.duration._
 
+import scala.concurrent.duration.*
 import scala.concurrent.Future
 
-class SubscriberEventSourceSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class SubscriberEventSourceSpec extends AnyFlatSpec with Matchers with MockitoSugar with ScalaFutures {
 
   behavior of "SubscriberEventSource.source"
 
   it should "provide all the events for the downstream demand" in new Scope {
     when(subscriberEventRepository.next())
       .thenReturn(someFutureEvent)
-      .andThenAnswer(someFutureEvent)
-      .andThenAnswer(someFutureEvent)
+      .thenAnswer(_ => someFutureEvent)
+      .thenAnswer(_ => someFutureEvent)
 
     subscriberEventSource
       .source
@@ -51,7 +50,7 @@ class SubscriberEventSourceSpec extends AnyFlatSpec with Matchers with Idiomatic
       .runWith(Sink.seq)
       .futureValue shouldBe Seq(event, event, event)
 
-    subscriberEventRepository.next() wasCalled threeTimes
+    verify(subscriberEventRepository, times(3)).next()
   }
 
   it should "provide an event for a single ask" in new Scope {
@@ -63,7 +62,7 @@ class SubscriberEventSourceSpec extends AnyFlatSpec with Matchers with Idiomatic
       .runWith(Sink.seq)
       .futureValue shouldBe Seq(event)
 
-    subscriberEventRepository.next() wasCalled once
+    verify(subscriberEventRepository, atLeastOnce()).next()
   }
 
   it should "continuously poll the repository for events when there is unsatisfied demand" in new Scope {
@@ -78,7 +77,7 @@ class SubscriberEventSourceSpec extends AnyFlatSpec with Matchers with Idiomatic
 
     eventually(timeout = Timeout(Span(timeInSeconds, Seconds))) {
       val soManyTimes: Int = ((timeInSeconds - 1) * 1000) / pollingInterval.toMillis.toInt
-      subscriberEventRepository.next() wasCalled AtLeast(soManyTimes)
+      verify(subscriberEventRepository, atLeastTimes(soManyTimes)).next()
     }
   }
 

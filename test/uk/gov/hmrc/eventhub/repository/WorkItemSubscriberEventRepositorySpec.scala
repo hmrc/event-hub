@@ -17,13 +17,14 @@
 package uk.gov.hmrc.eventhub.repository
 
 import ch.qos.logback.classic.Level
-import org.mockito.ArgumentMatchersSugar.*
-import org.mockito.IdiomaticMockito
+import org.mockito.ArgumentMatchers.*
+import org.mockito.Mockito.{times, verify, when}
 import org.mongodb.scala.Observable
 import org.mongodb.scala.bson.ObjectId
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.eventhub.helpers.LogCapturing
 import uk.gov.hmrc.eventhub.model.Event
 import uk.gov.hmrc.eventhub.model.TestModels.{event, workItem}
@@ -33,18 +34,18 @@ import uk.gov.hmrc.mongo.workitem.WorkItem
 import scala.concurrent.Future
 
 class WorkItemSubscriberEventRepositorySpec
-    extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with LogCapturing {
+    extends AnyFlatSpec with Matchers with MockitoSugar with ScalaFutures with LogCapturing {
 
   behavior of "WorkItemSubscriberEventRepository.next"
 
   it should "return an event when the underlying work item repo returns a new work item" in new Scope {
-    someFutureWorkItem willBe returned by subscriberQueueRepository.getEvent
+    when(subscriberQueueRepository.getEvent).thenReturn(someFutureWorkItem)
 
     workItemSubscriberEventRepository.next().futureValue should be(Some(event))
   }
 
   it should "return None when the underlying work item repo returns None" in new Scope {
-    futureNone willBe returned by subscriberQueueRepository.getEvent
+    when(subscriberQueueRepository.getEvent).thenReturn(futureNone)
 
     workItemSubscriberEventRepository.next().futureValue should be(None)
   }
@@ -56,15 +57,15 @@ class WorkItemSubscriberEventRepositorySpec
       """Failed to parse json as uk.gov.hmrc.mongo.workitem.WorkItem '{"_id":{"$oid":"61360df8bcf93f52c00f3dc8"},"""
     )
 
-    subscriberQueueRepository.getEvent.returns(Future.failed(deserError), futureNone)
-    subscriberQueueRepository.complete(failedId, PermanentlyFailed).returns(Future.successful(true))
+    when(subscriberQueueRepository.getEvent).thenReturn(Future.failed(deserError), futureNone)
+    when(subscriberQueueRepository.complete(failedId, PermanentlyFailed)).thenReturn(Future.successful(true))
 
     workItemSubscriberEventRepository
       .next()
       .futureValue should be(None)
 
-    subscriberQueueRepository.complete(failedId, PermanentlyFailed) wasCalled once
-    subscriberQueueRepository.getEvent wasCalled twice
+    verify(subscriberQueueRepository, times(1)).complete(failedId, PermanentlyFailed)
+    verify(subscriberQueueRepository, times(2)).getEvent
   }
 
   it should "attempt to mark the work item as permanently failed when the event document json could not be deserialized " +
@@ -75,8 +76,8 @@ class WorkItemSubscriberEventRepositorySpec
         """Failed to parse json as uk.gov.hmrc.mongo.workitem.WorkItem '{"_id":{"$oid":"61360df8bcf93f52c00f3dc8"},"""
       )
 
-      subscriberQueueRepository.getEvent.returns(Future.failed(deserError), futureNone)
-      subscriberQueueRepository.complete(failedId, PermanentlyFailed).returns(Future.successful(false))
+      when(subscriberQueueRepository.getEvent).thenReturn(Future.failed(deserError), futureNone)
+      when(subscriberQueueRepository.complete(failedId, PermanentlyFailed)).thenReturn(Future.successful(false))
 
       workItemSubscriberEventRepository
         .next()
@@ -84,15 +85,15 @@ class WorkItemSubscriberEventRepositorySpec
         .futureValue
         .getMessage should be(deserError.getMessage)
 
-      subscriberQueueRepository.complete(failedId, PermanentlyFailed) wasCalled once
-      subscriberQueueRepository.getEvent wasCalled once
+      verify(subscriberQueueRepository, times(1)).complete(failedId, PermanentlyFailed)
+      verify(subscriberQueueRepository, times(1)).getEvent
     }
 
   behavior of "WorkItemSubscriberEventRepository.failed"
 
   it should "find an work item containing an event and mark it as failed" in new Scope {
-    someFutureWorkItem willBe returned by subscriberQueueRepository.findAsWorkItem(*[Event])
-    futureTrue willBe returned by subscriberQueueRepository.failed(workItem)
+    when(subscriberQueueRepository.findAsWorkItem(any[Event])).thenReturn(someFutureWorkItem)
+    when(subscriberQueueRepository.failed(workItem)).thenReturn(futureTrue)
 
     withCaptureOfLoggingFrom[WorkItemSubscriberEventRepository] { logEvents =>
       workItemSubscriberEventRepository.failed(event).futureValue should be(Some(true))
@@ -105,8 +106,8 @@ class WorkItemSubscriberEventRepositorySpec
   behavior of "WorkItemSubscriberEventRepository.sent"
 
   it should "find an work item containing an event and mark it as completed and delete" in new Scope {
-    someFutureWorkItem willBe returned by subscriberQueueRepository.findAsWorkItem(*[Event])
-    futureTrue willBe returned by subscriberQueueRepository.completeAndDelete(*[ObjectId])
+    when(subscriberQueueRepository.findAsWorkItem(any[Event])).thenReturn(someFutureWorkItem)
+    when(subscriberQueueRepository.completeAndDelete(any[ObjectId])).thenReturn(futureTrue)
 
     withCaptureOfLoggingFrom[WorkItemSubscriberEventRepository] { logEvents =>
       workItemSubscriberEventRepository.sent(event).futureValue should be(Some(true))
@@ -119,8 +120,8 @@ class WorkItemSubscriberEventRepositorySpec
   behavior of "WorkItemSubscriberEventRepository.remove"
 
   it should "find an work item containing an event and mark it as permanently failed" in new Scope {
-    someFutureWorkItem willBe returned by subscriberQueueRepository.findAsWorkItem(*[Event])
-    futureTrue willBe returned by subscriberQueueRepository.permanentlyFailed(workItem)
+    when(subscriberQueueRepository.findAsWorkItem(any[Event])).thenReturn(someFutureWorkItem)
+    when(subscriberQueueRepository.permanentlyFailed(workItem)).thenReturn(futureTrue)
 
     withCaptureOfLoggingFrom[WorkItemSubscriberEventRepository] { logEvents =>
       workItemSubscriberEventRepository.remove(event).futureValue should be(Some(true))

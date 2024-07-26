@@ -18,12 +18,13 @@ package uk.gov.hmrc.eventhub.config
 
 import com.typesafe.config.Config
 import play.api.ConfigLoader
-import pureconfig.ConfigSource
-import pureconfig.generic.auto._
+import pureconfig.{ConfigConvert, ConfigSource}
+import pureconfig.generic.semiauto.*
 
 case class PublisherConfig(transactionRetries: Int)
 
 object PublisherConfig {
+  implicit val configConvert: ConfigConvert[PublisherConfig] = deriveConvert[PublisherConfig]
   implicit val configLoader: ConfigLoader[PublisherConfig] = (rootConfig: Config, path: String) =>
     ConfigSource.fromConfig(rootConfig.getConfig(path)).load[PublisherConfig] match {
       case Left(value) =>

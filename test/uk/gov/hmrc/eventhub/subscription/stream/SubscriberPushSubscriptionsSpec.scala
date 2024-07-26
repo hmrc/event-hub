@@ -19,28 +19,28 @@ package uk.gov.hmrc.eventhub.subscription.stream
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Source
-import org.mockito.IdiomaticMockito
-import org.mockito.MockitoSugar.when
+import org.mockito.Mockito.{atLeastOnce, times, verify, when}
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import play.api.inject.ApplicationLifecycle
 import uk.gov.hmrc.eventhub.config.{Subscriber, Topic, TopicName}
-import org.mockito.ArgumentMatchersSugar.{*, any}
+import org.mockito.ArgumentMatchers.*
 import org.scalatest.matchers.should.Matchers
-import uk.gov.hmrc.eventhub.config.TestModels._
+import uk.gov.hmrc.eventhub.config.TestModels.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptions
 
-class SubscriberPushSubscriptionsSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class SubscriberPushSubscriptionsSpec extends AnyFlatSpec with Matchers with MockitoSugar with ScalaFutures {
 
   behavior of "SubscriberPushSubscriptions"
 
   it should "create and run a subscriber stream for single topic with a single subscriber" in new Scope {
-    when(subscriptionStreamBuilder.build(*, any[TopicName])).thenReturn(Source.empty)
+    when(subscriptionStreamBuilder.build(any, any[TopicName])).thenReturn(Source.empty)
     subscriberPushSubscriptions(Set(Topic(TopicName("test"), List(subscriber))))
 
-    subscriptionStreamBuilder.build(*, any[TopicName]) wasCalled once
+    verify(subscriptionStreamBuilder, atLeastOnce).build(any, any[TopicName])
   }
 
   it should "create and run subscriber streams for a complex set of topic configurations" in new Scope {
@@ -56,12 +56,12 @@ class SubscriberPushSubscriptionsSpec extends AnyFlatSpec with Matchers with Idi
         Topic.empty(TopicName("empty"))
       )
 
-    when(subscriptionStreamBuilder.build(*, any[TopicName]))
+    when(subscriptionStreamBuilder.build(any, any[TopicName]))
       .thenReturn(Source.empty, Source.empty, Source.empty, Source.empty)
 
     subscriberPushSubscriptions(complexTopics)
 
-    subscriptionStreamBuilder.build(*, any[TopicName]) wasCalled fourTimes
+    verify(subscriptionStreamBuilder, times(4)).build(any, any[TopicName])
   }
 
   trait Scope {

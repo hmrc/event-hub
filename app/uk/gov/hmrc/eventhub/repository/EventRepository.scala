@@ -19,6 +19,7 @@ package uk.gov.hmrc.eventhub.repository
 import org.mongodb.scala.ClientSession
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.result.InsertOneResult
+import org.mongodb.scala.SingleObservableFuture
 import uk.gov.hmrc.eventhub.model.{Event, PublishedEvent}
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 

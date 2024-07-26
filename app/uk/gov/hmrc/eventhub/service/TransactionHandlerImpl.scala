@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.eventhub.service
 
-import org.mongodb.scala.{ClientSession, ClientSessionOptions, MongoException, ToSingleObservableVoid, TransactionOptions}
+import org.mongodb.scala.{ClientSession, ClientSessionOptions, MongoException, ToSingleObservableUnit, TransactionOptions}
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 import play.api.i18n.Lang.logger
 import uk.gov.hmrc.eventhub.config.PublisherConfig
 import uk.gov.hmrc.eventhub.service.TransactionHandler.{TransientTransactionError, UnknownTransactionError}

@@ -20,20 +20,20 @@ import sbt._
 object Dependencies {
 
   object Library {
-    val PekkoHttp = "org.apache.pekko"          %% "pekko-http"                        % "1.0.0"
+    val PekkoHttp = "org.apache.pekko"          %% "pekko-http"                        % "1.0.1"
     val PekkoActorTyped = "org.apache.pekko"    %% "pekko-actor-typed"                 % "1.0.2"
     val PekkoStream = "org.apache.pekko"        %% "pekko-stream"                      % "1.0.2"
-    val Bootstrap = "uk.gov.hmrc"               %% "bootstrap-backend-play-30"         % "8.4.0"
-    val HmrcMongoWorkItem = "uk.gov.hmrc.mongo" %% "hmrc-mongo-work-item-repo-play-30" % "1.7.0"
-    val Pureconfig = "com.github.pureconfig"    %% "pureconfig"                        % "0.17.4"
+    val Bootstrap = "uk.gov.hmrc"               %% "bootstrap-backend-play-30"         % "9.0.0"
+    val HmrcMongoWorkItem = "uk.gov.hmrc.mongo" %% "hmrc-mongo-work-item-repo-play-30" % "2.1.0"
+    val Pureconfig = "com.github.pureconfig"    %% "pureconfig-generic-scala3"         % "0.17.7"
     val Cats = "org.typelevel"                  %% "cats-core"                         % "2.9.0"
     val Swagger = "org.webjars"                  % "swagger-ui"                        % "5.2.0"
     val Enumeration = "com.beachape"            %% "enumeratum-play"                   % "1.8.0"
     val jayway = "com.jayway.jsonpath"           % "json-path"                         % "2.9.0"
-    val BootstrapTest = "uk.gov.hmrc"           %% "bootstrap-test-play-30"            % "8.4.0"
-    val HmrcMongoTest = "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-30"           % "1.7.0"
+    val BootstrapTest = "uk.gov.hmrc"           %% "bootstrap-test-play-30"            % "9.0.0"
+    val HmrcMongoTest = "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-30"           % "2.1.0"
     val ScalaCheck = "org.scalatestplus"        %% "scalacheck-1-17"                   % "3.2.18.0"
-    val Mockito = "org.mockito"                 %% "mockito-scala"                     % "1.17.30"
+    val Mockito = "org.scalatestplus"           %% "mockito-4-11"                      % "3.2.17.0"
     val PekkoTestKit = "org.apache.pekko"       %% "pekko-testkit"                     % "1.0.2"
   }
 

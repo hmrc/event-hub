@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.eventhub.metric
 
-import org.mockito.IdiomaticMockito
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class TimersSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
+class TimersSpec extends AnyFlatSpec with Matchers {
 
   behavior of "Timers.CompletedTimer.time"
 

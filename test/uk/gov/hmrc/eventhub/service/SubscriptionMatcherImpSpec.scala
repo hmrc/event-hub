@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.eventhub.service
 
-import cats.syntax.either._
-import org.mockito.IdiomaticMockito
+import cats.syntax.either.*
+import org.mockito.Mockito.when
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.{JsObject, JsString}
 import uk.gov.hmrc.eventhub.config.TestModels.{EmailTopic, anotherSubscriber, channelPreferences, emails}
 import uk.gov.hmrc.eventhub.config.{Topic, TopicName}
@@ -28,7 +29,7 @@ import uk.gov.hmrc.eventhub.model.{Event, NoEventTopic, NoSubscribersForTopic, S
 import uk.gov.hmrc.eventhub.modules.MongoSetup
 import uk.gov.hmrc.mongo.workitem.WorkItemRepository
 
-class SubscriptionMatcherImpSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
+class SubscriptionMatcherImpSpec extends AnyFlatSpec with Matchers with MockitoSugar {
 
   behavior of "SubscriptionMatcherImpl.apply"
 
@@ -42,7 +43,7 @@ class SubscriptionMatcherImpSpec extends AnyFlatSpec with Matchers with Idiomati
   }
 
   it should "return NoSubscribersForTopic error when the topic exists but there are no matching subscribers" in new Scope {
-    mongoSetup.topics returns Set(Topic(EmailTopic, List(channelPreferences)))
+    when(mongoSetup.topics).thenReturn(Set(Topic(EmailTopic, List(channelPreferences))))
 
     subscriptionMatcherImpl.apply(
       event.copy(
@@ -59,8 +60,8 @@ class SubscriptionMatcherImpSpec extends AnyFlatSpec with Matchers with Idiomati
     )
 
     val mongoSetup: MongoSetup = mock[MongoSetup]
-    mongoSetup.topics returns Set(emails)
-    mongoSetup.subscriberRepositories returns subscriberRepos
+    when(mongoSetup.topics).thenReturn(Set(emails))
+    when(mongoSetup.subscriberRepositories).thenReturn(subscriberRepos)
 
     val subscriptionMatcherImpl: SubscriptionMatcherImpl = new SubscriptionMatcherImpl(mongoSetup)
   }

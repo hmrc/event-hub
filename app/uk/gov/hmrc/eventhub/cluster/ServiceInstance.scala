@@ -17,7 +17,7 @@
 package uk.gov.hmrc.eventhub.cluster
 
 import org.mongodb.scala.bson.ObjectId
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{Format, JsPath, OFormat}
 import uk.gov.hmrc.mongo.play.json.formats.{MongoFormats, MongoJavatimeFormats}
 
@@ -32,5 +32,5 @@ object ServiceInstance {
   implicit val mongoFormat: OFormat[ServiceInstance] = (
     (JsPath \ "_id").format[ObjectId]
       ~ (JsPath \ "lastSeenAt").format[Instant]
-  )(ServiceInstance.apply, unlift(ServiceInstance.unapply))
+  )(ServiceInstance.apply, s => Tuple.fromProductTyped(s))
 }

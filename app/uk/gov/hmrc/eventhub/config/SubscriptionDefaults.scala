@@ -20,8 +20,9 @@ import org.apache.pekko.http.scaladsl.model.HttpMethod
 import org.apache.pekko.http.scaladsl.model.HttpMethods.POST
 import com.typesafe.config.Config
 import play.api.ConfigLoader
-import pureconfig.ConfigSource
-import pureconfig.generic.auto._
+import pureconfig.{ConfigConvert, ConfigSource}
+import pureconfig.generic.semiauto.*
+
 import scala.concurrent.duration.FiniteDuration
 
 case class SubscriptionDefaults(
@@ -36,6 +37,7 @@ case class SubscriptionDefaults(
 object SubscriptionDefaults {
   val DefaultHttpMethod: HttpMethod = POST
 
+  implicit val configConvert: ConfigConvert[SubscriptionDefaults] = deriveConvert[SubscriptionDefaults]
   implicit val configLoader: ConfigLoader[SubscriptionDefaults] = (rootConfig: Config, path: String) =>
     ConfigSource.fromConfig(rootConfig.getConfig(path)).load[SubscriptionDefaults] match {
       case Left(value) =>

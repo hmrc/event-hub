@@ -17,6 +17,7 @@
 package uk.gov.hmrc.eventhub.events
 
 import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.SingleObservableFuture
 import org.scalatest.concurrent.Eventually.eventually
 import uk.gov.hmrc.eventhub.ISpec
 import uk.gov.hmrc.eventhub.config.TransactionConfiguration.sessionOptions
@@ -45,7 +46,7 @@ class EventRepositoryISpec extends ISpec {
     timestamp = LocalDateTime.now(),
     event = eventJson
   )
-  override def additionalConfig: Map[String, _ <: Any] =
+  override def additionalConfig: Map[String, ? <: Any] =
     Map(
       "application.router"                        -> "testOnlyDoNotUseInAppConf.Routes",
       "metrics.enabled"                           -> false,

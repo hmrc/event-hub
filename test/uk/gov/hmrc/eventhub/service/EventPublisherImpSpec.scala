@@ -17,13 +17,14 @@
 package uk.gov.hmrc.eventhub.service
 
 import com.mongodb.client.result.InsertOneResult
-import org.mockito.ArgumentMatchersSugar.*
-import org.mockito.IdiomaticMockito
+import org.mockito.ArgumentMatchers.*
+import org.mockito.Mockito.{doNothing, when}
 import org.mongodb.scala.ClientSession
 import org.mongodb.scala.bson.BsonObjectId
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.eventhub.model.SubscriberRepository
 import uk.gov.hmrc.eventhub.model.TestModels.event
 import uk.gov.hmrc.eventhub.repository.EventRepository
@@ -31,18 +32,22 @@ import uk.gov.hmrc.eventhub.repository.EventRepository
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class EventPublisherImpSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class EventPublisherImpSpec extends AnyFlatSpec with Matchers with MockitoSugar with ScalaFutures {
 
   behavior of "EventPublisherImpl.apply"
 
   it should "return a successful future unit when publishing succeeds" in new Scope {
-    eventRepository.addEvent(clientSession, event) returns Future.successful(
-      InsertOneResult.acknowledged(BsonObjectId())
+    when(eventRepository.addEvent(clientSession, event)).thenReturn(
+      Future.successful(
+        InsertOneResult.acknowledged(BsonObjectId())
+      )
     )
-    subscriberRepository.insertOne(clientSession, event) returns Future.successful(
-      InsertOneResult.acknowledged(BsonObjectId())
+    when(subscriberRepository.insertOne(clientSession, event)).thenReturn(
+      Future.successful(
+        InsertOneResult.acknowledged(BsonObjectId())
+      )
     )
-    transactionHandler.commit(clientSession) returns Future.unit
+    when(transactionHandler.commit(clientSession)).thenReturn(Future.unit)
 
     eventPublisherImpl
       .apply(event, targets)
@@ -50,7 +55,7 @@ class EventPublisherImpSpec extends AnyFlatSpec with Matchers with IdiomaticMock
   }
 
   it should "return a failed future when adding the initial event to the EventRepository fails" in new Scope {
-    eventRepository.addEvent(clientSession, event) returns Future.failed(new IllegalStateException("boom"))
+    when(eventRepository.addEvent(clientSession, event)).thenReturn(Future.failed(new IllegalStateException("boom")))
 
     eventPublisherImpl
       .apply(event, targets)
@@ -58,15 +63,18 @@ class EventPublisherImpSpec extends AnyFlatSpec with Matchers with IdiomaticMock
       .futureValue
       .getMessage shouldBe "boom"
   }
-
   it should "return a failed future when committing the transaction fails" in new Scope {
-    eventRepository.addEvent(clientSession, event) returns Future.successful(
-      InsertOneResult.acknowledged(BsonObjectId())
+    when(eventRepository.addEvent(clientSession, event)).thenReturn(
+      Future.successful(
+        InsertOneResult.acknowledged(BsonObjectId())
+      )
     )
-    subscriberRepository.insertOne(clientSession, event) returns Future.successful(
-      InsertOneResult.acknowledged(BsonObjectId())
+    when(subscriberRepository.insertOne(clientSession, event)).thenReturn(
+      Future.successful(
+        InsertOneResult.acknowledged(BsonObjectId())
+      )
     )
-    transactionHandler.commit(clientSession) returns Future.failed(new IllegalStateException("commit boom"))
+    when(transactionHandler.commit(clientSession)).thenReturn(Future.failed(new IllegalStateException("commit boom")))
 
     eventPublisherImpl
       .apply(event, targets)
@@ -81,8 +89,8 @@ class EventPublisherImpSpec extends AnyFlatSpec with Matchers with IdiomaticMock
     val transactionHandler: TransactionHandler = mock[TransactionHandler]
     val publishEventAuditor: PublishEventAuditor = mock[PublishEventAuditor]
 
-    transactionHandler.startTransactionSession(*, *) returns Future.successful(clientSession)
-    publishEventAuditor.failed(*, *).doesNothing()
+    when(transactionHandler.startTransactionSession(any, any)).thenReturn(Future.successful(clientSession))
+    doNothing().when(publishEventAuditor).failed(any, any)
 
     val eventPublisherImpl: EventPublisherImpl = new EventPublisherImpl(
       transactionHandler,

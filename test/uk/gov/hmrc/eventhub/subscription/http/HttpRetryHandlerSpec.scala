@@ -21,19 +21,20 @@ import org.apache.pekko.http.scaladsl.model.HttpMethods.POST
 import org.apache.pekko.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError, OK, TooManyRequests}
 import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse, RequestTimeoutException}
 import org.apache.pekko.stream.Materializer
-import org.mockito.ArgumentMatchersSugar.*
-import org.mockito.IdiomaticMockito
+import org.mockito.ArgumentMatchers.{eq => equalTo, *}
+import org.mockito.Mockito.{times, verify}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import uk.gov.hmrc.eventhub.config.TestModels._
+import org.scalatestplus.mockito.MockitoSugar
+import uk.gov.hmrc.eventhub.config.TestModels.*
 import uk.gov.hmrc.eventhub.metric.MetricsReporter
 import uk.gov.hmrc.eventhub.metric.MetricsReporter.{ExceptionalStatus, HttpStatus}
 import uk.gov.hmrc.eventhub.model.Event
-import uk.gov.hmrc.eventhub.model.TestModels._
+import uk.gov.hmrc.eventhub.model.TestModels.*
 
 import scala.util.{Failure, Success, Try}
 
-class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
+class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers with MockitoSugar {
 
   behavior of "HttpRetryHandler.shouldRetry"
 
@@ -53,14 +54,14 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMocki
     shouldRetry(httpRequest -> event, Success(tooManyRequestsResponse) -> event) shouldBe Some(
       httpRequest           -> event
     )
-    metricsReporter.incrementSubscriptionRetry(*, HttpStatus(TooManyRequests)) wasCalled once
+    verify(metricsReporter, times(1)).incrementSubscriptionRetry(any, equalTo(HttpStatus(TooManyRequests)))
   }
 
   it should "return Some(inputs) when a http response is provided with a status in the 500 range" in new Scope {
     shouldRetry(httpRequest -> event, Success(internalServerErrorHttpResponse) -> event) shouldBe Some(
       httpRequest           -> event
     )
-    metricsReporter.incrementSubscriptionRetry(*, HttpStatus(InternalServerError)) wasCalled once
+    verify(metricsReporter, times(1)).incrementSubscriptionRetry(any, equalTo(HttpStatus(InternalServerError)))
   }
 
   it should "return Some(inputs) when a RequestTimeoutException is returned" in new Scope {
@@ -70,7 +71,7 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMocki
     ) shouldBe Some(
       httpRequest -> event
     )
-    metricsReporter.incrementSubscriptionRetry(*, ExceptionalStatus) wasCalled once
+    verify(metricsReporter, times(1)).incrementSubscriptionRetry(any, equalTo(ExceptionalStatus))
   }
 
   it should "return Some(inputs) when a RuntimeException a message containing `The http server closed the connection unexpectedly` is returned" in new Scope {
@@ -80,7 +81,7 @@ class HttpRetryHandlerSpec extends AnyFlatSpec with Matchers with IdiomaticMocki
     ) shouldBe Some(
       httpRequest -> event
     )
-    metricsReporter.incrementSubscriptionRetry(*, ExceptionalStatus) wasCalled once
+    verify(metricsReporter, times(1)).incrementSubscriptionRetry(any, equalTo(ExceptionalStatus))
   }
 
   trait Scope {

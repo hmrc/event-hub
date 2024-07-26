@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.eventhub.repository
 
-import org.mockito.IdiomaticMockito
 import org.mongodb.scala.bson.BsonDocument
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
@@ -30,13 +30,14 @@ import uk.gov.hmrc.eventhub.config.TopicName
 import uk.gov.hmrc.eventhub.model.TestModels.{channelPreferences, event}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.{InProgress, PermanentlyFailed, ToDo}
+import org.mongodb.scala.SingleObservableFuture
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
 
 class SubscriberQueueRepositorySpec
-    extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures with GuiceOneServerPerSuite {
+    extends AnyFlatSpec with Matchers with MockitoSugar with ScalaFutures with GuiceOneServerPerSuite {
 
   lazy val ttlInSecondsEvent = 300
   lazy val ttlInSecondsSubscribers = 300

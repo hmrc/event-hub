@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.eventhub.utils
 
-import org.mockito.IdiomaticMockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.eventhub.model.UnknownError
 
 import scala.concurrent.Future
 
-class HelperFunctionsSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class HelperFunctionsSpec extends AnyFlatSpec with Matchers with MockitoSugar with ScalaFutures {
 
   behavior of "HelperFunctions.liftFuture"
 

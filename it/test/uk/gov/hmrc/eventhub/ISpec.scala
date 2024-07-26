@@ -16,14 +16,12 @@
 
 package uk.gov.hmrc.eventhub
 
-import org.mongodb.scala.{MongoClient, MongoDatabase}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, SuiteMixin, TestSuite}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.{Application, Environment, Logger, Mode}
+import play.api.{Application, Logger}
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.eventhub.UrlHelper.-/
 import uk.gov.hmrc.eventhub.modules.MongoSetup
@@ -41,15 +39,7 @@ trait ISpec extends PlaySpec with ServiceSpec with BeforeAndAfterEach with Integ
   val mongoComponent = app.injector.instanceOf[MongoComponent]
 
   override def afterAll(): Unit = {
-    implicit val patienceConfig: PatienceConfig =
-      PatienceConfig(
-        timeout = scaled(Span(60, Seconds)),
-        interval = scaled(Span(150, Millis))
-      )
     super.afterAll()
-    val mongoClient: MongoClient = MongoClient(s"mongodb://mongo:27017/$testName?replicaSet=devrs")
-    val mongoDatabase: MongoDatabase = mongoClient.getDatabase(testName)
-//    mongoDatabase.drop().toFuture().futureValue
   }
 }
 
@@ -67,7 +57,7 @@ trait ServiceSpec
       .build()
   }
 
-  def additionalConfig: Map[String, _ <: Any] =
+  def additionalConfig: Map[String, ? <: Any] =
     Map.empty
 
   def testName: String =

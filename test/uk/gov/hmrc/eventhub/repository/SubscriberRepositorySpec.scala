@@ -17,21 +17,21 @@
 package uk.gov.hmrc.eventhub.repository
 
 import com.mongodb.client.result.InsertOneResult
-import org.mockito.ArgumentMatchersSugar.*
-import org.mockito.IdiomaticMockito
+import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchers.{eq => equalTo, *}
 import org.mongodb.scala.bson.BsonObjectId
-import org.mongodb.scala.result.InsertOneResult
 import org.mongodb.scala.{ClientSession, MongoCollection, SingleObservable}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.eventhub.config.{Subscriber, TopicName}
 import uk.gov.hmrc.eventhub.model.TestModels.{channelPreferences, event}
 import uk.gov.hmrc.eventhub.model.{Event, SubscriberRepository}
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.ToDo
 import uk.gov.hmrc.mongo.workitem.{WorkItem, WorkItemRepository}
 
-class SubscriberRepositorySpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class SubscriberRepositorySpec extends AnyFlatSpec with Matchers with MockitoSugar with ScalaFutures {
 
   trait Scope {
     val clientSessionMock: ClientSession = mock[ClientSession]
@@ -43,13 +43,14 @@ class SubscriberRepositorySpec extends AnyFlatSpec with Matchers with IdiomaticM
       new SubscriberRepository(topicName, subscriber, workItemRepositoryMock)
     val insertOneResult: InsertOneResult = InsertOneResult.acknowledged(BsonObjectId())
 
-    workItemRepositoryMock.collection returns mongoCollectionMock
+    when(workItemRepositoryMock.collection).thenReturn(mongoCollectionMock)
   }
 
   behavior of "SubscriberRepository.insertOne"
 
   it should "return a mongo InsertOneResult when the underlying repo adds a new event to the event repo" in new Scope {
-    mongoCollectionMock.insertOne(clientSessionMock, *[WorkItem[Event]]) returns SingleObservable(insertOneResult)
+    when(mongoCollectionMock.insertOne(equalTo(clientSessionMock), any[WorkItem[Event]]))
+      .thenReturn(SingleObservable(insertOneResult))
     subscriberRepository.insertOne(clientSessionMock, event).futureValue shouldBe insertOneResult
   }
 

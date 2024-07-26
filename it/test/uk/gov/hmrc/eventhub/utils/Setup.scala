@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.eventhub.utils
 
+import org.mongodb.scala.SingleObservableFuture
+import play.api.libs.ws.writeableOf_JsValue
 import org.apache.pekko.stream.Materializer
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier
@@ -39,7 +41,7 @@ object Setup {
   def scope(testTopic: TestTopic)(test: Setup => Any)(implicit testId: TestId): Unit =
     scope(Set(testTopic))(test)
 
-  def scope(testTopics: Set[TestTopic])(test: Setup => Any)(implicit testId: TestId) {
+  def scope(testTopics: Set[TestTopic])(test: Setup => Any)(implicit testId: TestId): Unit = {
     val setup = new Setup(testTopics, testId)
     try test(setup)
     finally setup.shutdown()

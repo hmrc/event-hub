@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.eventhub.model
 
-import org.mockito.IdiomaticMockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.eventhub.model.TestModels.{event, publishedEvent}
 import java.time.Instant
 
-class PublishedEventSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class PublishedEventSpec extends AnyFlatSpec with Matchers with ScalaFutures {
 
   behavior of "PublishedEvent.from"
 

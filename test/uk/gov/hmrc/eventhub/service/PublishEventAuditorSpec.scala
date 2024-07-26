@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.eventhub.service
 
-import org.mockito.IdiomaticMockito
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.eventhub.model.TestModels.event
 
-class PublishEventAuditorSpec extends AnyFlatSpec with Matchers with IdiomaticMockito {
+class PublishEventAuditorSpec extends AnyFlatSpec with Matchers with MockitoSugar {
 
   behavior of "PublishEventAuditor.asDataEvent"
 

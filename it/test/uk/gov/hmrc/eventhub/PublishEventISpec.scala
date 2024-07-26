@@ -22,6 +22,7 @@ import uk.gov.hmrc.eventhub.config.TopicName
 import uk.gov.hmrc.eventhub.repository.EventRepository
 import uk.gov.hmrc.eventhub.subscription.SubscriberConfigOps
 import uk.gov.hmrc.eventhub.subscription.model.TestModels.Subscriptions.channelPreferences
+import play.api.libs.ws.readableAsString
 
 import java.io.File
 import java.util.UUID
@@ -29,7 +30,7 @@ import java.util.UUID
 class PublishEventISpec extends ISpec {
   lazy val eventRepository: EventRepository = app.injector.instanceOf[EventRepository]
 
-  override def additionalConfig: Map[String, _ <: Any] =
+  override def additionalConfig: Map[String, ? <: Any] =
     Map(
       "application.router" -> "testOnlyDoNotUseInAppConf.Routes",
       "metrics.enabled"    -> true,

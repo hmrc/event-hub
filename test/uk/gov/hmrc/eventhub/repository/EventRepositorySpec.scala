@@ -17,35 +17,35 @@
 package uk.gov.hmrc.eventhub.repository
 
 import com.mongodb.client.result.InsertOneResult
-import org.mockito.ArgumentMatchersSugar.*
-import org.mockito.IdiomaticMockito
+import org.mockito.ArgumentMatchers.*
+import org.mockito.Mockito.when
 import org.mongodb.scala.{ClientSession, FindObservable, MongoCollection, Observable, SingleObservable}
 import org.mongodb.scala.bson.BsonObjectId
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.result.InsertOneResult
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.eventhub.model.{Event, PublishedEvent}
 import uk.gov.hmrc.eventhub.model.TestModels.event
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.util.UUID
 
-class EventRepositorySpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class EventRepositorySpec extends AnyFlatSpec with Matchers with MockitoSugar with ScalaFutures {
 
   behavior of "EventRepository.addEvent"
 
   it should "return a mongo InsertOneResult when the underlying repo adds a new event to the event repo" in new Scope {
-    mongoCollectionMock.insertOne(clientSessionMock, *[PublishedEvent]) returns SingleObservable(insertOneResult)
+    when(mongoCollectionMock.insertOne(any(), any[PublishedEvent])).thenReturn(SingleObservable(insertOneResult))
     eventRepository.addEvent(clientSessionMock, event).futureValue shouldBe insertOneResult
   }
 
   behavior of "EventRepository.find"
 
   it should "return an event when the underlying repo successfully finds one for that event ID" in new Scope {
-    findObservableMock.map[Event](*) returns Observable(Seq(event))
-    mongoCollectionMock.find[PublishedEvent](*[Bson])(*, *) returns findObservableMock
+    when(findObservableMock.map[Event](any())).thenReturn(Observable(Seq(event)))
+    when(mongoCollectionMock.find[PublishedEvent](any[Bson])(any, any)).thenReturn(findObservableMock)
     eventRepository.find(UUID.randomUUID()).futureValue should be(Some(event))
   }
 
@@ -57,6 +57,6 @@ class EventRepositorySpec extends AnyFlatSpec with Matchers with IdiomaticMockit
     val eventRepository: EventRepository = new EventRepository(playMongoEventRepository)
     val insertOneResult: InsertOneResult = InsertOneResult.acknowledged(BsonObjectId())
 
-    playMongoEventRepository.collection returns mongoCollectionMock
+    when(playMongoEventRepository.collection).thenReturn(mongoCollectionMock)
   }
 }

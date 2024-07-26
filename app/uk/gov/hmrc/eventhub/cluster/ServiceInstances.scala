@@ -20,6 +20,8 @@ import org.apache.pekko.actor.Scheduler
 import org.apache.pekko.pattern.Patterns.after
 import org.bson.types.ObjectId
 import org.mongodb.scala.SingleObservable
+import org.mongodb.scala.SingleObservableFuture
+import org.mongodb.scala.ToSingleObservablePublisher
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model._
 import org.mongodb.scala.result.UpdateResult

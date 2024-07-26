@@ -16,16 +16,17 @@
 
 package uk.gov.hmrc.eventhub.service
 
-import cats.syntax.either._
-import org.mockito.ArgumentMatchersSugar.{*, any}
-import org.mockito.IdiomaticMockito
+import cats.syntax.either.*
+import org.mockito.ArgumentMatchers.*
+import org.mockito.Mockito.{never, times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import uk.gov.hmrc.eventhub.config.TestModels.{channelPreferences, _}
+import org.scalatestplus.mockito.MockitoSugar
+import uk.gov.hmrc.eventhub.config.TestModels.{channelPreferences, *}
 import uk.gov.hmrc.eventhub.config.TopicName
 import uk.gov.hmrc.eventhub.metric.MetricsReporter
-import uk.gov.hmrc.eventhub.model.TestModels._
+import uk.gov.hmrc.eventhub.model.TestModels.*
 import uk.gov.hmrc.eventhub.model.{DuplicateEvent, Event, NoSubscribersForTopic, SubscriberRepository}
 import uk.gov.hmrc.eventhub.repository.EventRepository
 import uk.gov.hmrc.mongo.workitem.WorkItemRepository
@@ -33,53 +34,55 @@ import uk.gov.hmrc.mongo.workitem.WorkItemRepository
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class EventPublisherServiceImpSpec extends AnyFlatSpec with Matchers with IdiomaticMockito with ScalaFutures {
+class EventPublisherServiceImpSpec extends AnyFlatSpec with Matchers with MockitoSugar with ScalaFutures {
 
   behavior of "EventPublisherServiceImpl.publish"
 
   it should "return a set of subscribers that were successfully published to" in new Scope {
-    eventRepository.find(event.eventId) returns Future.successful(None)
-    subscriptionMatcher.apply(event, EmailTopic) returns Set(
-      SubscriberRepository(EmailTopic, channelPreferences, mock[WorkItemRepository[Event]])
-    ).asRight
-    eventPublisher.apply(*, *) returns Future.successful(Set(channelPreferences).asRight)
+    when(eventRepository.find(event.eventId)).thenReturn(Future.successful(None))
+    when(subscriptionMatcher(event, EmailTopic)).thenReturn(
+      Set(
+        SubscriberRepository(EmailTopic, channelPreferences, mock[WorkItemRepository[Event]])
+      ).asRight
+    )
+    when(eventPublisher.apply(any, any)).thenReturn(Future.successful(()))
 
     eventPublisherServiceImpl
       .publish(event, EmailTopic)
       .futureValue shouldBe Set(channelPreferences).asRight
 
-    metricsReporter.incrementEventPublishedCount(*, any[TopicName]) wasCalled once
-    metricsReporter.incrementSubscriptionEventEnqueuedCount(channelPreferences) wasCalled once
-    metricsReporter.startSubscriptionPublishTimer(*, *) wasCalled once
+    verify(metricsReporter, times(1)).incrementEventPublishedCount(any, any[TopicName])
+    verify(metricsReporter, times(1)).incrementSubscriptionEventEnqueuedCount(channelPreferences)
+    verify(metricsReporter, times(1)).startSubscriptionPublishTimer(any, any)
   }
 
   it should "return a DuplicateEvent error when the event has already been published" in new Scope {
-    eventRepository.find(event.eventId) returns Future.successful(Some(event))
+    when(eventRepository.find(event.eventId)).thenReturn(Future.successful(Some(event)))
 
     eventPublisherServiceImpl
       .publish(event, EmailTopic)
       .futureValue shouldBe DuplicateEvent(s"Duplicate Event: Event with eventId already exists").asLeft
 
-    metricsReporter.incrementDuplicateEventCount(*, any[TopicName]) wasCalled once
-    metricsReporter.startSubscriptionPublishTimer(*, *) wasNever called
+    verify(metricsReporter, times(1)).incrementDuplicateEventCount(any, any[TopicName])
+    verify(metricsReporter, never()).startSubscriptionPublishTimer(any, any)
   }
 
   it should "return a PublishError returned from SubscriptionMatcher" in new Scope {
     val noSubscribersForTopic: NoSubscribersForTopic = NoSubscribersForTopic("No subscribers for topic")
-    eventRepository.find(event.eventId) returns Future.successful(None)
-    subscriptionMatcher.apply(event, EmailTopic) returns noSubscribersForTopic.asLeft
+    when(eventRepository.find(event.eventId)).thenReturn(Future.successful(None))
+    when(subscriptionMatcher.apply(event, EmailTopic)).thenReturn(noSubscribersForTopic.asLeft)
 
     eventPublisherServiceImpl
       .publish(event, EmailTopic)
       .futureValue shouldBe noSubscribersForTopic.asLeft
 
-    metricsReporter.incrementEventPublishedCount(*, any[TopicName]) wasNever called
-    metricsReporter.startSubscriptionPublishTimer(*, *) wasNever called
+    verify(metricsReporter, never()).incrementEventPublishedCount(any, any[TopicName])
+    verify(metricsReporter, never()).startSubscriptionPublishTimer(any, any)
   }
 
   trait Scope {
     val eventRepository: EventRepository = mock[EventRepository]
-    val subscriptionMatcher: SubscriptionMatcher = mock[SubscriptionMatcher]
+    val subscriptionMatcher: SubscriptionMatcher = mock[SubscriptionMatcherImpl]
     val eventPublisher: EventPublisher = mock[EventPublisher]
     val metricsReporter: MetricsReporter = mock[MetricsReporter]
 
