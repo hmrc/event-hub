@@ -44,7 +44,7 @@ class MongoSetupSpec extends AnyFlatSpec with Matchers with ScalaFutures with Gu
 
   def additionalConfig: Map[String, ? <: Any] =
     Map(
-      "application.router"                        -> "testOnlyDoNotUseInAppConf.Routes",
+      "application.router"                        -> "prod.Routes",
       "metrics.enabled"                           -> false,
       "auditing.enabled"                          -> false,
       "publish.workItem.retryAfterHours"          -> inProgressRetryAfterInHours,
