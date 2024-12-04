@@ -50,7 +50,6 @@ class SubscriberQueueRepositorySpec
 
   def additionalConfig: Map[String, Any] =
     Map(
-      "application.router"                        -> "testOnlyDoNotUseInAppConf.Routes",
       "metrics.enabled"                           -> false,
       "auditing.enabled"                          -> false,
       "queue.retryFailedAfter"                    -> "1 second",
