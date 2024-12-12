@@ -32,7 +32,7 @@ class PublishEventISpec extends ISpec {
 
   override def additionalConfig: Map[String, ? <: Any] =
     Map(
-      "application.router" -> "app.Routes",
+      "application.router" -> "testOnlyDoNotUseInAppConf.Routes",
       "metrics.enabled"    -> true,
       "auditing.enabled"   -> false,
       "topics"             -> channelPreferences.asConfigMap(TopicName("email"))

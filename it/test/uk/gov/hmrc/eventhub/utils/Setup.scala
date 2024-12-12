@@ -73,7 +73,7 @@ class Setup private (testTopics: Set[TestTopic], testId: TestId) {
 
   private val application: Application = new GuiceApplicationBuilder()
     .configure("mongodb.uri" -> s"mongodb://localhost:27017/${testId.toString}")
-    .configure("application.router" -> "app.Routes")
+    .configure("application.router" -> "testOnlyDoNotUseInAppConf.Routes")
     .configure("metrics.enabled" -> true)
     .configure("auditing.enabled" -> false)
     .configure("event-repo.expire-after-seconds-ttl" -> 2000)
