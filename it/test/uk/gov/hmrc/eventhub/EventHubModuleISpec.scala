@@ -49,7 +49,7 @@ class EventHubModuleISpec extends ISpec {
   )
   override def additionalConfig: Map[String, ? <: Any] =
     Map(
-      "application.router"                        -> "testOnlyDoNotUseInAppConf.Routes",
+      "application.router"                        -> "app.Routes",
       "metrics.enabled"                           -> false,
       "auditing.enabled"                          -> false,
       "event-repo.expire-after-seconds-ttl"       -> ttlInSecondsEvent,
