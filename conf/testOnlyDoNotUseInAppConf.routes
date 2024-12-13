@@ -11,6 +11,6 @@
 
 # Add all the application routes to the prod.routes file
 
-#GET   /test-only/docs/swagger-ui/*file                controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
-#GET   /test-only/assets/*file                         controllers.Assets.versioned(path="/public", file: Asset)
+GET   /test-only/docs/swagger-ui/*file                controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
+GET   /test-only/assets/*file                         controllers.Assets.versioned(path="/public", file: Asset)
 ->         /                          prod.Routes
