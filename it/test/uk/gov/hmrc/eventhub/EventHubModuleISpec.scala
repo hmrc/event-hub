@@ -132,7 +132,7 @@ class EventHubModuleISpec extends ISpec {
 
 
       logger.warn("----start----")
-      logger.warn(System.currentTimeMillis().milliseconds.toSeconds.toString)
+      logger.warn(System.currentTimeMillis().toString)
 
 
       val repo = mongoSetup.subscriberRepositories.head.workItemRepository
@@ -143,17 +143,17 @@ class EventHubModuleISpec extends ISpec {
         failed     <- repo.markAs(workItem.id, PermanentlyFailed)
       } yield failed
       logger.warn("----after result----")
-      logger.warn(System.currentTimeMillis().milliseconds.toSeconds.toString)
+      logger.warn(System.currentTimeMillis().toString)
       await(result) mustBe true
       logger.warn("----after await----")
-      logger.warn(System.currentTimeMillis().milliseconds.toSeconds.toString)
+      logger.warn(System.currentTimeMillis().toString)
       threeMinutes {
         logger.warn("----after 3 min----")
-        logger.warn(System.currentTimeMillis().milliseconds.toSeconds.toString)
+        logger.warn(System.currentTimeMillis().toString)
         await(repo.collection.countDocuments().toFuture()) mustBe 0
       }
       logger.warn("----end----")
-      logger.warn(System.currentTimeMillis().milliseconds.toSeconds.toString)
+      logger.warn(System.currentTimeMillis().toString)
     }
   }
 }
