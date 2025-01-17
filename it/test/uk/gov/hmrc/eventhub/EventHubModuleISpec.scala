@@ -20,14 +20,15 @@ import org.apache.pekko.http.scaladsl.model.HttpMethods
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.SingleObservableFuture
 import org.scalatest.concurrent.Eventually.eventually
+import play.api.Logger
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.eventhub.config.{Subscriber, Topic, TopicName}
 import uk.gov.hmrc.eventhub.model.{Event, PublishedEvent}
 import uk.gov.hmrc.mongo.workitem.ProcessingStatus.PermanentlyFailed
-import uk.gov.hmrc.eventhub.subscription._
+import uk.gov.hmrc.eventhub.subscription.*
 import uk.gov.hmrc.eventhub.subscription.model.TestModels.Events.eventJson
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import java.util.concurrent.TimeUnit
 import uk.gov.hmrc.eventhub.subscription.model.TestModels.Subscriptions.{Elements, MaxConnections, MaxRetries, channelPreferences}
 
@@ -124,6 +125,16 @@ class EventHubModuleISpec extends ISpec {
     }
 
     "ensure inserted events which are now permanently failed are removed from mongo once TTL period set on updatedAt field has been reached" in {
+  import  play.api.Logging
+
+      val logger: Logger = Logger(getClass)
+
+
+
+      logger.warn("----start----")
+      logger.warn(System.currentTimeMillis().milliseconds.toSeconds.toString)
+
+
       val repo = mongoSetup.subscriberRepositories.head.workItemRepository
       val result = for {
         _          <- repo.collection.deleteMany(BsonDocument()).toFuture()
@@ -131,12 +142,18 @@ class EventHubModuleISpec extends ISpec {
         firstCount <- repo.collection.countDocuments().toFuture()
         failed     <- repo.markAs(workItem.id, PermanentlyFailed)
       } yield failed
-
+      logger.warn("----after result----")
+      logger.warn(System.currentTimeMillis().milliseconds.toSeconds.toString)
       await(result) mustBe true
-
+      logger.warn("----after await----")
+      logger.warn(System.currentTimeMillis().milliseconds.toSeconds.toString)
       threeMinutes {
+        logger.warn("----after 3 min----")
+        logger.warn(System.currentTimeMillis().milliseconds.toSeconds.toString)
         await(repo.collection.countDocuments().toFuture()) mustBe 0
       }
+      logger.warn("----end----")
+      logger.warn(System.currentTimeMillis().milliseconds.toSeconds.toString)
     }
   }
 }
