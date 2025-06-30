@@ -1,14 +1,12 @@
 
 val appName = "event-hub"
 
-Global / majorVersion := 3
+Global / majorVersion := 4
 Global / scalaVersion := "3.4.2"
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(
     play.sbt.PlayScala,
-    SbtAutoBuildPlugin,
-    SbtGitVersioning,
     SbtDistributablesPlugin
   )
   .disablePlugins(JUnitXmlReportPlugin)
