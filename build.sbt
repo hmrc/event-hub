@@ -1,7 +1,7 @@
 
 val appName = "event-hub"
 
-Global / majorVersion := 4
+Global / majorVersion := 3
 Global / scalaVersion := "3.4.2"
 
 lazy val microservice = Project(appName, file("."))
