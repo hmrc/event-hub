@@ -37,7 +37,7 @@ import java.util.UUID
 class EventHubModuleISpec extends ISpec {
 
   def threeMinutes[T](fun: => T): T = eventually(timeout(3.minutes), interval(10.seconds))(fun)
-
+  
   lazy val ttlInSecondsEvent = 10
   lazy val ttlInSecondsSubscribers = 1
   val event: Event = Event(
