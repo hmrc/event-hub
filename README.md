@@ -1,9 +1,23 @@
 #### License
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
 
-## event-hub
+# event-hub
+
+# Overview
 
 A messaging middleware solution to decouple sending and receiving of events between distributed applications. The event hub offers fan out of messages to subscribers over HTTP.
+
+## Features
+
+* Services can subscribe to know the status of email sent using email microservice.
+* Services can filter events they are interested in by using a JSONPath expression.
+* Events like `Delivered`, `Opened`, `PermanentBounce` are supported.
+
+## Useful links
+ - [Event-hub overview](https://confluence.tools.tax.service.gov.uk/display/DCT/Event+Hub)
+ - [Digital Contact Slack channel - #team-digital-contact](https://hmrcdigital.slack.com/archives/C0J85LC3W)
+ - [Metrics dashboard](https://grafana.tools.production.tax.service.gov.uk/d/event-hub/event-hub?orgId=1&from=now-24h&to=now&timezone=browser&var-ecsServiceName=ecs-event-hub-protected-Service-XTC62ZofzyHH&var-ecsServicePrefix=ecs-event-hub-protected&refresh=15m)
+
 
 ## Configuration
 
@@ -260,7 +274,7 @@ Custom stats for event-hub can be collected and viewed locally by setting up gra
 * Configure a graphite datasource to `http://graphite:8080`
 * Running integration tests, in particular `uk.gov.hmrc.eventhub.subscription.SubscriberPushSubscriptionsISpec`, is a convenient way to generate most metrics.
 
-## Run the tests and sbt fmt before raising a PR
+## SBT tasks
 
 Format:
 
