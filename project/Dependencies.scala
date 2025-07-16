@@ -15,11 +15,12 @@
  */
 
 import play.sbt.PlayImport.ws
-import sbt._
+import sbt.*
+import sbt.Keys.dependencyOverrides
 
 object Dependencies {
 
-  private val BOOTSTRAP_VERSION: String = "9.13.0"
+  private val BOOTSTRAP_VERSION: String = "9.16.0"
   private val MONGO_VERSION: String      = "2.6.0"
   
   object Library {
@@ -35,7 +36,9 @@ object Dependencies {
     val ScalaCheck = "org.scalatestplus"        %% "scalacheck-1-17"                   % "3.2.18.0"
     val Mockito = "org.scalatestplus"           %% "mockito-4-11"                      % "3.2.17.0"
     val PekkoTestKit = "org.apache.pekko"       %% "pekko-testkit"                     % "1.0.3"
+
   }
+  val dependencyOverrides: Seq[ModuleID] = Seq("net.minidev" % "json-smart" % "2.5.2")
 
   import Library._
 
