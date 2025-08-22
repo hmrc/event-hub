@@ -34,9 +34,11 @@ class HttpResponseHandler(
 )(implicit executionContext: ExecutionContext)
     extends Logging {
 
-  def handle(subscriberEventHttpResponse: SubscriberEventHttpResponse): Future[EventSendStatus] =
+  def handle(subscriberEventHttpResponse: SubscriberEventHttpResponse): Future[EventSendStatus] = {
+    logger debug s"Received subscriber response $subscriberEventHttpResponse"
     subscriberEventHttpResponse match {
       case SubscriberEventHttpResponse(response, event, subscriber) =>
+        logger debug s"Eventhub: $response - $event - $subscriber"
         val resultF = EventSendStatus(event, subscriber, _)
         metricsReporter.stopSubscriptionPublishTimer(subscriber, event)
 
@@ -81,6 +83,7 @@ class HttpResponseHandler(
             }
         }
     }
+  }
 
   private def markAsFailed(
     event: Event,
