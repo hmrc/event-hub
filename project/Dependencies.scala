@@ -21,7 +21,7 @@ import sbt.Keys.dependencyOverrides
 object Dependencies {
 
   private val BOOTSTRAP_VERSION: String = "10.1.0"
-  private val MONGO_VERSION: String      = "2.6.0"
+  private val MONGO_VERSION: String      = "2.7.0"
   
   object Library {
     val Bootstrap = "uk.gov.hmrc"               %% "bootstrap-backend-play-30"         % BOOTSTRAP_VERSION
