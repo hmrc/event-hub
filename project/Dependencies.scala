@@ -20,7 +20,7 @@ import sbt.Keys.dependencyOverrides
 
 object Dependencies {
 
-  private val BOOTSTRAP_VERSION: String = "9.16.0"
+  private val BOOTSTRAP_VERSION: String = "10.1.0"
   private val MONGO_VERSION: String      = "2.6.0"
   
   object Library {
@@ -29,7 +29,6 @@ object Dependencies {
     val Pureconfig = "com.github.pureconfig"    %% "pureconfig-generic-scala3"         % "0.17.7"
     val Cats = "org.typelevel"                  %% "cats-core"                         % "2.9.0"
     val Swagger = "org.webjars"                  % "swagger-ui"                        % "5.2.0"
-    val Enumeration = "com.beachape"            %% "enumeratum-play"                   % "1.8.0"
     val jayway = "com.jayway.jsonpath"           % "json-path"                         % "2.9.0"
     val BootstrapTest = "uk.gov.hmrc"           %% "bootstrap-test-play-30"            % BOOTSTRAP_VERSION
     val HmrcMongoTest = "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-30"           % MONGO_VERSION
@@ -40,16 +39,15 @@ object Dependencies {
   }
   val dependencyOverrides: Seq[ModuleID] = Seq("net.minidev" % "json-smart" % "2.5.2")
 
-  import Library._
+  import Library.*
 
-  val libraries = Seq(
+  val libraries: Seq[ModuleID] = Seq(
     ws,
     Bootstrap,
     HmrcMongoWorkItem,
     Pureconfig,
     Cats,
     Swagger,
-    Enumeration,
     jayway,
     BootstrapTest % Test,
     HmrcMongoTest % Test,
