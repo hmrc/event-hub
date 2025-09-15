@@ -15,7 +15,6 @@ lazy val microservice = Project(appName, file("."))
     dependencyOverrides ++= Dependencies.dependencyOverrides,
     scalacOptions ++= List("-Xmax-inlines", "64"),
   )
-  .settings(resolvers += Resolver.jcenterRepo)
   .settings(ScoverageSettings())
   .settings(inConfig(Test)(org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings))
 
