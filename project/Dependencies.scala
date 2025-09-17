@@ -28,7 +28,6 @@ object Dependencies {
     val HmrcMongoWorkItem = "uk.gov.hmrc.mongo" %% "hmrc-mongo-work-item-repo-play-30" % MONGO_VERSION
     val Pureconfig = "com.github.pureconfig"    %% "pureconfig-generic-scala3"         % "0.17.7"
     val Cats = "org.typelevel"                  %% "cats-core"                         % "2.9.0"
-    val Swagger = "org.webjars"                  % "swagger-ui"                        % "5.2.0"
     val jayway = "com.jayway.jsonpath"           % "json-path"                         % "2.9.0"
     val BootstrapTest = "uk.gov.hmrc"           %% "bootstrap-test-play-30"            % BOOTSTRAP_VERSION
     val HmrcMongoTest = "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-30"           % MONGO_VERSION
@@ -47,7 +46,6 @@ object Dependencies {
     HmrcMongoWorkItem,
     Pureconfig,
     Cats,
-    Swagger,
     jayway,
     BootstrapTest % Test,
     HmrcMongoTest % Test,

@@ -15,12 +15,12 @@
  */
 
 import sbt.Keys.parallelExecution
-import sbt._
+import sbt.*
 import scoverage.ScoverageKeys
 
 object ScoverageSettings {
-  def apply(): Seq[Def.Setting[_ >: String with Double with Boolean]] =
-    Seq( // Semicolon-separated list of regexes matching classes to exclude
+  def apply(): Seq[Def.Setting[? >: String & Double & Boolean]] =
+    Seq(
       ScoverageKeys.coverageExcludedPackages := "<empty>;.*Reverse.*;.*(config).*;.*(BuildInfo|Routes).*",
       ScoverageKeys.coverageMinimumStmtTotal := 96.35,
       ScoverageKeys.coverageFailOnMinimum := true,
