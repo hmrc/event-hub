@@ -20,10 +20,11 @@ import org.apache.pekko.http.scaladsl.model.HttpMethods.PUT
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import pureconfig.error.{ExceptionThrown, FailureReason}
 import uk.gov.hmrc.eventhub.config.Subscriber.{InvalidSubscriberName, InvalidTopicName}
 import uk.gov.hmrc.eventhub.config.TestModels.{subscriber, subscriptionDefaults}
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 class TopicSpec extends AnyFlatSpec with Matchers {
 
@@ -37,38 +38,56 @@ class TopicSpec extends AnyFlatSpec with Matchers {
 
   it should "return a failure reason when provided with a topic's name which contains special characters" in {
     val topicName = TopicName(name = "topic+++*&*&*^&^&%^@$^&%@_name")
-    val result = Subscriber.validateTopicName(topicName)
+    val result: Either[FailureReason, TopicName] = Subscriber.validateTopicName(topicName)
+
     result shouldBe Left(InvalidTopicName(topicName))
-    result.left.get.description shouldBe "Invalid topic name: topic+++*&*&*^&^&%^@$^&%@_name"
+    result
+      .swap
+      .getOrElse(ExceptionThrown(new RuntimeException("exception occurred")))
+      .description shouldBe "Invalid topic name: topic+++*&*&*^&^&%^@$^&%@_name"
   }
 
   it should "return a failure reason when provided with a topic's name which contains capitals" in {
     val topicName = TopicName(name = "TopicName")
     val result = Subscriber.validateTopicName(topicName)
+
     result shouldBe Left(InvalidTopicName(topicName))
-    result.left.get.description shouldBe "Invalid topic name: TopicName"
+    result
+      .swap
+      .getOrElse(ExceptionThrown(new RuntimeException("exception occurred")))
+      .description shouldBe "Invalid topic name: TopicName"
   }
 
   behavior of "Subscriber.validateSubscriberName"
 
-  it should "return a the subscriber name supplied back when provided with a subscriber's name which contains digits, hyphens, and lowercase letters" in {
-    val subscriberName = "subscriber01-23name"
-    val result = Subscriber.validateSubscriberName(subscriberName)
-    result shouldBe Right(subscriberName)
-  }
+  it should "return a the subscriber name supplied back when provided with a subscriber's name which contains digits," +
+    " hyphens, and lowercase letters" in {
+      val subscriberName = "subscriber01-23name"
+      val result = Subscriber.validateSubscriberName(subscriberName)
+
+      result shouldBe Right(subscriberName)
+    }
 
   it should "return a failure reason when provided with a subscriber's name which contains special characters" in {
     val subscriberName = "subscriber+++*&*&*^&^&%^@$^&%@_name"
     val result = Subscriber.validateSubscriberName(subscriberName)
+
     result shouldBe Left(InvalidSubscriberName(subscriberName))
-    result.left.get.description shouldBe "Invalid subscriber name: subscriber+++*&*&*^&^&%^@$^&%@_name"
+    result
+      .swap
+      .getOrElse(ExceptionThrown(new RuntimeException("exception occurred")))
+      .description shouldBe "Invalid subscriber name: subscriber+++*&*&*^&^&%^@$^&%@_name"
   }
 
   it should "return a failure reason when provided with a subscriber's name which contains capitals" in {
     val subscriberName = "SubscriberName"
     val result = Subscriber.validateSubscriberName(subscriberName)
+
     result shouldBe Left(InvalidSubscriberName(subscriberName))
-    result.left.get.description shouldBe "Invalid subscriber name: SubscriberName"
+    result
+      .swap
+      .getOrElse(ExceptionThrown(new RuntimeException("exception occurred")))
+      .description shouldBe "Invalid subscriber name: SubscriberName"
   }
 
   behavior of "Topic.configLoader"
