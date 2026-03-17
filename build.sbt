@@ -1,8 +1,7 @@
-
 val appName = "event-hub"
 
 Global / majorVersion := 3
-Global / scalaVersion := "3.4.2"
+Global / scalaVersion := "3.6.1"
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(
@@ -13,7 +12,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     libraryDependencies ++= Dependencies.libraries,
     dependencyOverrides ++= Dependencies.dependencyOverrides,
-    scalacOptions ++= List("-Xmax-inlines", "64"),
+    scalacOptions ++= List("-Xmax-inlines", "64", "-Wconf:src=routes/.*:s", "-Wconf:msg=Flag.*repeatedly:s")
   )
   .settings(ScoverageSettings())
   .settings(inConfig(Test)(org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings))
