@@ -19,7 +19,7 @@ import sbt.*
 
 object Dependencies {
 
-  private val BOOTSTRAP_VERSION: String = "10.7.0"
+  private val BOOTSTRAP_VERSION: String = "10.7.1"
   private val MONGO_VERSION: String = "2.12.0"
 
   object Library {
